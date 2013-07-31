@@ -1,0 +1,28 @@
+application: tattooport
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+
+builtins:
+- appstats: on
+
+handlers:
+- url: /css
+  static_dir: css
+- url: /js
+  static_dir: js
+- url: /img
+  static_dir: img
+- url: /.*
+  script: main.app
+  login: admin
+
+admin_console:
+  pages:
+  - name: appstats
+    url: /stats
