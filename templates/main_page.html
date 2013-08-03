@@ -1,12 +1,28 @@
 {% extends "base_template.html" %}
 
 {% block title %}
-    TattooPort
+    Tattooport
 {% endblock %}
 
-{% block body %}
-    <h1>TattooPort</h1>
+{% block container %}
+    <h1>Tattooport</h1>
 
-    <p>Welcome!</p>
+    <p>Welcome! {{ title }}</p>
+	
+	<div class="row">
+		<div class="col-12 col-sm-8 col-lg-8">.col-12 .col-lg-8</div>
+		<div class="col-6 col-sm-4 col-lg-4">.col-6 .col-lg-4</div>
+	</div>
+	<div class="row">
+		<div class="col-6 col-sm-4 col-lg-4">.col-6 .col-lg-4</div>
+		<div class="col-6 col-sm-4 col-lg-4">.col-6 .col-lg-4</div>
+		<div class="col-6 col-sm-4 col-lg-4">.col-6 .col-lg-4</div>
+	</div>
+	<div class="row">
+		<div class="col-6 col-sm-6 col-lg-6">.col-6 .col-lg-6</div>
+		<div class="col-6 col-sm-6 col-lg-6">.col-6 .col-lg-6</div>
+	</div>
+
+
 {% endblock %}
 

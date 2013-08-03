@@ -32,8 +32,13 @@ class BaseHandler(webapp2.RequestHandler):
 	def render(self, template, **kw):
 		self.write(self.render_str(template, **kw))
 
+class Welcome(BaseHandler):
+	def get(self):
+		self.render('main_page.html', title = 'yup')
+
 class MainPage(BaseHandler):
 	def get(self):
 		self.render('main_page.html')
 
-app = webapp2.WSGIApplication([('/.*', MainPage)], debug = True)
+app = webapp2.WSGIApplication([('/welcome',Welcome),
+								('/.*', MainPage)], debug = True)
