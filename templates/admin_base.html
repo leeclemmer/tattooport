@@ -14,6 +14,9 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
 
+    <!-- Font Awesome -->
+	<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+
     <!-- Custom -->
 	<link rel="stylesheet" href="/css/admin.css" type="text/css"/>
 	{% endblock %}
@@ -22,31 +25,33 @@
 <body>
 	<div class="container">
 		<div class="navbar navbar-inverse navbar-fixed-top">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
+			<div class="container">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
 
-			<a class="navbar-brand" href="/" target="_blank">Home</a>
-			
-			<div class="nav-collapse collapse navbar-responsive-collapse">
-				<ul class="nav navbar-nav">
-					{% block topmenu %}
-					<li{% if active == 'admin' %} class="active" {% endif %}><a href="/admin">Admin</a></li>
-					<li{% if active == 'models' %} class="active" {% endif %}><a href="/admin/models">Data Models</a></li>
-					{% endblock %}
-				</ul>
+				<a class="navbar-brand" href="/" target="_blank">Home</a>
+				
+				<div class="nav-collapse collapse navbar-responsive-collapse">
+					<ul class="nav navbar-nav">
+						{% block topmenu %}
+						<li{% if active == 'admin' %} class="active" {% endif %}><a href="/admin">Admin</a></li>
+						<li{% if active == 'models' %} class="active" {% endif %}><a href="/admin/models">Data Models</a></li>
+						{% endblock %}
+					</ul>
+				</div>
 			</div>
 		</div>
 
 		<div class="row">
-			<div class="col-lg-2 col-offset-1 tp-sidenav">
+			<div class="col-lg-2 tp-sidenav">
 				{% block sidenav %}
 				{% endblock %}
 			</div>
 
-			<div class="col-lg-9">
+			<div class="col-lg-10 tp-main">
 				{% block main %}
 				<h1>Admin Main Page</h1>
 				<p>Fill in block</p>
@@ -62,6 +67,9 @@
     <script src="/js/bootstrap.min.js"></script>
 
     <!-- Enable responsive features in IE8 -->
-    <script scr="/js/respond.min.js"></script>
+    <script src="/js/respond.min.js"></script>
+
+    <!-- Custom -->
+    <script src="/js/app.js"></script>
 </body>
 </html>

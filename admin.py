@@ -19,6 +19,11 @@ class AdminStudio(BaseHandler):
 		except jinja2.TemplateNotFound:
 			self.redirect('/admin/models')
 
+	def post(self, name):
+		if name == 'create':
+			phone = self.request.get('phone')
+			info('phone', phone)
+
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models', AdminModels),
