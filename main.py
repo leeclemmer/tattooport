@@ -12,6 +12,7 @@ import logging
 import keys
 import utils
 from utils import info
+from models import *
 
 # external
 import webapp2
@@ -32,6 +33,10 @@ class BaseHandler(webapp2.RequestHandler):
 	def render(self, template, **kw):
 		self.write(self.render_str(template, **kw))
 
+	def str_to_class(self, s):
+		''' Return a class with name s. '''
+		return getattr(sys.modules[__name__], s)
+
 class Welcome(BaseHandler):
 	def get(self):
 		self.render('main_page.html', title = 'yup')
@@ -40,5 +45,5 @@ class MainPage(BaseHandler):
 	def get(self):
 		self.render('main_page.html')
 
-app = webapp2.WSGIApplication([('/welcome',Welcome),
-								('/.*', MainPage)], debug = True)
+app = webapp2.WSGIApplication([('/welcome', Welcome),
+							   ('/.*', MainPage)], debug = True)
