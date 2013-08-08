@@ -10,5 +10,21 @@
 	text-shadow: 0 1px 0 #fff;
 	background-color: #f7f5fa;
 	border-radius: 5px;
-	background-color: #eee;
+}
+
+.tp-sidenav .accordion-group {
+    border:none;
+}
+
+.tp-sidenav .accordion-inner {
+    border:none;
+}
+
+.tp-sidenav ul {
+    font-size:0.9em;
+}
+
+.tp-sidenav ul li {
+    padding-bottom:10px;
+    padding-left:10px;
 }
