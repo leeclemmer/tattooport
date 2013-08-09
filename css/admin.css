@@ -35,6 +35,16 @@
     margin-bottom:2em;
 }
 
+/*** Create New Studio Form ***/
+#mailing-address {
+    display: none;
+}
+
+.chosen-single {
+    height:38px !important;
+    line-height:36px !important;
+}
+
 /*** Side-Nav ***/
 .tp-sidenav {
     font-size:1.3em;
