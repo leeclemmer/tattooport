@@ -128,7 +128,7 @@
 			<div class="form-group">
 				<label for="country" class="col-lg-2 control-label">Country</label>
 				<div class="col-lg-9">
-					<select name="country" id="country" class="form-control chosen-select">
+					<select name="country" id="country" class="form-control chosen-select country">
 						<option value="US" selected>United States</option>
 						<option value="DE">Germany</option>
 						<option value="AF">Afghanistan</option>
@@ -388,7 +388,7 @@
 			<div class="form-group">
 				<label for="subdivision" class="col-lg-2 control-label">State/Province</label>
 				<div class="col-lg-9">
-					<select name="subdivision" id="subdivision" class="form-control chosen-select">
+					<select name="subdivision" id="subdivision" class="form-control chosen-select subdivisions">
 						<option value="US-AL">Alabama</option>
 						<option value="US-AK">Alaska</option>
 						<option value="US-AS">American Samoa</option>
@@ -461,38 +461,38 @@
 
 		<!-- Different mailing address? -->
 		<div class="form-group col-lg-12 text-muted" id="different-ma">
-			<label for="ma-toggle">Different mailing address?</label>
-			<input type="radio" name="ma-toggle" value="yes"/> Yes
-			<input type="radio" name="ma-toggle" value="no" checked/> No
+			<label for="ma_toggle">Different mailing address?</label>
+			<input type="radio" name="ma_toggle" value="yes"/> Yes
+			<input type="radio" name="ma_toggle" value="no" checked/> No
 		</div>
 
 		<!-- Mailing Address -->
-		<fieldset id="mailing-address">
+		<fieldset id="mailing_address">
 			<legend>
 				Mailing address
 			</legend>
 
 			<!-- MA: Street -->
 			<div class="form-group">
-				<label for="mailing-street" class="col-lg-2 control-label">Street</label>
+				<label for="ma_street" class="col-lg-2 control-label">Street</label>
 				<div class="col-lg-9">
-					<textarea rows="2" type="text" name="mailing-street" id="mailing-street" class="form-control" placeholder="Enter street"></textarea>
+					<textarea rows="2" type="text" name="ma_street" id="ma_street" class="form-control" placeholder="Enter street"></textarea>
 				</div>
 			</div>
 			
 			<!-- MA: City -->
 			<div class="form-group">
-				<label for="mailing-city" class="col-lg-2 control-label">City</label>
+				<label for="ma_city" class="col-lg-2 control-label">City</label>
 				<div class="col-lg-9">
-					<input type="text" name="mailing-city" id="mailing-city" class="form-control" placeholder="Enter city">
+					<input type="text" name="ma_city" id="ma_city" class="form-control" placeholder="Enter city">
 				</div>
 			</div>
 			
 			<!-- MA: Country -->
 			<div class="form-group">
-				<label for="mailing-country" class="col-lg-2 control-label">Country</label>
+				<label for="ma_country" class="col-lg-2 control-label">Country</label>
 				<div class="col-lg-9">
-					<select name="mailing-country" id="mailing-country" class="form-control chosen-select">
+					<select name="ma_country" id="ma_country" class="form-control chosen-select country">
 						<option value="US" selected>United States</option>
 						<option value="DE">Germany</option>
 						<option value="AF">Afghanistan</option>
@@ -750,10 +750,10 @@
 			
 			<!-- MA: State/Province -->
 			<div class="form-group">
-				<label for="mailing-subdivision" class="col-lg-2 control-label">State/Province</label>
+				<label for="ma_subdivision" class="col-lg-2 control-label">State/Province</label>
 				<div class="col-lg-9">
 					
-					<select name="mailing-subdivision" id="mailing-subdivision" class="form-control chosen-select">
+					<select name="ma_subdivision" id="ma_subdivision" class="form-control chosen-select subdivisions">
 						<option value="US-AL">Alabama</option>
 						<option value="US-AK">Alaska</option>
 						<option value="US-AS">American Samoa</option>
@@ -817,9 +817,9 @@
 			
 			<!-- MA: ZIP/Postal code -->
 			<div class="form-group">
-				<label for="mailing-postal_code" class="col-lg-2 control-label">ZIP/Postal code</label>
+				<label for="ma_postal_code" class="col-lg-2 control-label">ZIP/Postal code</label>
 				<div class="col-lg-9">
-					<input type="text" name="mailing-postal_code" id="mailing-postal_code" class="form-control" placeholder="Enter ZIP/postal code">
+					<input type="text" name="ma_postal_code" id="ma_postal_code" class="form-control" placeholder="Enter ZIP/postal code">
 				</div>
 			</div>
 		</fieldset>

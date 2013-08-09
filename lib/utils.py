@@ -152,3 +152,7 @@ def avg_dol(d):
 	for k,v in d.iteritems():
 		d[k] = average(v)
 	return d
+
+def numbers_only(s):
+	''' Takes string s and removes any non digits. '''
+	return ''.join([d for d in s if d.isdigit()])

@@ -54,11 +54,11 @@ $(function() {
 	// Display different mailing address form
 	$('#different-ma').click(function() {
 		if ($('#different-ma input:checked').val() == 'yes') {
-			$('#mailing-address').css('display','block');
-			$('#mailing_country_chosen').attr('style','width: 100%');
-			$('#mailing_subdivision_chosen').attr('style','width: 100%');
+			$('#mailing_address').css('display','block');
+			$('#ma_country_chosen').attr('style','width: 100%');
+			$('#ma_subdivision_chosen').attr('style','width: 100%');
 		} else {
-			$('#mailing-address').css('display','none');
+			$('#mailing_address').css('display','none');
 		}
 	});
 
@@ -140,35 +140,19 @@ $(function() {
 						<option value="US-WI">Wisconsin</option> \
 						<option value="US-WY">Wyoming</option>';
 
-	$('#country').bind('change load', function() {
+	$('.country').bind('change load', function() {
 		// Enables subdivision dropdown with country's subdivision
-		var selected_country = $('#country').val();
+		var selected_country = $(this).val();
+		var subdivision = $(this).closest('fieldset').find('.subdivisions');
 
 		if ($.inArray(selected_country, enabled_countries) > -1) {
-			console.log(selected_country);
-			$('#subdivision').html(subdivisions[selected_country]);
-			$('#subdivision').removeAttr('disabled');
-			$('#subdivision').trigger('chosen:updated');
+			subdivision.html(subdivisions[selected_country]);
+			subdivision.removeAttr('disabled');
+			subdivision.trigger('chosen:updated');
 		} else {
-			$('#subdivision').html('<option>Country not supported yet</option>');
-			$('#subdivision').attr('disabled','disabled');
-			$('#subdivision').trigger('chosen:updated');
-		}
-	});
-
-	$('#mailing-country').bind('change load', function() {
-		// Enables subdivision dropdown with country's subdivision
-		var selected_country = $('#mailing-country').val();
-
-		if ($.inArray(selected_country, enabled_countries) > -1) {
-			console.log(selected_country);
-			$('#mailing-subdivision').html(subdivisions[selected_country]);
-			$('#mailing-subdivision').removeAttr('disabled');
-			$('#mailing-subdivision').trigger('chosen:updated');
-		} else {
-			$('#mailing-subdivision').html('<option>Country not supported yet</option>');
-			$('#mailing-subdivision').attr('disabled','disabled');
-			$('#mailing-subdivision').trigger('chosen:updated');
+			subdivision.html('<option>Country not supported yet</option>');
+			subdivision.attr('disabled','disabled');
+			subdivision.trigger('chosen:updated');
 		}
 	});
 });
