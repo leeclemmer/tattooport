@@ -55,11 +55,15 @@ class Contact(polymodel.PolyModel):
 
 	@property
 	def phone(self):
-		return Phone.query(phone.contact == self.key())
+		return Phone.query(Phone.contact == self.key())
 
 	@property
 	def website(self):
-		return Website.query(website.contact == self.key())
+		return Website.query(Website.contact == self.key())
+
+	@property
+	def gallery(self):
+		return Gallery.query(Gallery.contact == self.key())
 
 class InstagramUsername(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
@@ -97,7 +101,7 @@ class Address(ndb.Model):
 	lat_lon = ndb.GeoPtProperty()
 
 class MailingAddress(Address):
-	mailing_address = ndb.BooleanProperty()
+	contact = ndb.KeyProperty(kind = Contact)
 
 class Email(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
@@ -118,6 +122,9 @@ class Website(ndb.Model):
 	
 	url = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
+
+class Gallery(Website):
+	contact = ndb.KeyProperty(kind = Contact)	
 
 class Studio(Contact):
 	''' Models a physical tattoo studio. '''

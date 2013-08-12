@@ -45,6 +45,11 @@
     line-height:36px !important;
 }
 
+.form-error {
+    background-color:#f9f2f4;
+    padding:7px;
+}
+
 /*** Side-Nav ***/
 .tp-sidenav {
     font-size:1.3em;
