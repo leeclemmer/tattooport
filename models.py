@@ -11,17 +11,17 @@ from google.appengine.ext.ndb import polymodel
 class Country(ndb.Model):
 	''' Models a country after ISO 3166-1.
 		See http://en.wikipedia.org/wiki/ISO_3166-1 for more. '''
-	pass
+	display_name = ndb.StringProperty(required = True)
 
 class Subdivision(ndb.Model):
 	''' Models a country's subdivision such as state or province. 
 		Modeled after ISO 3166-2; see http://en.wikipedia.org/wiki/ISO_3166-2
 		for more.'''
-	pass
+	display_name = ndb.StringProperty(required = True)
 
 class Locality(ndb.Model):
 	''' Models a locality such as city or town. '''
-	pass
+	display_name = ndb.StringProperty(required = True)
 
 class Contact(polymodel.PolyModel):
 	''' Superclass that defines common contact properties. '''
@@ -118,7 +118,7 @@ class TumblrUsername(ndb.Model):
 class Address(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
-	address = ndb.StringProperty()
+	street = ndb.StringProperty()
 	locality = ndb.StringProperty()
 	subdivision = ndb.StringProperty()
 	country = ndb.StringProperty()

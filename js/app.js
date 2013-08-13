@@ -92,7 +92,8 @@ $(function() {
 	$('#country').trigger('chosen:updated');
 
 	// Populate mailing address country field
-	html = select_html(country_names, $_LOC['ma_country']);
+	html = '<option value=""></option>';
+	html += select_html(country_names, $_LOC['ma_country']);
 	$('#ma_country').html(html);
 	$('#ma_country').trigger('chosen:updated'); 
 

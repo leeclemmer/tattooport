@@ -3,9 +3,163 @@
 	{{title}}
 {% endblock %}
 {% block main %}
-	<h1>{{ studio['name'] }}</h1>
+<span class="temp-admin-view">
 
-	{% for email in studio['emails'] %}
-		<p>{{ email.email }}</p>
-	{% endfor %}
+	<div class="row">
+		<div class="col-lg-10">
+			<h1>{{ studio.name }}</h1>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-5">
+			<strong class="section-label">Address</strong>
+
+			<address>
+				<strong>{{ studio.name }}</strong><br/>
+
+				<!-- Address -->
+				<p>
+					{% if studio.address.get().street %}
+						<span class="white-space">{{ studio.address.get().street }}</span><br/>
+					{% endif %}
+
+					{% if studio.address.get().locality %}
+						{{ studio.address.get().locality }},
+					{% endif %}
+
+					{% if studio.subdivision %}
+						{{ studio.subdivision }} 
+					{% endif %}
+
+					{% if studio.address.get().postal_code %}
+						{{ studio.address.get().postal_code }}
+					{% endif %}
+
+					{% if studio.country %}
+						<br/>{{ studio.country }}
+					{% endif %}
+				</p>
+
+				<!-- Email -->
+				{% if studio.email %}
+				<p>
+					{% for email in studio.email %}
+						<a href="mailto:{{ email.email }}">{{ email.email }}</a><br/>
+					{% endfor %}
+				</p>
+				{% endif %}
+
+				<!-- Phone -->
+				{% if studio.phone %}
+				<p>
+				{% for phone in studio.phone %}
+					<abbr title="{{ phone.phone_type.capitalize() }} Phone">{{ phone.phone_type[0].capitalize() }}:</abbr>
+					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
+						+{{ phone.country_code }} 
+						{% if phone.country_code == '1' %}
+							{{ '(%s) %s-%s' % (phone.number[0:3],phone.number[3:6],phone.number[6:]) }}
+						{% else %}
+							{{ phone.number }}
+						{% endif %}
+					</a><br/>
+				{% endfor %}
+				</p>
+				{% endif %}
+
+			</address>
+
+			{% if studio.mailing_address.get() %}
+			<address>
+				<strong class="section-label">Mailing Address</strong>
+
+				<!-- Mailing Address -->
+				<p>
+					{% if studio.mailing_address.get().street %}
+						<span class="white-space">{{ studio.mailing_address.get().street }}</span><br/>
+					{% endif %}
+
+					{% if studio.mailing_address.get().locality %}
+						{{ studio.mailing_address.get().locality }},
+					{% endif %}
+
+					{% if studio.ma_subdivision %}
+						{{ studio.ma_subdivision }} 
+					{% endif %}
+
+					{% if studio.mailing_address.get().postal_code %}
+						{{ studio.mailing_address.get().postal_code }}
+					{% endif %}
+
+					{% if studio.ma_country %}
+						<br/>{{ studio.ma_country }}
+					{% endif %}
+				</p>
+			</address>
+			{% endif %}
+		</div>
+
+		<div class="col-lg-5">
+
+			<!-- Website -->
+			{% if studio.website.get() %}
+				<strong class="section-label">Websites</strong>
+
+				<ul class="list-unstyled">
+				{% for website in studio.website %}
+					<li>
+						<a href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			<!-- Gallery -->
+			{% if studio.gallery.get() %}
+				<strong class="section-label">Galleries</strong>
+
+				<ul class="list-unstyled">
+				{% for gallery in studio.gallery %}
+					<li>
+						<a href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			<strong class="section-label">Social Usernames</strong>
+
+			{% if studio.instagram_username.get() %}
+				{% for instagram_username in studio.instagram_username %}
+					<i class="icon-instagram icon-large"></i> <a href="http://www.instagram.com/{{ instagram_username.instagram_username }}">{{ instagram_username.instagram_username }}</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.facebook_username.get() %}
+				{% for facebook_username in studio.facebook_username %}
+					<i class="icon-facebook-sign icon-large"></i> <a href="http://www.facebook.com/{{ facebook_username.facebook_username }}">{{ facebook_username.facebook_username }}</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.twitter_username.get() %}
+				{% for twitter_username in studio.twitter_username %}
+					<i class="icon-twitter-sign icon-large"></i> <a href="http://www.twitter.com/{{ twitter_username.twitter_username }}">{{ twitter_username.twitter_username }}</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.tumblr_username.get() %}
+				{% for tumblr_username in studio.tumblr_username %}
+					<i class="icon-tumblr-sign icon-large"></i> <a href="http://{{ tumblr_username.tumblr_username }}.tumblr.com/">{{ tumblr_username.tumblr_username }}</a><br/>
+				{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<small class="text-muted">Created on {{ studio.created.ctime() }}. Last updated on {{ studio.last_edited.ctime() }}.</small>
+		</div>
+	</div>
+
+</span>
 {% endblock %}

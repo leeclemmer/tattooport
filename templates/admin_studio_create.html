@@ -62,10 +62,10 @@
 						</select>
 					</div>
 					<div class="col-lg-3">
-						<select name="countrycode{{ ext }}" id="countrycode{{ ext }}" class="form-control">
+						<select name="country_code{{ ext }}" id="country_code{{ ext }}" class="form-control">
 							<option value=""></option>
-							<option value="1" {% if args['countrycode%s' % (ext,)] == '1' %}selected{% endif %}>US +1</option>
-							<option value="49" {% if args['countrycode%s' % (ext,)] == '49' %}selected{% endif %}>Germany +49</option>
+							<option value="1" {% if args['country_code%s' % (ext,)] == '1' %}selected{% endif %}>US +1</option>
+							<option value="49" {% if args['country_code%s' % (ext,)] == '49' %}selected{% endif %}>Germany +49</option>
 						</select>
 					</div>
 					<div class="col-lg-4">
@@ -145,7 +145,7 @@
 				<div class="form-group">
 					<label for="{{ key }}" class="col-lg-2 control-label">Facebook</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[a-z\d\.]{5,50}$" maxlength="50" >
+						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -200,11 +200,11 @@
 				</div>
 			</div>
 			
-			<!-- City -->
+			<!-- Locality -->
 			<div class="form-group">
-				<label for="city" class="col-lg-2 control-label">City <span class="required">*</span></label>
+				<label for="locality" class="col-lg-2 control-label">Locality <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<input type="text" name="city" id="city" class="form-control" placeholder="Enter city" value="{{ args['city'] }}" required>
+					<input type="text" name="locality" id="locality" class="form-control" placeholder="Enter city or town" value="{{ args['locality'] }}" required>
 				</div>
 			</div>
 			
@@ -258,11 +258,11 @@
 				</div>
 			</div>
 			
-			<!-- MA: City -->
+			<!-- MA: Locality -->
 			<div class="form-group">
-				<label for="ma_city" class="col-lg-2 control-label">City</label>
+				<label for="ma_locality" class="col-lg-2 control-label">Locality</label>
 				<div class="col-lg-9">
-					<input type="text" name="ma_city" id="ma_city" class="form-control" placeholder="Enter city" value="{{ args['ma_city'] }}">
+					<input type="text" name="ma_locality" id="ma_locality" class="form-control" placeholder="Enter city or town" value="{{ args['ma_locality'] }}">
 				</div>
 			</div>
 			

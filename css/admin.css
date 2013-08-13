@@ -12,6 +12,17 @@
     color: red;
 }
 
+.section-label {
+    display:block;
+    margin-bottom:0.5em;
+    color:#ccc;
+    text-transform:uppercase;
+}
+
+.white-space {
+    white-space: pre;
+}
+
 /*** Main ***/
 .tp-main {
     padding-left:30px;

@@ -12,6 +12,7 @@ import logging
 # internal
 import keys
 import utils
+from countries import COUNTRIES
 from utils import info
 from models import *
 
@@ -41,7 +42,7 @@ class BaseHandler(webapp2.RequestHandler):
 
 	def key_to_path(self, key):
 		''' Converts a key with ancestors to a url path. '''
-		return '/%s/%s' % ('/'.join([urllib.quote_plus(pair[1]) for pair in key.pairs() if pair[0] == 'Country' or pair[0] == 'Subdivision' or pair[0] == 'City']),key.id())
+		return '/%s/%s' % ('/'.join([urllib.quote_plus(pair[1]) for pair in key.pairs() if pair[0] == 'Country' or pair[0] == 'Subdivision' or pair[0] == 'Locality']),key.id())
 
 class Welcome(BaseHandler):
 	def get(self):
