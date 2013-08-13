@@ -13,13 +13,11 @@
 				General
 			</legend>
 
-			<p> {{ emails }} </p>
-
 			<!-- Name -->
 			<div class="form-group">
-				<label for="name" class="col-lg-2 control-label">Name</label>
+				<label for="name" class="col-lg-2 control-label">Name <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<input type="text" name="name" id="name" class="form-control" pattern=".{3,500}" placeholder="3-500 characters" value="{{ args['name'] }}" required>
+					<input type="text" name="name" id="name" class="form-control" pattern="[!:.,'a-zA-Z0-9_-\s]{3,250}" maxlength="250" placeholder="3-500 letters, numbers, or _,-,!" value="{{ args['name'] }}" required>
 				</div>
 			</div>
 
@@ -55,6 +53,7 @@
 					<label for="phone{{ ext }}" class="col-lg-2 control-label">Phone</label>
 					<div class="col-lg-2">
 						<select name="phonetype{{ ext }}" id="phonetype{{ ext }}" class="form-control">
+							<option value=""></option>
 							<option value="work" {% if args['phonetype%s' % (ext,)] == 'work' %}selected{% endif %}>Work</option>
 							<option value="mobile" {% if args['phonetype%s' % (ext,)] == 'mobile' %}selected{% endif %}>Mobile</option>
 							<option value="home" {% if args['phonetype%s' % (ext,)] == 'home' %}selected{% endif %}>Home</option>
@@ -64,8 +63,9 @@
 					</div>
 					<div class="col-lg-3">
 						<select name="countrycode{{ ext }}" id="countrycode{{ ext }}" class="form-control">
-							<option value="US" {% if args['countrycode%s' % (ext,)] == 'US' %}selected{% endif %}>US +1</option>
-							<option value="DE" {% if args['countrycode%s' % (ext,)] == 'DE' %}selected{% endif %}>Germany +49</option>
+							<option value=""></option>
+							<option value="1" {% if args['countrycode%s' % (ext,)] == '1' %}selected{% endif %}>US +1</option>
+							<option value="49" {% if args['countrycode%s' % (ext,)] == '49' %}selected{% endif %}>Germany +49</option>
 						</select>
 					</div>
 					<div class="col-lg-4">
@@ -118,7 +118,7 @@
 
 			
 			<!-- Instagram -->
-			{% set key = 'instagram_username' %}
+			{% set key = 'instagram_un' %}
 			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
 
 			{% for i in range(1,max+1) %}
@@ -128,14 +128,14 @@
 				<div class="form-group">
 					<label for="{{ key }}" class="col-lg-2 control-label">Instagram</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,30}$">
+						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Facebook -->
-			{% set key = 'facebook_username' %}
+			{% set key = 'facebook_un' %}
 			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
 
 			{% for i in range(1,max+1) %}
@@ -145,14 +145,14 @@
 				<div class="form-group">
 					<label for="{{ key }}" class="col-lg-2 control-label">Facebook</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[a-z\d\.]{5,50}$">
+						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[a-z\d\.]{5,50}$" maxlength="50" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Twitter -->
-			{% set key = 'twitter_username' %}
+			{% set key = 'twitter_un' %}
 			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
 
 			{% for i in range(1,max+1) %}
@@ -162,14 +162,14 @@
 				<div class="form-group">
 					<label for="{{ key }}" class="col-lg-2 control-label">Twitter</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,32}$">
+						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Tumblr -->
-			{% set key = 'tumblr_username' %}
+			{% set key = 'tumblr_un' %}
 			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
 
 			{% for i in range(1,max+1) %}
@@ -179,7 +179,7 @@
 				<div class="form-group">
 					<label for="{{ key }}" class="col-lg-2 control-label">Tumblr</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9-_]{1,32}$">
+						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -202,17 +202,17 @@
 			
 			<!-- City -->
 			<div class="form-group">
-				<label for="city" class="col-lg-2 control-label">City</label>
+				<label for="city" class="col-lg-2 control-label">City <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<input type="text" name="city" id="city" class="form-control" placeholder="Enter city" value="{{ args['city'] }}">
+					<input type="text" name="city" id="city" class="form-control" placeholder="Enter city" value="{{ args['city'] }}" required>
 				</div>
 			</div>
 			
 			<!-- Country -->
 			<div class="form-group">
-				<label for="country" class="col-lg-2 control-label">Country</label>
+				<label for="country" class="col-lg-2 control-label">Country <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<select name="country" id="country" class="form-control chosen-select country">
+					<select name="country" id="country" class="form-control chosen-select country" required>
 						<option value="" selected>If you see this, something went wrong :(</option>
 					</select>
 				</div>
@@ -220,9 +220,9 @@
 			
 			<!-- State/Province -->
 			<div class="form-group">
-				<label for="subdivision" class="col-lg-2 control-label">State/Province</label>
+				<label for="subdivision" class="col-lg-2 control-label">State/Province <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<select name="subdivision" id="subdivision" class="form-control chosen-select subdivisions">
+					<select name="subdivision" id="subdivision" class="form-control chosen-select subdivisions" required>
 						<option value="" selected>If you see this, something went wrong :(</option>
 					</select>
 				</div>

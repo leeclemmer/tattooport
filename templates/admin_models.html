@@ -47,5 +47,20 @@
 
 {% block main %}
 	<h1>Data Models</h1>
-	<p>'Sup?</p>
+	<p>Most recently edited or created:</p>
+
+	{% if studios %}
+		<ul class="list-unstyled model-results studio-results">
+		{% for studio in studios %}
+			<li>
+				<span class="date">{{ studio.last_edited.ctime() }}</span>
+				<h3><a href="{{ studio['link'] }}">{{ studio['name'] }}</a></h3>
+			</li>
+		{% endfor %}
+		</ul>
+	{% endif %}
+
+	{% if more and next_curs %}
+		<a href="/admin/models?cursor={{ next_curs }}">More...</a>
+	{% endif %}
 {% endblock %}

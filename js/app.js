@@ -68,7 +68,7 @@ $(function() {
 	//## Generate country dropdown
 	function select_html(kv, selected) {
 		// function generates <options> HTML given object kv where k = value and id and v is the text
-		var html = '';
+		var html = '<options value=""></options>';
 		for (var k in kv) {
 			s = '';
 			if (k == selected) s = ' selected';
@@ -107,8 +107,9 @@ $(function() {
 
 		var selected = $_LOC['subdivision'];
 		if ($(this).attr('id') == 'ma_country') selected = $_LOC['ma_subdivision'];
-		
-		var html = select_html(COUNTRIES[selected_country]['subdivisions'],selected);
+
+		var html = '<option value=""></option>';
+		html += select_html(COUNTRIES[selected_country]['subdivisions'],selected);
 		
 		if ($.inArray(selected_country, ENABLED_COUNTRIES) > -1) {
 			subdivision.html(html);

@@ -1,0 +1,11 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+	<h1>{{ studio['name'] }}</h1>
+
+	{% for email in studio['emails'] %}
+		<p>{{ email.email }}</p>
+	{% endfor %}
+{% endblock %}

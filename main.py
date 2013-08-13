@@ -1,4 +1,5 @@
 # builtins
+import re
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'lib'))
@@ -37,6 +38,10 @@ class BaseHandler(webapp2.RequestHandler):
 	def str_to_class(self, s):
 		''' Return a class with name s. '''
 		return getattr(sys.modules[__name__], s)
+
+	def key_to_path(self, key):
+		''' Converts a key with ancestors to a url path. '''
+		return '/%s/%s' % ('/'.join([urllib.quote_plus(pair[1]) for pair in key.pairs() if pair[0] == 'Country' or pair[0] == 'Subdivision' or pair[0] == 'City']),key.id())
 
 class Welcome(BaseHandler):
 	def get(self):

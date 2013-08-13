@@ -25,45 +25,71 @@ class Locality(ndb.Model):
 
 class Contact(polymodel.PolyModel):
 	''' Superclass that defines common contact properties. '''
+	created = ndb.DateTimeProperty(auto_now_add = True)
+	last_edited = ndb.DateTimeProperty(auto_now = True)
+
 	@property
 	def instagram_username(self):
-		return InstagramUsername.query(InstagramUsername.contact == self.key())
+		return InstagramUsername.query(InstagramUsername.contact == self.key)
 
 	@property
 	def facebook_username(self):
-		return FacebookUsername.query(FacebookUsername.contact == self.key())
+		return FacebookUsername.query(FacebookUsername.contact == self.key)
 
 	@property
 	def twitter_username(self):
-		return TwitterUsername.query(TwitterUsername.contact == self.key())
+		return TwitterUsername.query(TwitterUsername.contact == self.key)
 
 	@property
 	def tumblr_username(self):
-		return TumblrUsername.query(TumblrUsername.contact == self.key())
+		return TumblrUsername.query(TumblrUsername.contact == self.key)
 
 	@property
 	def address(self):
-		return Address.query(Address.contact == self.key())
+		return Address.query(Address.contact == self.key)
 
 	@property
 	def mailing_address(self):
-		return MailingAddress.query(MailingAddress.contact == self.key())
+		return MailingAddress.query(MailingAddress.contact == self.key)
 
 	@property
 	def email(self):
-		return Email.query(Email.contact == self.key())
+		return Email.query(Email.contact == self.key)
 
 	@property
 	def phone(self):
-		return Phone.query(Phone.contact == self.key())
+		return Phone.query(Phone.contact == self.key)
 
 	@property
 	def website(self):
-		return Website.query(Website.contact == self.key())
+		return Website.query(Website.contact == self.key)
 
 	@property
 	def gallery(self):
-		return Gallery.query(Gallery.contact == self.key())
+		return Gallery.query(Gallery.contact == self.key)
+
+class Email(ndb.Model):
+	contact = ndb.KeyProperty(kind = Contact)
+
+	email = ndb.StringProperty()
+	primary = ndb.BooleanProperty()
+
+class Phone(ndb.Model):
+	contact = ndb.KeyProperty(kind = Contact)
+
+	phone_type = ndb.StringProperty(choices = ('home', 'work', 'fax', 'mobile', 'other'))
+	country_code = ndb.StringProperty()
+	number = ndb.StringProperty()
+	primary = ndb.BooleanProperty()
+
+class Website(ndb.Model):
+	contact = ndb.KeyProperty(kind = Contact)
+	
+	url = ndb.StringProperty()
+	primary = ndb.BooleanProperty()
+
+class Gallery(Website):
+	contact = ndb.KeyProperty(kind = Contact)	
 
 class InstagramUsername(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
@@ -103,29 +129,6 @@ class Address(ndb.Model):
 class MailingAddress(Address):
 	contact = ndb.KeyProperty(kind = Contact)
 
-class Email(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
-
-	email = ndb.StringProperty()
-	primary = ndb.BooleanProperty()
-
-class Phone(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
-
-	phone_type = ndb.StringProperty(choices = ('home', 'work', 'fax', 'mobile', 'other'))
-	country_code = ndb.StringProperty()
-	number = ndb.StringProperty()
-	primary = ndb.BooleanProperty()
-
-class Website(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
-	
-	url = ndb.StringProperty()
-	primary = ndb.BooleanProperty()
-
-class Gallery(Website):
-	contact = ndb.KeyProperty(kind = Contact)	
-
 class Studio(Contact):
 	''' Models a physical tattoo studio. '''
 	name = ndb.StringProperty()
@@ -135,7 +138,7 @@ class Studio(Contact):
 	# locality (e.g. city or town) 
 	@classmethod
 	def query_location(cls, ancestor_key):
-		return cls.query(ancestor = ancestor_key).order(cls.name)
+		return cls.query(ancestor = ancestor_key)
 	
 	# Return all artists assigned to studio
 	@property

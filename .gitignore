@@ -2,6 +2,7 @@
 ## Custom
 #################
 keys.py
+_design/*.*
 
 #################
 ## Eclipse

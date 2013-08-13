@@ -1,9 +1,15 @@
+/*** Global ***/
+
 .container {
     padding-top:50px;
 }
 
 .container .container {
     padding-top: 0;
+}
+
+.required {
+    color: red;
 }
 
 /*** Main ***/
@@ -35,21 +41,6 @@
     margin-bottom:2em;
 }
 
-/*** Create New Studio Form ***/
-#mailing_address {
-    display: none;
-}
-
-.chosen-single {
-    height:38px !important;
-    line-height:36px !important;
-}
-
-.form-error {
-    background-color:#f9f2f4;
-    padding:7px;
-}
-
 /*** Side-Nav ***/
 .tp-sidenav {
     font-size:1.3em;
@@ -76,4 +67,26 @@
 .tp-sidenav ul li {
     padding-bottom:10px;
     padding-left:10px;
+}
+
+/*** Create New Studio Form ***/
+#mailing_address {
+    display: none;
+}
+
+.chosen-single {
+    height:38px !important;
+    line-height:36px !important;
+}
+
+.form-error {
+    background-color:#f9f2f4;
+    padding:7px;
+}
+
+/*** Results ***/
+.model-results h3 {
+    display:inline-block;
+    margin-left:1em;
+    margin-top:0;
 }
