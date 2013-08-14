@@ -101,3 +101,22 @@
     margin-left:1em;
     margin-top:0;
 }
+
+/*** AdminView template ***/
+.temp-admin-view h1 {
+    display: inline-block;
+}
+
+.temp-admin-view button.btn-primary {
+    margin-left:1em;
+}
+
+.temp-admin-view .btn-danger {
+    background-color:#ddd;
+    border-color:#ddd
+}
+
+.temp-admin-view .btn-danger:hover {
+    background-color:#d9534f;
+    border-color:#d9534f
+}

@@ -68,6 +68,21 @@ class Contact(polymodel.PolyModel):
 	def gallery(self):
 		return Gallery.query(Gallery.contact == self.key)
 
+	@property
+	def props(self):
+		return dict(self._properties.items() + {
+			'instagram_username':self.instagram_username,
+		   'facebook_username':self.facebook_username,
+		   'twitter_username':self.twitter_username,
+		   'tumblr_username':self.tumblr_username,
+		   'address':self.address,
+		   'mailing_address':self.mailing_address,
+		   'email':self.email,
+		   'phone':self.phone,
+		   'website':self.website,
+		   'gallery':self.gallery
+		   }.items())
+
 class Email(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 

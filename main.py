@@ -44,6 +44,11 @@ class BaseHandler(webapp2.RequestHandler):
 		''' Converts a key with ancestors to a url path. '''
 		return '/%s/%s' % ('/'.join([urllib.quote_plus(pair[1]) for pair in key.pairs() if pair[0] == 'Country' or pair[0] == 'Subdivision' or pair[0] == 'Locality']),key.id())
 
+	def path_to_key(self, path):
+		''' Converts path to key with ancestor path. '''
+		country, subdivision, locality, sid = urllib.unquote_plus(path).split('/')
+		return ndb.Key('Country',country,'Subdivision',subdivision,'Locality',locality,'Contact',int(sid))
+
 class Welcome(BaseHandler):
 	def get(self):
 		self.render('main_page.html', title = 'yup')

@@ -26,181 +26,184 @@ class AdminStudio(BaseHandler):
 	def get(self, pagename):
 		try:
 			info(pagename)
-			self.render('admin_studio_%s.html' % (pagename), active='models', active_nav = 'studio', args = {}, num_fields = {})
+			self.render('admin_studio_%s.html' % (pagename), active='models', active_nav = 'studio')
 		except jinja2.TemplateNotFound:
 			self.redirect('/admin/models')
 
-	def post(self, pagename):
-		if pagename == 'create':
-			# Collect all POSTed arguments
-			args = {arg:self.request.get(arg) for arg in self.request.arguments()}
+class AdminCreate(BaseHandler):
+	def get(self):
+		self.render('admin_studio_create.html', active_nav = 'studio', args = {}, num_fields = {})
 
-			# multi_fields list contains all form fields that can be 1 or more
-			multi_fields = ['email','phonenumber','country_code','phonetype','website','gallery','instagram_un','facebook_un','twitter_un','tumblr_un']
+	def post(self):
+		# Collect all POSTed arguments
+		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
+
+		# multi_fields list contains all form fields that can be 1 or more
+		multi_fields = ['email','phonenumber','country_code','phonetype','website','gallery','instagram_un','facebook_un','twitter_un','tumblr_un']
+		
+		# num_fields is a dict which counts the number of each multi_field; passed to template so that it outputs correct number of fields
+		num_fields = {field:len([arg for arg in self.request.arguments() if arg.startswith(field)]) for field in multi_fields}
 			
-			# num_fields is a dict which counts the number of each multi_field; passed to template so that it outputs correct number of fields
-			num_fields = {field:len([arg for arg in self.request.arguments() if arg.startswith(field)]) for field in multi_fields}
-				
-			try:
-				# Validate form data before putting to DB
-				error = ''
-				raise_it = False
+		try:
+			# Validate form data before putting to DB
+			error = ''
+			raise_it = False
 
-				# Name validation
-				if not args.get('name'):
-					error += 'Studio must have a name'
-					raise_it = True
+			# Name validation
+			if not args.get('name'):
+				error += 'Studio must have a name'
+				raise_it = True
 
-				# Validation functions
-				validation_funcs = {'name':self.valid_name,
-									'email':self.valid_email,
-									'phonenumber':self.valid_phonenumber,
-									'country_code':self.valid_country_code,
-									'phonetype':self.valid_phonetype,
-									'website':self.valid_url,
-									'gallery':self.valid_url,
-									'instagram_un':self.valid_instagram_un,
-									'facebook_un':self.valid_facebook_un,
-									'twitter_un':self.valid_twitter_un,
-									'tumblr_un':self.valid_tumblr_un,
-									'street':self.valid_street,
-									'locality':self.valid_locality,
-									'country':self.valid_country,
-									'subdivision':self.valid_subdivision,
-									'postal_code':self.valid_postal_code,
-									'ma_toggle':self.valid_toggle,
-									'ma_street':self.valid_street,
-									'ma_locality':self.valid_locality,
-									'ma_country':self.valid_country,
-									'ma_subdivision':self.valid_subdivision,
-									'ma_postal_code':self.valid_postal_code}
+			# Validation functions
+			validation_funcs = {'name':self.valid_name,
+								'email':self.valid_email,
+								'phonenumber':self.valid_phonenumber,
+								'country_code':self.valid_country_code,
+								'phonetype':self.valid_phonetype,
+								'website':self.valid_url,
+								'gallery':self.valid_url,
+								'instagram_un':self.valid_instagram_un,
+								'facebook_un':self.valid_facebook_un,
+								'twitter_un':self.valid_twitter_un,
+								'tumblr_un':self.valid_tumblr_un,
+								'street':self.valid_street,
+								'locality':self.valid_locality,
+								'country':self.valid_country,
+								'subdivision':self.valid_subdivision,
+								'postal_code':self.valid_postal_code,
+								'ma_toggle':self.valid_toggle,
+								'ma_street':self.valid_street,
+								'ma_locality':self.valid_locality,
+								'ma_country':self.valid_country,
+								'ma_subdivision':self.valid_subdivision,
+								'ma_postal_code':self.valid_postal_code}
 
-				# Traverse arguments
-				for arg in args:
-					if args.get(arg):
-						# Handle multi_field args
-						if arg in multi_fields:
-							for i in range(1,num_fields[arg.split('-')[0]] + 1):
-								ext = ''
-								if i > 1: ext = '-%s' % (i,)
+			# Traverse arguments
+			for arg in args:
+				if args.get(arg):
+					# Handle multi_field args
+					if arg in multi_fields:
+						for i in range(1,num_fields[arg.split('-')[0]] + 1):
+							ext = ''
+							if i > 1: ext = '-%s' % (i,)
 
-								if args.get('%s%s' % (arg,ext)) and not validation_funcs[arg.split('-')[0]](args.get('%s%s' % (arg,ext))):
-									error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args.get('%s%s' % (arg,ext)))
-									raise_it = True
+							if args.get('%s%s' % (arg,ext)) and not validation_funcs[arg.split('-')[0]](args.get('%s%s' % (arg,ext))):
+								error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args.get('%s%s' % (arg,ext)))
+								raise_it = True
 
-								# Special case to make sure all 3 phone fields are filled out
-								if arg == ('phonenumber%s' % (ext)) and (not args['country_code%s' % (ext,)] or not args['phonetype%s' % (ext,)] or not args['phonenumber%s' % (ext,)]):
-									error += 'Please fill in all three phone fields. #'
-									raise_it = True
-						# Single field args
-						elif not validation_funcs[arg.split('-')[0]](args.get(arg)):
-							error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg, args[arg])
-							raise_it = True
+							# Special case to make sure all 3 phone fields are filled out
+							if arg == ('phonenumber%s' % (ext)) and (not args['country_code%s' % (ext,)] or not args['phonetype%s' % (ext,)] or not args['phonenumber%s' % (ext,)]):
+								error += 'Please fill in all three phone fields. #'
+								raise_it = True
+					# Single field args
+					elif not validation_funcs[arg.split('-')[0]](args.get(arg)):
+						error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg, args[arg])
+						raise_it = True
 
-				if raise_it: raise Exception()
+			if raise_it: raise Exception()
 
-				# Put form fields into database
-				new_studio = Studio(parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision'], 'Locality', args['locality']),
-									name = args['name'])
-				new_studio.put()
+			# Put form fields into database
+			new_studio = Studio(parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision'], 'Locality', args['locality']),
+								name = args['name'])
+			new_studio.put()
 
-				# Traverse arguments and put if exist
-				for arg in args:
-					if args.get(arg):
-						primary = False
-						ext = ''
-						if len(arg.split('-')) <= 1: primary = True
-						else: ext = '-%s' % (arg.split('-')[1])
+			# Traverse arguments and put if exist
+			for arg in args:
+				if args.get(arg):
+					primary = False
+					ext = ''
+					if len(arg.split('-')) <= 1: primary = True
+					else: ext = '-%s' % (arg.split('-')[1])
 
-						if arg.startswith('email'):
-							Email(
-								contact = new_studio.key,
-								email = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('phonenumber'):
-							Phone(
-								contact = new_studio.key,
-								phone_type = args['phonetype%s' % (ext,)],
-								country_code = args['country_code%s' % (ext,)],
-								number = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('website'):
-							Website(
-								contact = new_studio.key,
-								url = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('gallery'):
-							Gallery(
-								contact = new_studio.key,
-								url = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('instagram_un'):
-							InstagramUsername(
-								contact = new_studio.key,
-								instagram_username = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('facebook_un'):
-							FacebookUsername(
-								contact = new_studio.key,
-								facebook_username = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('twitter_un'):
-							TwitterUsername(
-								contact = new_studio.key,
-								twitter_username = args[arg],
-								primary = primary
-								).put()
-						elif arg.startswith('tumblr_un'):
-							TumblrUsername(
-								contact = new_studio.key,
-								tumblr_username = args[arg],
-								primary = primary
-								).put()
-						elif arg == 'country':
-							Address(
-								contact = new_studio.key,
-								street = args['street'],
-								locality = args['locality'],
-								subdivision = args['subdivision'],
-								country = args[arg],
-								postal_code = args['postal_code']
-								).put()
-							Country(
-								id = '%s' % (args[arg],),
-								display_name = COUNTRIES[args[arg]]['name']
-								).put()
-							Subdivision(
-								parent = ndb.Key('Country', args['country']),
-								id = args['subdivision'],
-								display_name = COUNTRIES[args[arg]]['subdivisions'][args['subdivision']]
-								).put()
-							Locality(
-								parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision']),
-								id = args['locality'],
-								display_name = args['locality']
-								).put()
-						elif arg == 'ma_country':
-							MailingAddress(
-								contact = new_studio.key,
-								street = args['ma_street'],
-								locality = args['ma_locality'],
-								subdivision = args['ma_subdivision'],
-								country = args[arg],
-								postal_code = args['ma_postal_code']
-								).put()
+					if arg.startswith('email'):
+						Email(
+							contact = new_studio.key,
+							email = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('phonenumber'):
+						Phone(
+							contact = new_studio.key,
+							phone_type = args['phonetype%s' % (ext,)],
+							country_code = args['country_code%s' % (ext,)],
+							number = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('website'):
+						Website(
+							contact = new_studio.key,
+							url = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('gallery'):
+						Gallery(
+							contact = new_studio.key,
+							url = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('instagram_un'):
+						InstagramUsername(
+							contact = new_studio.key,
+							instagram_username = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('facebook_un'):
+						FacebookUsername(
+							contact = new_studio.key,
+							facebook_username = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('twitter_un'):
+						TwitterUsername(
+							contact = new_studio.key,
+							twitter_username = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('tumblr_un'):
+						TumblrUsername(
+							contact = new_studio.key,
+							tumblr_username = args[arg],
+							primary = primary
+							).put()
+					elif arg == 'country':
+						Address(
+							contact = new_studio.key,
+							street = args['street'],
+							locality = args['locality'],
+							subdivision = args['subdivision'],
+							country = args[arg],
+							postal_code = args['postal_code']
+							).put()
+						Country(
+							id = '%s' % (args[arg],),
+							display_name = COUNTRIES[args[arg]]['name']
+							).put()
+						Subdivision(
+							parent = ndb.Key('Country', args['country']),
+							id = args['subdivision'],
+							display_name = COUNTRIES[args[arg]]['subdivisions'][args['subdivision']]
+							).put()
+						Locality(
+							parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision']),
+							id = args['locality'],
+							display_name = args['locality']
+							).put()
+					elif arg == 'ma_country':
+						MailingAddress(
+							contact = new_studio.key,
+							street = args['ma_street'],
+							locality = args['ma_locality'],
+							subdivision = args['ma_subdivision'],
+							country = args[arg],
+							postal_code = args['ma_postal_code']
+							).put()
 
-				self.redirect('/admin/models/studio/view%s' % (self.key_to_path(new_studio.key)))
-			except:
-				# Error, so re-render form with error message
-				error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
+			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(new_studio.key)))
+		except:
+			# Error, so re-render form with error message
+			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-				self.render('admin_studio_create.html', active_nav = 'studio', args = args, num_fields = num_fields, error = error)
+			self.render('admin_studio_create.html', active_nav = 'studio', args = args, num_fields = num_fields, error = error)
 
 	def valid_name(self, name):
 		NAME_RE = re.compile(r"^[!:.,'\sa-zA-Z0-9_-]{3,250}$")
@@ -263,12 +266,13 @@ class AdminStudio(BaseHandler):
 
 class AdminView(BaseHandler):
 	def get(self, pagename):
-		country, subdivision, locality, sid = urllib.unquote_plus(pagename).split('/')
-		ancestor_key = ndb.Key('Country',country,'Subdivision',subdivision,'Locality',locality,'Contact',int(sid))
+		# Create ancestor key from URL path
+		ancestor_key = self.path_to_key(pagename)
+		
+		# Get studio
 		studio = ancestor_key.get()
 
-		info('studio',studio)
-		info('studio.address',studio.address.get().locality)
+		# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
 		studio.country = COUNTRIES[studio.address.get().country]['name']
 		studio.subdivision = COUNTRIES[studio.address.get().country]['subdivisions'][studio.address.get().subdivision]
 
@@ -276,9 +280,58 @@ class AdminView(BaseHandler):
 			studio.ma_country = COUNTRIES[studio.mailing_address.get().country]['name']
 			studio.ma_subdivision = COUNTRIES[studio.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
 
-		self.render('admin_view.html', active='models', active_nav = 'studio', studio = studio)
+		# Tag on the edit and delete links
+		studio.edit = '/admin/models/studio/edit/%s' % (pagename,)
+		studio.delete = '/admin/models/studio/delete/%s' % (pagename,)
+
+		# Call the template
+		self.render('admin_studio_view.html', active='models', active_nav = 'studio', studio = studio)
+
+class AdminEdit(BaseHandler):
+	def get(self, pagename):
+		# Create ancestor key from URL path
+		ancestor_key = self.path_to_key(pagename)
+		
+		# Get studio
+		studio = ancestor_key.get()
+
+class AdminDelete(BaseHandler):
+	def get(self, pagename):
+		# Create ancestor key from URL path
+		ancestor_key = self.path_to_key(pagename)
+		
+		# Get studio
+		studio = ancestor_key.get()
+		studio.view = '/admin/models/studio/view/%s' % (pagename,)
+
+		# Call the template
+		self.render('admin_studio_delete.html', active='models', active_nave = 'studio', studio = studio)
+
+	def post(self, pagename):
+		# Create ancestor key from URL path
+		ancestor_key = self.path_to_key(pagename)
+		
+		# Get studio
+		name = ancestor_key.get().name
+
+		# Call the template
+		if self.request.get('delete') and self.request.get('delete') == 'yes':
+			for prop_name,prop in ancestor_key.get().props.iteritems():
+				try:
+					ndb.delete_multi([p.key for p in prop.fetch()])
+				except AttributeError:
+					pass
+			# Delete studio
+			ancestor_key.delete()
+			self.render('admin_studio_delete.html', active='models', active_nave = 'studio', name = name, confirmation = True)
+		else:
+			self.redirect('/admin/models/studio/delete/%s' % (pagename,))
+
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models', AdminModels),
+							   ('/admin/models/studio/create/?', AdminCreate),
 							   ('/admin/models/studio/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
+							   ('/admin/models/studio/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
+							   ('/admin/models/studio/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
 							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio)], debug=True)
