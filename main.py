@@ -25,7 +25,10 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 							   extensions = ['jinja2.ext.loopcontrols'],
 							   autoescape = True)
 
-class BaseHandler(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):	
+	# multi_fields list contains all form fields that can be 1 or more
+	multi_fields = ['email','phone_number','country_code','phone_type','website','gallery','instagram_un','facebook_un','twitter_un','tumblr_un']
+
 	def write(self, *a, **kw):
 		self.response.out.write(*a, **kw)
 
@@ -48,6 +51,12 @@ class BaseHandler(webapp2.RequestHandler):
 		''' Converts path to key with ancestor path. '''
 		country, subdivision, locality, sid = urllib.unquote_plus(path).split('/')
 		return ndb.Key('Country',country,'Subdivision',subdivision,'Locality',locality,'Contact',int(sid))
+
+	def num_fields(self, args):
+		''' Returns dictionary of how many multi_fields in args there are for each arg. '''		
+		# num_fields is a dict which counts the number of each multi_field; passed to template so that it outputs correct number of fields
+		return {field:len([arg for arg in args if arg.startswith(field)]) for field in self.multi_fields}			
+		
 
 class Welcome(BaseHandler):
 	def get(self):

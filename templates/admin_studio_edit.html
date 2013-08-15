@@ -1,7 +1,7 @@
 {% extends "admin_models.html" %}
 
 {% block main %}
-	<h1>Create New Studio</h1>
+	<h1>Edit {{ args['name'] }}</h1>
 
 	{% if error %}
 	<p class="text-danger form-error"><b>Form Error:</b> {{ error }}</p>
@@ -9,10 +9,8 @@
 
 	<form method="post" action="/admin/models/studio/create" class="form-horizontal" id="create-new-studio">
 		<fieldset>
-			{% if args['skey'] %}
 			<input type="hidden" name="skey" value="{{ args['skey'] }}">
-			{% endif %}
-
+			
 			<legend>
 				General
 			</legend>
@@ -26,71 +24,50 @@
 			</div>
 
 			<!-- Email -->
-			{% set key = 'email' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
-
+			{% for arg in args['email'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Email</label>
+					<label for="email-{{ arg[0] }}" class="col-lg-2 control-label">Email</label>
 					<div class="col-lg-9">
-						<input type="email" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: lee@tattooport.com" value="{{ args[key] }}">
+						<input type="email" name="email-{{ arg[0] }}" id="email-{{ arg[0] }}" class="form-control" placeholder="For example: lee@tattooport.com" value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Phone -->
-			{% set key = 'phone_number' %}
-			{% set ext = '' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set ext = '-%s' % (i,) %}
-				{% endif %}
-
+			{% for arg in args['phone'] %}
 				<div class="form-group">
-					<label for="phone{{ ext }}" class="col-lg-2 control-label">Phone</label>
+					<label for="phone_number-{{ arg[0] }}" class="col-lg-2 control-label">Phone</label>
 					<div class="col-lg-2">
-						<select name="phone_type{{ ext }}" id="phone_type{{ ext }}" class="form-control">
+						<select name="phone_type-{{ arg[0] }}" id="phone_type-{{ arg[0] }}" class="form-control">
 							<option value=""></option>
-							<option value="work" {% if args['phone_type%s' % (ext,)] == 'work' %}selected{% endif %}>Work</option>
-							<option value="mobile" {% if args['phone_type%s' % (ext,)] == 'mobile' %}selected{% endif %}>Mobile</option>
-							<option value="home" {% if args['phone_type%s' % (ext,)] == 'home' %}selected{% endif %}>Home</option>
-							<option value="fax" {% if args['phone_type%s' % (ext,)] == 'fax' %}selected{% endif %}>Fax</option>
-							<option value="other" {% if args['phone_type%s' % (ext,)] == 'other' %}selected{% endif %}>Other</option>
+							<option value="work" {% if arg[1]['phone_type'] == 'work' %}selected{% endif %}>Work</option>
+							<option value="mobile" {% if arg[1]['phone_type'] == 'mobile' %}selected{% endif %}>Mobile</option>
+							<option value="home" {% if arg[1]['phone_type'] == 'home' %}selected{% endif %}>Home</option>
+							<option value="fax" {% if arg[1]['phone_type'] == 'fax' %}selected{% endif %}>Fax</option>
+							<option value="other" {% if arg[1]['phone_type'] == 'other' %}selected{% endif %}>Other</option>
 						</select>
 					</div>
 					<div class="col-lg-3">
-						<select name="country_code{{ ext }}" id="country_code{{ ext }}" class="form-control">
+						<select name="country_code-{{ arg[0] }}" id="country_code-{{ arg[0] }}" class="form-control">
 							<option value=""></option>
-							<option value="1" {% if args['country_code%s' % (ext,)] == '1' %}selected{% endif %}>US +1</option>
-							<option value="49" {% if args['country_code%s' % (ext,)] == '49' %}selected{% endif %}>Germany +49</option>
+							<option value="1" {% if arg[1]['country_code'] == '1' %}selected{% endif %}>US +1</option>
+							<option value="49" {% if arg[1]['country_code'] == '49' %}selected{% endif %}>Germany +49</option>
 						</select>
 					</div>
 					<div class="col-lg-4">
-						<input type="tel" name="phone_number{{ ext }}" id="phone_number{{ ext }}" class="form-control" placeholder="For example: 215-555-1234" value="{{ args['phone_number%s' % (ext,)] }}">
+						<input type="tel" name="phone_number-{{ arg[0] }}" id="phone_number-{{ arg[0] }}" class="form-control" placeholder="For example: 215-555-1234" value="{{ arg[1]['phone_number'] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Website -->
-			{% set key = 'website' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['website'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Website</label>
+					<label for="website-{{ arg[0] }}" class="col-lg-2 control-label">Website</label>
 					<div class="col-lg-9">
-						<input type="url" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: http://www.tattooport.com" value="{{ args[key] }}">
+						<input type="url" name="website-{{ arg[0] }}" id="website-{{ arg[0] }}" class="form-control" placeholder="For example: http://www.tattooport.com" value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -98,17 +75,11 @@
 
 			
 			<!-- Gallery -->
-			{% set key = 'gallery' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['gallery'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Gallery</label>
+					<label for="gallery-{{ arg[0] }}" class="col-lg-2 control-label">Gallery</label>
 					<div class="col-lg-9">
-						<input type="url" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: http://www.tattooport.com/gallery" value="{{ args[key] }}">
+						<input type="url" name="gallery-{{ arg[0] }}" id="gallery-{{ arg[0] }}" class="form-control" placeholder="For example: http://www.tattooport.com/gallery" value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -122,68 +93,44 @@
 
 			
 			<!-- Instagram -->
-			{% set key = 'instagram_un' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['instagram_username'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Instagram</label>
+					<label for="instagram_un-{{ arg[0] }}" class="col-lg-2 control-label">Instagram</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
+						<input type="text" name="instagram_un-{{ arg[0] }}" id="instagram_un-{{ arg[0] }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Facebook -->
-			{% set key = 'facebook_un' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['facebook_username'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Facebook</label>
+					<label for="facebook_un-{{ arg[0] }}" class="col-lg-2 control-label">Facebook</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
+						<input type="text" name="facebook_un-{{ arg[0] }}" id="facebook_un-{{ arg[0] }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Twitter -->
-			{% set key = 'twitter_un' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['twitter_username'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Twitter</label>
+					<label for="twitter_un-{{ arg[0] }}" class="col-lg-2 control-label">Twitter</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
+						<input type="text" name="twitter_un-{{ arg[0] }}" id="twitter_un-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Tumblr -->
-			{% set key = 'tumblr_un' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
+			{% for arg in args['tumblr_username'] %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Tumblr</label>
+					<label for="tumblr_un-{{ arg[0] }}" class="col-lg-2 control-label">Tumblr</label>
 					<div class="col-lg-9">
-						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
+						<input type="text" name="tumblr_un-{{ arg[0] }}" id="tumblr_un-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -244,7 +191,7 @@
 		<!-- Different mailing address? -->
 		<div class="form-group col-lg-12 text-muted" id="different-ma">
 			<label for="ma_toggle">Different mailing address?</label>
-			<input type="radio" name="ma_toggle" value="yes"{% if args and args['ma_toggle'] == 'yes' %} checked{% endif %}/> Yes
+			<input type="radio" name="ma_toggle" value="yes"{% if args['ma_toggle'] == 'yes' %} checked{% endif %}/> Yes
 			<input type="radio" name="ma_toggle" value="no"{% if args['ma_toggle'] == 'no' or not args%} checked{% endif %}/> No
 		</div>
 

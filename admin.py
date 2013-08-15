@@ -37,12 +37,6 @@ class AdminCreate(BaseHandler):
 	def post(self):
 		# Collect all POSTed arguments
 		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
-
-		# multi_fields list contains all form fields that can be 1 or more
-		multi_fields = ['email','phonenumber','country_code','phonetype','website','gallery','instagram_un','facebook_un','twitter_un','tumblr_un']
-		
-		# num_fields is a dict which counts the number of each multi_field; passed to template so that it outputs correct number of fields
-		num_fields = {field:len([arg for arg in self.request.arguments() if arg.startswith(field)]) for field in multi_fields}
 			
 		try:
 			# Validate form data before putting to DB
@@ -57,9 +51,9 @@ class AdminCreate(BaseHandler):
 			# Validation functions
 			validation_funcs = {'name':self.valid_name,
 								'email':self.valid_email,
-								'phonenumber':self.valid_phonenumber,
+								'phone_number':self.valid_phone_number,
 								'country_code':self.valid_country_code,
-								'phonetype':self.valid_phonetype,
+								'phone_type':self.valid_phone_type,
 								'website':self.valid_url,
 								'gallery':self.valid_url,
 								'instagram_un':self.valid_instagram_un,
@@ -78,34 +72,50 @@ class AdminCreate(BaseHandler):
 								'ma_subdivision':self.valid_subdivision,
 								'ma_postal_code':self.valid_postal_code}
 
-			# Traverse arguments
+			# Traverse arguments and run against validation function
 			for arg in args:
 				if args.get(arg):
 					# Handle multi_field args
-					if arg in multi_fields:
-						for i in range(1,num_fields[arg.split('-')[0]] + 1):
-							ext = ''
-							if i > 1: ext = '-%s' % (i,)
+					if arg.split('-')[0] in self.multi_fields:
+						info('args',args)
+						info('arg',arg)
 
-							if args.get('%s%s' % (arg,ext)) and not validation_funcs[arg.split('-')[0]](args.get('%s%s' % (arg,ext))):
-								error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args.get('%s%s' % (arg,ext)))
-								raise_it = True
+						if not validation_funcs[arg.split('-')[0]](args[arg]):
+							error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args[arg])
+							raise_it = True
 
-							# Special case to make sure all 3 phone fields are filled out
-							if arg == ('phonenumber%s' % (ext)) and (not args['country_code%s' % (ext,)] or not args['phonetype%s' % (ext,)] or not args['phonenumber%s' % (ext,)]):
-								error += 'Please fill in all three phone fields. #'
-								raise_it = True
+						# Special case to make sure all 3 phone fields are filled out
+						ext = ''
+						if len(arg.split('-')) > 1: ext = arg.split('-')[1]
+						if arg.startswith('phone_number') and (not args['country_code%s' % (ext,)] or not args['phone_type%s' % (ext,)] or not args['phone_number%s' % (ext,)]):
+							error += 'Please fill in all three phone fields. #'
+							raise_it = True
 					# Single field args
-					elif not validation_funcs[arg.split('-')[0]](args.get(arg)):
+					elif arg != 'skey' and not validation_funcs[arg.split('-')[0]](args.get(arg)):
 						error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg, args[arg])
 						raise_it = True
 
-			if raise_it: raise Exception()
+			# if any of the fields failed validation
+			if raise_it: raise AttributeError
 
 			# Put form fields into database
-			new_studio = Studio(parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision'], 'Locality', args['locality']),
+			if args.get('skey'):
+				new_studio = self.path_to_key(args['skey']).get()
+				new_studio.name = args['name']
+			else:
+				new_studio = Studio(parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision'], 'Locality', args['locality']),
 								name = args['name'])
 			new_studio.put()
+
+			'''
+			To edit:
+			- Get form data
+			- Get db data
+			- Compare the two and 
+			  - Update existing db ents with new info
+			  - Delete db ents not in field
+			  - Put new ents to db
+			'''
 
 			# Traverse arguments and put if exist
 			for arg in args:
@@ -121,10 +131,10 @@ class AdminCreate(BaseHandler):
 							email = args[arg],
 							primary = primary
 							).put()
-					elif arg.startswith('phonenumber'):
+					elif arg.startswith('phone_number'):
 						Phone(
 							contact = new_studio.key,
-							phone_type = args['phonetype%s' % (ext,)],
+							phone_type = args['phone_type%s' % (ext,)],
 							country_code = args['country_code%s' % (ext,)],
 							number = args[arg],
 							primary = primary
@@ -199,11 +209,11 @@ class AdminCreate(BaseHandler):
 							).put()
 
 			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(new_studio.key)))
-		except:
+		except AttributeError:
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-			self.render('admin_studio_create.html', active_nav = 'studio', args = args, num_fields = num_fields, error = error)
+			self.render('admin_studio_create.html', active_nav = 'studio', args = args, num_fields = self.num_fields(self.request.arguments()), error = error)
 
 	def valid_name(self, name):
 		NAME_RE = re.compile(r"^[!:.,'\sa-zA-Z0-9_-]{3,250}$")
@@ -213,15 +223,15 @@ class AdminCreate(BaseHandler):
 		EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 		return EMAIL_RE.match(email)
 
-	def valid_phonenumber(self, phonenumber):
-		PHONENUMBER_RE = re.compile(r"^[0-9-\s()+]+$")
-		return PHONENUMBER_RE.match(phonenumber)
+	def valid_phone_number(self, phone_number):
+		PHONE_NUMBER_RE = re.compile(r"^[0-9-\s()+]+$")
+		return PHONE_NUMBER_RE.match(phone_number)
 
 	def valid_country_code(self, country_code):
 		return int(country_code) in [1,49]
 
-	def valid_phonetype(self, phonetype):
-		return phonetype in ['home','work','fax','mobile','other']
+	def valid_phone_type(self, phone_type):
+		return phone_type in ['home','work','fax','mobile','other']
 
 	def valid_url(self, url):
 		URL_RE = re.compile(r"^http+[!#$&-;=?-_a-z~]+\.+[!#$&-;=?-_a-z~]+$")
@@ -294,6 +304,76 @@ class AdminEdit(BaseHandler):
 		
 		# Get studio
 		studio = ancestor_key.get()
+
+		# Assemble args to pass to template
+		db_args = {}
+		args = {}
+
+		# First get all props from db via Contact.props
+		for k, v in studio.props.iteritems():
+			try:
+				db_args[k] = v.fetch()
+			except AttributeError:
+				if k != 'class': db_args[k] = getattr(studio,k)
+
+		# Then translate db props into args dict for template
+		for prop, value in db_args.iteritems():
+			try: 
+				# .sort() will except on non-list, as opposed to sorted()
+				value.sort()
+
+				# put primary item in front
+				if len(value) > 1: value.sort(key = lambda x: x.primary, reverse = True)
+			
+				# go through list and map to form fields					
+				if not args.get('ma_toggle') or args.get('ma_toggle') != 'yes': args['ma_toggle'] = 'no'
+
+				# args are set to empty for multis so that an empty form field gets displayed
+				if prop == 'email':
+					args['email'] = [(item.key.id(),item.email) for item in value] and [(item.key.id(),item.email) for item in value] or [('','')]
+				elif prop == 'phone':
+					args['phone'] = [(item.key.id(),{'phone_number':item.number,
+													 'phone_type':item.phone_type,
+													 'country_code':item.country_code}) for item in value] and [(item.key.id(),{'phone_number':item.number,
+																																 'phone_type':item.phone_type,
+																																 'country_code':item.country_code}) for item in value] or [('',{'phone_number':'',
+																																 																'phone_type':'',
+																																 																'country_code':''})]
+				elif prop == 'website':
+					args['website'] = [(item.key.id(),item.url) for item in value] and [(item.key.id(),item.url) for item in value] or [('','')]
+				elif prop == 'gallery':
+					args['gallery'] = [(item.key.id(),item.url) for item in value] and [(item.key.id(),item.url) for item in value] or [('','')]
+				elif prop == 'instagram_username':
+					args['instagram_username'] = [(item.key.id(),item.instagram_username) for item in value] and [(item.key.id(),item.instagram_username) for item in value] or [('','')]
+				elif prop == 'facebook_username':
+					args['facebook_username'] = [(item.key.id(),item.facebook_username) for item in value] and [(item.key.id(),item.facebook_username) for item in value] or [('','')]
+				elif prop == 'twitter_username':
+					args['twitter_username'] =  [(item.key.id(),item.twitter_username) for item in value] and [(item.key.id(),item.twitter_username) for item in value] or [('','')]
+				elif prop == 'tumblr_username':
+					args['tumblr_username'] =  [(item.key.id(),item.tumblr_username) for item in value] and [(item.key.id(),item.tumblr_username) for item in value] or [('','')]
+				elif prop == 'address' and value:
+					args['street'] = value[0].street
+					args['locality'] = value[0].locality
+					args['subdivision'] = value[0].subdivision
+					args['country'] = value[0].country
+					args['postal_code'] = value[0].postal_code
+				elif prop == 'mailing_address' and value:
+					args['ma_toggle'] = 'yes'
+					args['ma_street'] = value[0].street
+					args['ma_locality'] = value[0].locality
+					args['ma_subdivision'] = value[0].subdivision
+					args['ma_country'] = value[0].country
+					args['ma_postal_code'] = value[0].postal_code
+
+			except AttributeError:
+				# There was no list, so just put prop itself
+				if prop != 'class':
+					if hasattr(value,prop): args[prop] = getattr(value, prop)
+					else: args[prop] = value
+
+		args['skey'] = pagename
+
+		self.render('admin_studio_edit.html', active_nav = 'studio', args = args, num_fields = self.num_fields(args))
 
 class AdminDelete(BaseHandler):
 	def get(self, pagename):
