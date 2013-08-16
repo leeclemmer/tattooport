@@ -16,31 +16,24 @@ $(function() {
 		var new_id = ''
 		var label_id = ''
 
-		// Reset ID/name's in clone
-		for (i = 0; i < input_field.length; i++) {
-			// Get the old ID/name
-			old_id = $(input_field[i]).attr('name').split('-')[0];
+		function reset_clone(clone) {
+			// Reset ID/name's in clone
+			for (i = 0; i < clone.length; i++) {
+				// Get the old ID/name
+				old_id = $(clone[i]).attr('name').split('-')[0];
 
-			// Create new ID/name, which will be oldid-N where N is number of fields in doc
-			new_id = old_id + '-' + ($("input[name^='" + old_id.split('-')[0] + "']").length + 1);
-			label_id = new_id;
+				// Create new ID/name, which will be oldid-N where N is number of fields in doc
+				new_id = old_id + '-' + ($(clone.prop('tagName').split('_')[0] + "[name^='" + old_id.split('-')[0] + "']").length + 1);
+				label_id = new_id;
 
-			$(input_field[i]).removeAttr('id').attr('id',new_id);
-			$(input_field[i]).removeAttr('name').attr('name',new_id);
-			$(input_field[i]).val('');
+				$(clone[i]).removeAttr('id').attr('id',new_id);
+				$(clone[i]).removeAttr('name').attr('name',new_id);
+				$(clone[i]).val('');
+			}
 		}
-
-		for (i = 0; i < select_field.length; i++) {
-			// Get the old ID/name
-			old_id = $(select_field[i]).attr('name').split('-')[0];
-
-			// Create new ID/name, which will be oldid-N where N is number of fields in doc
-			new_id = old_id + '-' + ($("select[name^='" + old_id.split('-')[0] + "']").length + 1);
-
-			$(select_field[i]).removeAttr('id').attr('id',new_id);
-			$(select_field[i]).removeAttr('name').attr('name',new_id);
-		}
-
+		
+		reset_clone(input_field);
+		reset_clone(select_field);
 
 		$(parent_clone).children('label').removeAttr('for').attr('for',label_id);
 

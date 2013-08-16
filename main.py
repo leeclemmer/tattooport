@@ -27,7 +27,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 class BaseHandler(webapp2.RequestHandler):	
 	# multi_fields list contains all form fields that can be 1 or more
-	multi_fields = ['email','phone_number','country_code','phone_type','website','gallery','instagram_un','facebook_un','twitter_un','tumblr_un']
+	multi_fields = ['email','phone_number','country_code','phone_type','website','gallery','instagram_username','facebook_username','twitter_username','tumblr_username']
 
 	def write(self, *a, **kw):
 		self.response.out.write(*a, **kw)

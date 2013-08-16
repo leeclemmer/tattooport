@@ -7,7 +7,7 @@
 	<p class="text-danger form-error"><b>Form Error:</b> {{ error }}</p>
 	{% endif %}
 
-	<form method="post" action="/admin/models/studio/create" class="form-horizontal" id="create-new-studio">
+	<form method="post" class="form-horizontal" id="create-new-studio">
 		<fieldset>
 			<input type="hidden" name="skey" value="{{ args['skey'] }}">
 			
@@ -95,9 +95,9 @@
 			<!-- Instagram -->
 			{% for arg in args['instagram_username'] %}
 				<div class="form-group">
-					<label for="instagram_un-{{ arg[0] }}" class="col-lg-2 control-label">Instagram</label>
+					<label for="instagram_username-{{ arg[0] }}" class="col-lg-2 control-label">Instagram</label>
 					<div class="col-lg-9">
-						<input type="text" name="instagram_un-{{ arg[0] }}" id="instagram_un-{{ arg[0] }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
+						<input type="text" name="instagram_username-{{ arg[0] }}" id="instagram_username-{{ arg[0] }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -106,9 +106,9 @@
 			<!-- Facebook -->
 			{% for arg in args['facebook_username'] %}
 				<div class="form-group">
-					<label for="facebook_un-{{ arg[0] }}" class="col-lg-2 control-label">Facebook</label>
+					<label for="facebook_username-{{ arg[0] }}" class="col-lg-2 control-label">Facebook</label>
 					<div class="col-lg-9">
-						<input type="text" name="facebook_un-{{ arg[0] }}" id="facebook_un-{{ arg[0] }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
+						<input type="text" name="facebook_username-{{ arg[0] }}" id="facebook_username-{{ arg[0] }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -117,9 +117,9 @@
 			<!-- Twitter -->
 			{% for arg in args['twitter_username'] %}
 				<div class="form-group">
-					<label for="twitter_un-{{ arg[0] }}" class="col-lg-2 control-label">Twitter</label>
+					<label for="twitter_username-{{ arg[0] }}" class="col-lg-2 control-label">Twitter</label>
 					<div class="col-lg-9">
-						<input type="text" name="twitter_un-{{ arg[0] }}" id="twitter_un-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
+						<input type="text" name="twitter_username-{{ arg[0] }}" id="twitter_username-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -128,9 +128,9 @@
 			<!-- Tumblr -->
 			{% for arg in args['tumblr_username'] %}
 				<div class="form-group">
-					<label for="tumblr_un-{{ arg[0] }}" class="col-lg-2 control-label">Tumblr</label>
+					<label for="tumblr_username-{{ arg[0] }}" class="col-lg-2 control-label">Tumblr</label>
 					<div class="col-lg-9">
-						<input type="text" name="tumblr_un-{{ arg[0] }}" id="tumblr_un-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
+						<input type="text" name="tumblr_username-{{ arg[0] }}" id="tumblr_username-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>

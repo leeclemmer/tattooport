@@ -48,7 +48,7 @@
 				<!-- Email -->
 				{% if studio.email %}
 				<p>
-					{% for email in studio.email %}
+					{% for email in studio.email|sort(reverse=True,attribute='primary') %}
 						<a href="mailto:{{ email.email }}">{{ email.email }}</a><br/>
 					{% endfor %}
 				</p>
@@ -57,7 +57,7 @@
 				<!-- Phone -->
 				{% if studio.phone %}
 				<p>
-				{% for phone in studio.phone %}
+				{% for phone in studio.phone|sort(reverse=True,attribute='primary') %}
 					<abbr title="{{ phone.phone_type.capitalize() }} Phone">{{ phone.phone_type[0].capitalize() }}:</abbr>
 					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
 						+{{ phone.country_code }} 
@@ -110,7 +110,7 @@
 				<strong class="section-label">Websites</strong>
 
 				<ul class="list-unstyled">
-				{% for website in studio.website %}
+				{% for website in studio.website|sort(reverse=True,attribute='primary') %}
 					<li>
 						<a href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
 					</li>
@@ -123,7 +123,7 @@
 				<strong class="section-label">Galleries</strong>
 
 				<ul class="list-unstyled">
-				{% for gallery in studio.gallery %}
+				{% for gallery in studio.gallery|sort(reverse=True,attribute='primary') %}
 					<li>
 						<a href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
 					</li>
@@ -131,28 +131,30 @@
 				</ul>
 			{% endif %}
 
+			{% if studio.instagram_username.get() or studio.facebook_username.get() or studio.twitter_username.get() or studio.tumblr_username.get() %}
 			<strong class="section-label">Social Usernames</strong>
+			{% endif %}
 
 			{% if studio.instagram_username.get() %}
-				{% for instagram_username in studio.instagram_username %}
+				{% for instagram_username in studio.instagram_username|sort(reverse=True,attribute='primary') %}
 					<i class="icon-instagram icon-large"></i> <a href="http://www.instagram.com/{{ instagram_username.instagram_username }}">{{ instagram_username.instagram_username }}</a><br/>
 				{% endfor %}
 			{% endif %}
 
 			{% if studio.facebook_username.get() %}
-				{% for facebook_username in studio.facebook_username %}
+				{% for facebook_username in studio.facebook_username|sort(reverse=True,attribute='primary') %}
 					<i class="icon-facebook-sign icon-large"></i> <a href="http://www.facebook.com/{{ facebook_username.facebook_username }}">{{ facebook_username.facebook_username }}</a><br/>
 				{% endfor %}
 			{% endif %}
 
 			{% if studio.twitter_username.get() %}
-				{% for twitter_username in studio.twitter_username %}
+				{% for twitter_username in studio.twitter_username|sort(reverse=True,attribute='primary') %}
 					<i class="icon-twitter-sign icon-large"></i> <a href="http://www.twitter.com/{{ twitter_username.twitter_username }}">{{ twitter_username.twitter_username }}</a><br/>
 				{% endfor %}
 			{% endif %}
 
 			{% if studio.tumblr_username.get() %}
-				{% for tumblr_username in studio.tumblr_username %}
+				{% for tumblr_username in studio.tumblr_username|sort(reverse=True,attribute='primary') %}
 					<i class="icon-tumblr-sign icon-large"></i> <a href="http://{{ tumblr_username.tumblr_username }}.tumblr.com/">{{ tumblr_username.tumblr_username }}</a><br/>
 				{% endfor %}
 			{% endif %}
