@@ -62,7 +62,8 @@
 					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
 						+{{ phone.country_code }} 
 						{% if phone.country_code == '1' %}
-							{{ '(%s) %s-%s' % (phone.number[0:3],phone.number[3:6],phone.number[6:]) }}
+							{% set number = phone.number|replace("-","")|replace(" ","")| replace("(","")|replace(")","") %}
+							{{ '(%s) %s-%s' % (number[0:3],number[3:6],number[6:]) }}
 						{% else %}
 							{{ phone.number }}
 						{% endif %}

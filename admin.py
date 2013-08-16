@@ -286,7 +286,7 @@ class AdminEdit(AdminStudio):
 		args = {}
 
 		# First get all props from db via Contact.props
-		for k, v in studio.props.iteritems():
+		for k, v in studio.props().iteritems():
 			try:
 				db_args[k] = v.fetch()
 			except AttributeError:
@@ -390,7 +390,11 @@ class AdminEdit(AdminStudio):
 			# if any of the fields failed validation
 			if raise_it: raise ValidationError('error')
 
+
+			#####################
 			# Put new data to DB
+			#####################
+
 			studio = self.path_to_key(args['skey']).get()
 
 			info('args',args)
@@ -404,6 +408,7 @@ class AdminEdit(AdminStudio):
 							primary_id = item[0]
 							break
 
+					# Iterate over each field in multifield
 					for item in args[arg]:
 						if item[0] == primary_id: primary = True
 						else: primary = False
@@ -475,13 +480,15 @@ class AdminEdit(AdminStudio):
 									primary = primary
 									).put()
 						elif item_db:
-							if item[1] == '' or (arg == 'phone' and item[1]['phone_number'] == ''):				# Removed field
+							# Removed field
+							if item[1] == '' or (arg == 'phone' and item[1]['phone_number'] == ''):
 								info('del item_db',item_db)
 								info('del item',item)
 								info('del arg',arg)
 								item_db.key.delete()
-								info('deleted?',item_db.key.delete())					
-							elif arg == 'email' and item_db.email != item[1]: # Updated field
+								info('deleted?',item_db.key.delete())
+							# Updated fieldd
+							elif arg == 'email' and item_db.email != item[1]:
 								info('update email item_db',item_db)
 								info('update email item',item)
 								info('update email arg',arg)
@@ -493,18 +500,13 @@ class AdminEdit(AdminStudio):
 								item_db.url = item[1]
 							elif arg.endswith('username') and getattr(item_db,arg) != item[1]:
 								setattr(item_db,arg,item[1])
+							# Phone special case
 							elif arg == 'phone' and (item[1]['phone_number'] != item_db.number or \
 													 item[1]['phone_type'] != item_db.phone_type or \
 													 item[1]['country_code'] != item_db.country_code):
 								item_db.number = item[1]['phone_number']
 								item_db.phone_type = item[1]['phone_type']
 								item_db.country_code = item[1]['country_code']
-							elif arg == 'name' and item_db.name != item[1]:
-								item_db.name = item[1]
-							elif arg in ['street','locality','subdivision','country',
-										 'ma_street','ma_locality','ma_subdivision','ma_country'] and \
-										 	getattr(item_db,arg) != item[1]:
-								setattr(item_db,arg,item[1])
 
 							# Put it
 							if item[1] and arg != 'phone' or arg == 'phone' and item[1]['phone_number']:
@@ -516,6 +518,7 @@ class AdminEdit(AdminStudio):
 				except IndexError:
 					pass
 
+			# Put new address
 			put_it = False
 			studio_address = studio.address.get()
 			for arg in ['street','locality','subdivision','country','postal_code']:
@@ -524,11 +527,7 @@ class AdminEdit(AdminStudio):
 					put_it = True
 			if put_it: studio_address.put()
 
-			if self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())) != studio.key:
-				info("need a new key for this beyahootch")
-				info('old key', studio.key)
-				info('new key', self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())))
-
+			# Put new mailing address
 			put_it = False
 			studio_mailing_address = studio.mailing_address.get()
 			if args.get('ma_toggle') == 'no' and studio_mailing_address: studio_mailing_address.key.delete()
@@ -545,16 +544,23 @@ class AdminEdit(AdminStudio):
 																contact = studio.key,
 																street = args['ma_street'],
 																locality = args['ma_locality'],
-																	subdivision = args['ma_subdivision'],
+																subdivision = args['ma_subdivision'],
 																country = args['ma_country'],
 																postal_code = args['ma_postal_code']
 																)
 						put_it = True
 				if put_it: studio_mailing_address.put()
 
+			# Put new name
 			if args['name'] != studio.name:
 				studio.name = args['name']
 				studio.put()
+
+			# Update key if address has changed
+			if self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())) != studio.key:
+				info("need a new key for this beyahootch")
+				info('old key', studio.key)
+				info('new key', self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())))
 
 			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(studio.key)))
 		except ValidationError:
@@ -581,6 +587,14 @@ class AdminView(BaseHandler):
 				studio.ma_subdivision = COUNTRIES[studio.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
 		except:
 			pass
+
+		info('Contact.__dict__',Contact.__dict__)
+
+		for attr_name, attr_value in Contact.__dict__.iteritems():
+			if isinstance(attr_value, property):
+				info(attr_name, getattr(Contact,attr_name))
+
+		info('props',studio.props())
 
 		# Tag on the edit and delete links
 		studio.edit = '/admin/models/studio/edit/%s' % (pagename,)
@@ -610,7 +624,7 @@ class AdminDelete(BaseHandler):
 
 		# Call the template
 		if self.request.get('delete') and self.request.get('delete') == 'yes':
-			for prop_name,prop in ancestor_key.get().props.iteritems():
+			for prop_name,prop in ancestor_key.get().props().iteritems():
 				try:
 					ndb.delete_multi([p.key for p in prop.fetch()])
 				except AttributeError:
