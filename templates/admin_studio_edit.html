@@ -88,49 +88,60 @@
 
 		<fieldset>
 			<legend>
-				Social usernames
+				Social
 			</legend>
 
 			
 			<!-- Instagram -->
-			{% for arg in args['instagram_username'] %}
+			{% for arg in args['instagram'] %}
 				<div class="form-group">
-					<label for="instagram_username-{{ arg[0] }}" class="col-lg-2 control-label">Instagram</label>
+					<label for="instagram-{{ arg[0] }}" class="col-lg-2 control-label">Instagram name</label>
 					<div class="col-lg-9">
-						<input type="text" name="instagram_username-{{ arg[0] }}" id="instagram_username-{{ arg[0] }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
+						<input type="text" name="instagram-{{ arg[0] }}" id="instagram-{{ arg[0] }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
-			<!-- Facebook -->
-			{% for arg in args['facebook_username'] %}
+			<!-- Foursquare -->
+			{% for arg in args['foursquare'] %}
 				<div class="form-group">
-					<label for="facebook_username-{{ arg[0] }}" class="col-lg-2 control-label">Facebook</label>
+					<label for="foursquare-{{ arg[0] }}" class="col-lg-2 control-label">foursquare page</label>
 					<div class="col-lg-9">
-						<input type="text" name="facebook_username-{{ arg[0] }}" id="facebook_username-{{ arg[0] }}" class="form-control" placeholder="5 - 50 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[a-z\d\.-]{5,50}$" maxlength="50" >
+						<input type="url" name="foursquare-{{ arg[0] }}" id="foursquare-{{ arg[0] }}" class="form-control" placeholder="For example: https://foursquare.com/v/tattooport/..." value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Twitter -->
-			{% for arg in args['twitter_username'] %}
+			{% for arg in args['twitter'] %}
 				<div class="form-group">
-					<label for="twitter_username-{{ arg[0] }}" class="col-lg-2 control-label">Twitter</label>
+					<label for="twitter-{{ arg[0] }}" class="col-lg-2 control-label">Twitter name</label>
 					<div class="col-lg-9">
-						<input type="text" name="twitter_username-{{ arg[0] }}" id="twitter_username-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
+						<input type="text" name="twitter-{{ arg[0] }}" id="twitter-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
+					</div>
+					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
+				</div>
+			{% endfor %}
+
+			<!-- Facebook -->
+			{% for arg in args['facebook'] %}
+				<div class="form-group">
+					<label for="facebook-{{ arg[0] }}" class="col-lg-2 control-label">Facebook page</label>
+					<div class="col-lg-9">
+						<input type="url" name="facebook-{{ arg[0] }}" id="facebook-{{ arg[0] }}" class="form-control" placeholder="For example: http://www.facebook.com/page/tattooport" value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
 			{% endfor %}
 
 			<!-- Tumblr -->
-			{% for arg in args['tumblr_username'] %}
+			{% for arg in args['tumblr'] %}
 				<div class="form-group">
-					<label for="tumblr_username-{{ arg[0] }}" class="col-lg-2 control-label">Tumblr</label>
+					<label for="tumblr-{{ arg[0] }}" class="col-lg-2 control-label">Tumblr page</label>
 					<div class="col-lg-9">
-						<input type="text" name="tumblr_username-{{ arg[0] }}" id="tumblr_username-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9-_]{1,32}$" maxlength="32">
+						<input type="url" name="tumblr-{{ arg[0] }}" id="tumblr-{{ arg[0] }}" class="form-control" placeholder="For example: http://tattooport.tumbrl.com" value="{{ arg[1] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>

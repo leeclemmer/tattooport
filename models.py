@@ -29,20 +29,24 @@ class Contact(polymodel.PolyModel):
 	last_edited = ndb.DateTimeProperty(auto_now = True)
 
 	@property
-	def instagram_username(self):
-		return InstagramUsername.query(InstagramUsername.contact == self.key)
+	def instagram(self):
+		return Instagram.query(Instagram.contact == self.key)
 
 	@property
-	def facebook_username(self):
-		return FacebookUsername.query(FacebookUsername.contact == self.key)
+	def foursquare(self):
+		return Foursquare.query(Foursquare.contact == self.key)
 
 	@property
-	def twitter_username(self):
-		return TwitterUsername.query(TwitterUsername.contact == self.key)
+	def facebook(self):
+		return Facebook.query(Facebook.contact == self.key)
 
 	@property
-	def tumblr_username(self):
-		return TumblrUsername.query(TumblrUsername.contact == self.key)
+	def twitter(self):
+		return Twitter.query(Twitter.contact == self.key)
+
+	@property
+	def tumblr(self):
+		return Tumblr.query(Tumblr.contact == self.key)
 
 	@property
 	def address(self):
@@ -75,6 +79,12 @@ class Contact(polymodel.PolyModel):
 							Contact.__dict__.iteritems() if \
 							isinstance(attr_value,property)}.items())
 
+	@classmethod
+	def prop_names(cls):
+		return {attr_name for attr_name, attr_value \
+						  in cls.__dict__.iteritems() \
+						  if isinstance(attr_value,property)}
+
 class Email(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
@@ -98,28 +108,34 @@ class Website(ndb.Model):
 class Gallery(Website):
 	contact = ndb.KeyProperty(kind = Contact)	
 
-class InstagramUsername(ndb.Model):
+class Instagram(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
-	instagram_username = ndb.StringProperty()
+	instagram = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
-class FacebookUsername(ndb.Model):
+class Foursquare(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
-	facebook_username = ndb.StringProperty()
+	foursquare = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
-class TwitterUsername(ndb.Model):
+class Twitter(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
-	twitter_username = ndb.StringProperty()
+	twitter = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
-class TumblrUsername(ndb.Model):
+class Facebook(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
-	tumblr_username = ndb.StringProperty()
+	facebook = ndb.StringProperty()
+	primary = ndb.BooleanProperty()
+
+class Tumblr(ndb.Model):
+	contact = ndb.KeyProperty(kind = Contact)
+
+	tumblr = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Address(ndb.Model):

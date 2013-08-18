@@ -25,10 +25,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 							   extensions = ['jinja2.ext.loopcontrols'],
 							   autoescape = True)
 
-class BaseHandler(webapp2.RequestHandler):	
-	# multi_fields list contains all form fields that can be 1 or more
-	multi_fields = ['email','phone_number','country_code','phone_type','website','gallery','instagram_username','facebook_username','twitter_username','tumblr_username']
-
+class BaseHandler(webapp2.RequestHandler):
 	def write(self, *a, **kw):
 		self.response.out.write(*a, **kw)
 
@@ -53,9 +50,9 @@ class BaseHandler(webapp2.RequestHandler):
 		return ndb.Key('Country',country,'Subdivision',subdivision,'Locality',locality,'Contact',int(sid))
 
 	def num_fields(self, args):
-		''' Returns dictionary of how many multi_fields in args there are for each arg. '''		
-		# num_fields is a dict which counts the number of each multi_field; passed to template so that it outputs correct number of fields
-		return {field:len([arg for arg in args if arg.startswith(field)]) for field in self.multi_fields}			
+		''' Returns dictionary of how many Contact.prop_names in args there are for each arg. '''		
+		# num_fields is a dict which counts the number of each Contact.prop_name; passed to template so that it outputs correct number of fields
+		return {field:len([arg for arg in args if arg.startswith(field)]) for field in Contact.prop_names()}			
 		
 
 class Welcome(BaseHandler):

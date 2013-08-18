@@ -113,7 +113,7 @@
 				<ul class="list-unstyled">
 				{% for website in studio.website|sort(reverse=True,attribute='primary') %}
 					<li>
-						<a href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+						<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
 					</li>
 				{% endfor %}
 				</ul>
@@ -126,37 +126,43 @@
 				<ul class="list-unstyled">
 				{% for gallery in studio.gallery|sort(reverse=True,attribute='primary') %}
 					<li>
-						<a href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
 					</li>
 				{% endfor %}
 				</ul>
 			{% endif %}
 
-			{% if studio.instagram_username.get() or studio.facebook_username.get() or studio.twitter_username.get() or studio.tumblr_username.get() %}
-			<strong class="section-label">Social Usernames</strong>
+			{% if studio.instagram.get() or studio.facebook.get() or studio.twitter.get() or studio.tumblr.get() %}
+			<strong class="section-label">Social</strong>
 			{% endif %}
 
-			{% if studio.instagram_username.get() %}
-				{% for instagram_username in studio.instagram_username|sort(reverse=True,attribute='primary') %}
-					<i class="icon-instagram icon-large"></i> <a href="http://www.instagram.com/{{ instagram_username.instagram_username }}">{{ instagram_username.instagram_username }}</a><br/>
+			{% if studio.instagram.get() %}
+				{% for instagram in studio.instagram|sort(reverse=True,attribute='primary') %}
+					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
 				{% endfor %}
 			{% endif %}
 
-			{% if studio.facebook_username.get() %}
-				{% for facebook_username in studio.facebook_username|sort(reverse=True,attribute='primary') %}
-					<i class="icon-facebook-sign icon-large"></i> <a href="http://www.facebook.com/{{ facebook_username.facebook_username }}">{{ facebook_username.facebook_username }}</a><br/>
+			{% if studio.foursquare.get() %}
+				{% for foursquare in studio.foursquare|sort(reverse=True,attribute='primary') %}
+					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
 				{% endfor %}
 			{% endif %}
 
-			{% if studio.twitter_username.get() %}
-				{% for twitter_username in studio.twitter_username|sort(reverse=True,attribute='primary') %}
-					<i class="icon-twitter-sign icon-large"></i> <a href="http://www.twitter.com/{{ twitter_username.twitter_username }}">{{ twitter_username.twitter_username }}</a><br/>
+			{% if studio.twitter.get() %}
+				{% for twitter in studio.twitter|sort(reverse=True,attribute='primary') %}
+					<i class="icon-twitter-sign icon-large"></i> <a target="_blank" href="http://www.twitter.com/{{ twitter.twitter }}">Twitter</a><br/>
 				{% endfor %}
 			{% endif %}
 
-			{% if studio.tumblr_username.get() %}
-				{% for tumblr_username in studio.tumblr_username|sort(reverse=True,attribute='primary') %}
-					<i class="icon-tumblr-sign icon-large"></i> <a href="http://{{ tumblr_username.tumblr_username }}.tumblr.com/">{{ tumblr_username.tumblr_username }}</a><br/>
+			{% if studio.facebook.get() %}
+				{% for facebook in studio.facebook|sort(reverse=True,attribute='primary') %}
+					<i class="icon-facebook-sign icon-large"></i> <a target="_blank" href="{{ facebook.facebook }}">Facebook</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.tumblr.get() %}
+				{% for tumblr in studio.tumblr|sort(reverse=True,attribute='primary') %}
+					<i class="icon-tumblr-sign icon-large"></i> <a target="_blank" href="{{ tumblr.tumblr }}">Tumblr</a><br/>
 				{% endfor %}
 			{% endif %}
 		</div>

@@ -59,21 +59,21 @@ class AdminStudio(BaseHandler):
 		URL_RE = re.compile(r"^http+[!#$&-;=?-_a-z~]+\.+[!#$&-;=?-_a-z~]+$")
 		return URL_RE.match(url)
 
-	def valid_instagram_username(self, instagram_username):
-		INSTAGRAM_USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{1,30}$")
-		return INSTAGRAM_USERNAME_RE.match(instagram_username)
+	def valid_instagram(self, instagram):
+		INSTAGRAM_RE = re.compile(r"^[A-Za-z0-9_]{1,30}$")
+		return INSTAGRAM_RE.match(instagram)
 
-	def valid_facebook_username(self, facebook_username):
-		FACEBOOK_USERNAME_RE = re.compile(r"^[a-z\d\.-]{5,50}$")
-		return FACEBOOK_USERNAME_RE.match(facebook_username)
+	def valid_facebook(self, facebook):
+		FACEBOOK_RE = re.compile(r"^[a-z\d\.-]{5,50}$")
+		return FACEBOOK_RE.match(facebook)
 
-	def valid_twitter_username(self, twitter_username):
-		TWITTER_USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{1,32}$")
-		return TWITTER_USERNAME_RE.match(twitter_username)
+	def valid_twitter(self, twitter):
+		TWITTER_RE = re.compile(r"^[A-Za-z0-9_]{1,32}$")
+		return TWITTER_RE.match(twitter)
 
-	def valid_tumblr_username(self, tumblr_username):
-		TUMBLR_USERNAME_RE = re.compile(r"^[A-Za-z0-9-_]{1,32}$")
-		return TUMBLR_USERNAME_RE.match(tumblr_username)
+	def valid_tumblr(self, tumblr):
+		TUMBLR_RE = re.compile(r"^[A-Za-z0-9-_]{1,32}$")
+		return TUMBLR_RE.match(tumblr)
 
 	def valid_street(self, street):
 		STREET_RE = re.compile(r"^.[\s#.,;:'()a-zA-Z0-9_-]+$")
@@ -110,7 +110,7 @@ class AdminStudio(BaseHandler):
 		for arg in args:
 			if args.get(arg):
 				# Handle multi_field args
-				if arg.split('-')[0] in self.multi_fields:
+				if arg.split('-')[0] in Contact.prop_names() or arg.split('-')[0] in ['phone_number','phone_type','country_code']:
 					if not self.validation_funcs[arg.split('-')[0]](self, args[arg]):
 						error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args[arg])
 						raise_it = True
@@ -136,10 +136,11 @@ class AdminStudio(BaseHandler):
 						'phone_type':valid_phone_type,
 						'website':valid_url,
 						'gallery':valid_url,
-						'instagram_username':valid_instagram_username,
-						'facebook_username':valid_facebook_username,
-						'twitter_username':valid_twitter_username,
-						'tumblr_username':valid_tumblr_username,
+						'instagram':valid_instagram,
+						'foursquare':valid_url,
+						'twitter':valid_twitter,
+						'facebook':valid_url,
+						'tumblr':valid_url,
 						'street':valid_street,
 						'locality':valid_locality,
 						'country':valid_country,
@@ -209,28 +210,34 @@ class AdminCreate(AdminStudio):
 							url = args[arg],
 							primary = primary
 							).put()
-					elif arg.startswith('instagram_username'):
-						InstagramUsername(
+					elif arg.startswith('instagram'):
+						Instagram(
 							contact = new_studio.key,
-							instagram_username = args[arg],
+							instagram = args[arg],
 							primary = primary
 							).put()
-					elif arg.startswith('facebook_username'):
-						FacebookUsername(
+					elif arg.startswith('foursquare'):
+						Foursquare(
 							contact = new_studio.key,
-							facebook_username = args[arg],
+							foursquare = args[arg],
 							primary = primary
 							).put()
-					elif arg.startswith('twitter_username'):
-						TwitterUsername(
+					elif arg.startswith('facebook'):
+						Facebook(
 							contact = new_studio.key,
-							twitter_username = args[arg],
+							facebook = args[arg],
 							primary = primary
 							).put()
-					elif arg.startswith('tumblr_username'):
-						TumblrUsername(
+					elif arg.startswith('twitter'):
+						Twitter(
 							contact = new_studio.key,
-							tumblr_username = args[arg],
+							twitter = args[arg],
+							primary = primary
+							).put()
+					elif arg.startswith('tumblr'):
+						Tumblr(
+							contact = new_studio.key,
+							tumblr = args[arg],
 							primary = primary
 							).put()
 					elif arg == 'country':
@@ -317,14 +324,16 @@ class AdminEdit(AdminStudio):
 					args['website'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.url) for item in value] or [('','')]
 				elif prop == 'gallery':
 					args['gallery'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.url) for item in value] or [('','')]
-				elif prop == 'instagram_username':
-					args['instagram_username'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.instagram_username) for item in value] or [('','')]
-				elif prop == 'facebook_username':
-					args['facebook_username'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.facebook_username) for item in value] or [('','')]
-				elif prop == 'twitter_username':
-					args['twitter_username'] =  True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.twitter_username) for item in value] or [('','')]
-				elif prop == 'tumblr_username':
-					args['tumblr_username'] =  True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.tumblr_username) for item in value] or [('','')]
+				elif prop == 'instagram':
+					args['instagram'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.instagram) for item in value] or [('','')]
+				elif prop == 'foursquare':
+					args['foursquare'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.foursquare) for item in value] or [('','')]
+				elif prop == 'facebook':
+					args['facebook'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.facebook) for item in value] or [('','')]
+				elif prop == 'twitter':
+					args['twitter'] =  True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.twitter) for item in value] or [('','')]
+				elif prop == 'tumblr':
+					args['tumblr'] =  True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.tumblr) for item in value] or [('','')]
 				elif prop == 'address' and value:
 					args['street'] = value[0].street
 					args['locality'] = value[0].locality
@@ -366,7 +375,7 @@ class AdminEdit(AdminStudio):
 			args_edit = {}
 			for arg in args:
 				a = arg.split('-')[0]
-				if a in self.multi_fields and a not in ['phone_type','country_code']:
+				if (a in Contact.prop_names() or a == 'phone_number') and a not in ['phone_type','country_code']:
 					eid = arg.split('-',1)[1]
 
 					if a == 'phone_number' and not args_edit.get('phone'): args_edit['phone'] = []
@@ -413,20 +422,13 @@ class AdminEdit(AdminStudio):
 						if item[0] == primary_id: primary = True
 						else: primary = False
 
-						info('* item', item)
 						if '-' in item[0]:
-							info(' - arg',arg)
-							info(' - item',item)
 							item_id = item[0].split('-')[1]
-							item_db = ndb.Key(''.join([n.capitalize() for n in arg.split('_')]),int(item_id)).get() 
-							info(' - item_db',item_db)
+							item_db = ndb.Key(arg.capitalize(),int(item_id)).get()
 						else: 
 							item_db = ''
 
 						if not item_db and item[1]:		# New field
-							info('not item_db',item_db)
-							info('not item',item)
-							info('not arg',arg)
 							if arg == 'email':								
 								Email(
 									contact = studio.key,
@@ -455,50 +457,46 @@ class AdminEdit(AdminStudio):
 									url = item[1],
 									primary = primary
 									).put()
-							elif arg == 'instagram_username':
-								InstagramUsername(
+							elif arg == 'instagram':
+								Instagram(
 									contact = studio.key,
-									instagram_username = item[1],
+									instagram = item[1],
 									primary = primary
 									).put()
-							elif arg == 'facebook_username':
-								FacebookUsername(
+							elif arg == 'foursquare':
+								Foursquare(
 									contact = studio.key,
-									facebook_username = item[1],
+									foursquare = item[1],
 									primary = primary
 									).put()
-							elif arg == 'twitter_username':
-								TwitterUsername(
+							elif arg == 'facebook':
+								Facebook(
 									contact = studio.key,
-									twitter_username = item[1],
+									facebook = item[1],
 									primary = primary
 									).put()
-							elif arg == 'tumblr_username':
-								TumblrUsername(
+							elif arg == 'twitter':
+								Twitter(
 									contact = studio.key,
-									tumblr_username = item[1],
+									twitter = item[1],
+									primary = primary
+									).put()
+							elif arg == 'tumblr':
+								Tumblr(
+									contact = studio.key,
+									tumblr = item[1],
 									primary = primary
 									).put()
 						elif item_db:
 							# Removed field
 							if item[1] == '' or (arg == 'phone' and item[1]['phone_number'] == ''):
-								info('del item_db',item_db)
-								info('del item',item)
-								info('del arg',arg)
 								item_db.key.delete()
-								info('deleted?',item_db.key.delete())
 							# Updated fieldd
 							elif arg == 'email' and item_db.email != item[1]:
-								info('update email item_db',item_db)
-								info('update email item',item)
-								info('update email arg',arg)
 								item_db.email = item[1]
 							elif arg in ['website','gallery'] and item_db.url != item[1]:
-								info('update website item_db',item_db)
-								info('update website item',item)
-								info('update website arg',arg)
 								item_db.url = item[1]
-							elif arg.endswith('username') and getattr(item_db,arg) != item[1]:
+							elif arg in ['instagram','foursquare','facebook','twitter','tumblr'] and getattr(item_db,arg) != item[1]:
 								setattr(item_db,arg,item[1])
 							# Phone special case
 							elif arg == 'phone' and (item[1]['phone_number'] != item_db.number or \
@@ -510,9 +508,6 @@ class AdminEdit(AdminStudio):
 
 							# Put it
 							if item[1] and arg != 'phone' or arg == 'phone' and item[1]['phone_number']:
-								info('fallthrough item_db',item_db)
-								info('fallthrough item',item)
-								info('fallthrough arg',arg)
 								item_db.primary = primary
 								item_db.put()
 				except IndexError:
@@ -534,10 +529,7 @@ class AdminEdit(AdminStudio):
 			else:			
 				for arg in ['ma_street','ma_locality','ma_subdivision','ma_country','ma_postal_code']:
 					if studio_mailing_address and args.get(arg) != getattr(studio_mailing_address,arg.split('ma_')[1]):
-						info('args[arg]',args[arg])
-						info('gettattr',getattr(studio_mailing_address,arg.split('ma_')[1]))
 						setattr(studio_mailing_address,arg.split('ma_')[1],args[arg])
-						info('gettattr',getattr(studio_mailing_address,arg.split('ma_')[1]))
 						put_it = True
 					elif not studio_mailing_address and args.get(arg):
 						studio_mailing_address = MailingAddress(
@@ -558,9 +550,55 @@ class AdminEdit(AdminStudio):
 
 			# Update key if address has changed
 			if self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())) != studio.key:
-				info("need a new key for this beyahootch")
-				info('old key', studio.key)
-				info('new key', self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())))
+				'''
+				New key needed.
+				Need to change key for:
+				- Contact
+				- All query props
+				'''
+
+				''' Getting all query props '''
+				# Set new and old key
+				new_key = self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id()))
+				old_key = studio.key
+
+				# Go through properties and reset all query properties
+				for prop in studio.props():
+					if hasattr(studio,prop):
+						try:
+							q_attrs = getattr(studio,prop).fetch()
+							for attr in q_attrs:
+								attr.contact = new_key
+								attr.put()
+						except AttributeError:
+							pass
+
+				# Create new studio
+				studio.key = new_key
+				studio.put()
+
+				# Delete old studio
+				old_key.delete()
+
+				# Create Country, Subdivision, and/or Locality if they don't already exist
+				country = args['country']
+				subdivision = args['subdivision']
+				locality = args['locality']
+
+				Country(
+					id = '%s' % (country,),
+					display_name = COUNTRIES[country]['name']
+					).put()
+				Subdivision(
+					parent = ndb.Key('Country', country),
+					id = args['subdivision'],
+					display_name = COUNTRIES[country]['subdivisions'][subdivision]
+					).put()
+				Locality(
+					parent = ndb.Key('Country', country, 'Subdivision', subdivision),
+					id = locality,
+					display_name = locality
+					).put()
 
 			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(studio.key)))
 		except ValidationError:
@@ -587,14 +625,6 @@ class AdminView(BaseHandler):
 				studio.ma_subdivision = COUNTRIES[studio.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
 		except:
 			pass
-
-		info('Contact.__dict__',Contact.__dict__)
-
-		for attr_name, attr_value in Contact.__dict__.iteritems():
-			if isinstance(attr_value, property):
-				info(attr_name, getattr(Contact,attr_name))
-
-		info('props',studio.props())
 
 		# Tag on the edit and delete links
 		studio.edit = '/admin/models/studio/edit/%s' % (pagename,)
