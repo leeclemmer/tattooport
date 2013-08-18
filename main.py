@@ -49,6 +49,19 @@ class BaseHandler(webapp2.RequestHandler):
 		ancestor_kinds = ['Country','Subdivision','Locality','Contact']
 		return ndb.Key(pairs=zip(ancestor_kinds,[int(c) if c.isdigit() else c for c in urllib.unquote_plus(path).split('/')]))
 
+	def path_to_breadcrumbs(self, path):
+		''' Converts a path to a list of breadcrumbs 
+			in the form [['Counntry/Subdivision/Locality.display_name','browse path']] '''
+		paths = [path,]
+		while '/' in path:
+			paths.insert(0,path.rsplit('/',1)[0])
+			path = path.rsplit('/',1)[0]
+		
+		return zip([self.path_to_key(p).get().display_name
+					 	if self.path_to_key(p).kind() != 'Contact' 
+					 	else self.path_to_key(p).get().name
+					 		for p in paths],paths)
+
 	def num_fields(self, args):
 		''' Returns dictionary of how many Contact.prop_names in args there are for each arg. '''		
 		# num_fields is a dict which counts the number of each Contact.prop_name; passed to template so that it outputs correct number of fields

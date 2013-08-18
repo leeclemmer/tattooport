@@ -631,7 +631,7 @@ class AdminView(BaseHandler):
 		studio.delete = '/admin/models/studio/delete/%s' % (pagename,)
 
 		# Call the template
-		self.render('admin_studio_view.html', active='models', active_nav = 'studio', studio = studio)
+		self.render('admin_studio_view.html', active='models', active_nav = 'studio', studio = studio, breadcrumbs=self.path_to_breadcrumbs(pagename))
 
 class AdminDelete(BaseHandler):
 	def get(self, pagename):
@@ -681,14 +681,8 @@ class AdminBrowseRegion(BaseHandler):
 		ancestor_key = self.path_to_key(pagename)
 		results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
-
-		# This has got to be easier...
-		ancestor_pairs = [p for p in ancestor_key.pairs()]
-		ancestor_pairs = [ancestor_pairs[:ancestor_pairs.index(p)+1] for p in ancestor_pairs]
-		trail = zip([p[1] for p in ancestor_key.pairs()],[ndb.Key(pairs=p).get().display_name for p in ancestor_pairs])
-		breadcrumbs = [[i[1],'/'.join([urllib.quote_plus(t[0]) for t in trail[:trail.index(i)+1]])] for i in trail]
-
-		self.render('admin_studio_browse_region.html', active='models', active_nav='studio', results=results, breadcrumbs=breadcrumbs)
+		
+		self.render('admin_studio_browse_region.html', active='models', active_nav='studio', results=results, breadcrumbs=self.path_to_breadcrumbs(pagename))
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models/?', AdminModels),
