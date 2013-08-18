@@ -661,9 +661,26 @@ class AdminDelete(BaseHandler):
 					pass
 			# Delete studio
 			ancestor_key.delete()
-			self.render('admin_studio_delete.html', active='models', active_nave = 'studio', name = name, confirmation = True)
+			self.render('admin_studio_delete.html', active='models', active_nav='studio', name=name, confirmation=True)
 		else:
 			self.redirect('/admin/models/studio/delete/%s' % (pagename,))
+
+class AdminBrowse(BaseHandler):
+	def get(self):
+		''' Displays tree structure of country, subdivision, locality. '''
+		regions = [[country,
+					[[subdivision,
+						[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
+					for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
+				for country in Country.query().order(Country.display_name).fetch()]
+
+		self.render('admin_studio_browse.html', active='models', active_nav='studio', regions=regions)
+
+class AdminBrowseRegion(BaseHandler):
+	def get(self, pagename):
+		self.write(pagename)
+
+
 
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
@@ -672,4 +689,6 @@ app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models/studio/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
 							   ('/admin/models/studio/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
 							   ('/admin/models/studio/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
+							   ('/admin/models/studio/browse/?', AdminBrowse),
+							   ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminBrowseRegion),
 							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio)], debug=True)

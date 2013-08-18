@@ -36,3 +36,13 @@ indexes:
   - name: name
   - name: last_edited
     direction: desc
+
+- kind: Locality
+  ancestor: yes
+  properties:
+  - name: display_name
+
+- kind: Subdivision
+  ancestor: yes
+  properties:
+  - name: display_name

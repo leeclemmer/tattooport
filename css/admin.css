@@ -120,4 +120,8 @@
     background-color:#d9534f;
     border-color:#d9534f
 }
-4
+
+/*** AdminBrowse template ***/
+.temp-admin-browse li li {
+    padding-left:2em;
+}

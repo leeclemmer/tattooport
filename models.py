@@ -19,9 +19,17 @@ class Subdivision(ndb.Model):
 		for more.'''
 	display_name = ndb.StringProperty(required = True)
 
+	@classmethod
+	def query_location(cls, ancestor_key):
+		return cls.query(ancestor = ancestor_key)
+
 class Locality(ndb.Model):
 	''' Models a locality such as city or town. '''
 	display_name = ndb.StringProperty(required = True)
+
+	@classmethod
+	def query_location(cls, ancestor_key):
+		return cls.query(ancestor = ancestor_key)
 
 class Contact(polymodel.PolyModel):
 	''' Superclass that defines common contact properties. '''

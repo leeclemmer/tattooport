@@ -1,0 +1,41 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+<span class="temp-admin-browse">
+	<h1>Browse</h1>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<ul class="list-unstyled">
+			{% for country in regions %}
+				<li>
+					<a href="/admin/models/studio/browse/{{ country[0].key.id() }}">
+						{{ country[0].display_name }}
+					</a>
+					<ul class="list-unstyled">
+					{% for subdivision in country[1] %}
+						<li>
+							<a href="/admin/models/studio/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}">
+								{{ subdivision[0].display_name }}
+							</a>
+							<ul class="list-unstyled">
+							{% for locality in subdivision[1] %}
+								<li>
+									<a href="/admin/models/studio/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}/{{ locality[1] }}">
+										{{ locality[0].display_name }}
+									</a>
+								</li>
+							{% endfor %}
+							</ul>
+						</li>
+					{% endfor %}
+					</ul>
+				</li>
+			{% endfor %}
+			</ul>
+		</div>
+	</div>
+</span>
+{% endblock %}
