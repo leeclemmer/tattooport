@@ -1,0 +1,38 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+<span class="temp-admin-browse-region">
+	<ol class="breadcrumb">
+		<li>
+			<a href="/admin/models/studio/browse/">All</a>
+		</li>
+	{% for crumb in breadcrumbs %}
+		{% if crumb == breadcrumbs[-1] %} 
+			<li class="active">
+				{{ crumb[0] }}
+			</li>
+		{% else %}
+			<li>
+				<a href="/admin/models/studio/browse/{{ crumb[1] }}">{{ crumb[0] }}</a>
+			</li>
+		{% endif %}
+	{% endfor %}
+	</ol>
+
+	<h1>{{ breadcrumbs[-1][0] }}</h1>
+
+	<ul class="list-unstyled">
+	{% for result in results %}
+		<li>
+			<h3>
+				<a href="/admin/models/studio/view{{ result[1] }}">
+					{{ result[0].name }}
+				</a>
+			</h3>
+		</li>
+	{% endfor %}
+	</ul>
+</span>
+{% endblock %}

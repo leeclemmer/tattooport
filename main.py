@@ -42,12 +42,12 @@ class BaseHandler(webapp2.RequestHandler):
 
 	def key_to_path(self, key):
 		''' Converts a key with ancestors to a url path. '''
-		return '/%s/%s' % ('/'.join([urllib.quote_plus(pair[1]) for pair in key.pairs() if pair[0] == 'Country' or pair[0] == 'Subdivision' or pair[0] == 'Locality']),key.id())
+		return '/%s' % ('/'.join([urllib.quote_plus(str(pair[1])) for pair in key.pairs()]),)
 
 	def path_to_key(self, path):
 		''' Converts path to key with ancestor path. '''
-		country, subdivision, locality, sid = urllib.unquote_plus(path).split('/')
-		return ndb.Key('Country',country,'Subdivision',subdivision,'Locality',locality,'Contact',int(sid))
+		ancestor_kinds = ['Country','Subdivision','Locality','Contact']
+		return ndb.Key(pairs=zip(ancestor_kinds,[int(c) if c.isdigit() else c for c in urllib.unquote_plus(path).split('/')]))
 
 	def num_fields(self, args):
 		''' Returns dictionary of how many Contact.prop_names in args there are for each arg. '''		

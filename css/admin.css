@@ -23,6 +23,10 @@
     white-space: pre;
 }
 
+.breadcrumb {
+    margin-top:1.5em;
+}
+
 /*** Main ***/
 .tp-main {
     padding-left:30px;
