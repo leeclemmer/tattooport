@@ -7,13 +7,14 @@
 
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
+from geo.geomodel import GeoModel
 
-class Country(ndb.Model):
+class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.
 		See http://en.wikipedia.org/wiki/ISO_3166-1 for more. '''
 	display_name = ndb.StringProperty(required = True)
 
-class Subdivision(ndb.Model):
+class Subdivision(GeoModel, ndb.Model):
 	''' Models a country's subdivision such as state or province. 
 		Modeled after ISO 3166-2; see http://en.wikipedia.org/wiki/ISO_3166-2
 		for more.'''
@@ -23,7 +24,7 @@ class Subdivision(ndb.Model):
 	def query_location(cls, ancestor_key):
 		return cls.query(ancestor = ancestor_key)
 
-class Locality(ndb.Model):
+class Locality(GeoModel, ndb.Model):
 	''' Models a locality such as city or town. '''
 	display_name = ndb.StringProperty(required = True)
 
@@ -146,7 +147,7 @@ class Tumblr(ndb.Model):
 	tumblr = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
-class Address(ndb.Model):
+class Address(GeoModel, ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
 	street = ndb.StringProperty()
@@ -155,7 +156,6 @@ class Address(ndb.Model):
 	country = ndb.StringProperty()
 	postal_code = ndb.StringProperty()
 	intersection = ndb.StringProperty()
-	lat_lon = ndb.GeoPtProperty()
 
 class MailingAddress(Address):
 	contact = ndb.KeyProperty(kind = Contact)

@@ -19,6 +19,8 @@ from models import *
 # external
 import webapp2
 import jinja2
+from geopy import geocoders
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -65,7 +67,23 @@ class BaseHandler(webapp2.RequestHandler):
 	def num_fields(self, args):
 		''' Returns dictionary of how many Contact.prop_names in args there are for each arg. '''		
 		# num_fields is a dict which counts the number of each Contact.prop_name; passed to template so that it outputs correct number of fields
-		return {field:len([arg for arg in args if arg.startswith(field)]) for field in Contact.prop_names()}			
+		return {field:len([arg for arg in args if arg.startswith(field)]) for field in Contact.prop_names()}
+
+	def geo_pt(self, address):
+		''' Returns ndb.GeoPt for given address.'''
+		g = geocoders.GoogleV3()
+		return ndb.GeoPt(g.geocode(address)[1][0],g.geocode(address)[1][1])
+
+	def static_map_url(self, geo_pt, height=150, width=500):
+		base_url = 'http://maps.googleapis.com/maps/api/staticmap?'
+		if not hasattr(geo_pt,'lat'): return None
+		else: return '%ssize=%sx%s&markers=%s,%s&sensor=false&key=%s' % \
+				(base_url,
+					width,
+					height, 
+					geo_pt.lat, 
+					geo_pt.lon,
+					keys.GMAPS_STATIC_API_KEY)
 		
 
 class Welcome(BaseHandler):

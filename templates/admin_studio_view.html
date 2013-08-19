@@ -78,7 +78,11 @@
 					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
 						+{{ phone.country_code }} 
 						{% if phone.country_code == '1' %}
-							{% set number = phone.number|replace("-","")|replace(" ","")| replace("(","")|replace(")","") %}
+							{% set number = phone.number|replace("-","")
+														|replace(" ","")
+														|replace("(","")
+														|replace(")","")
+														|replace(".","") %}
 							{{ '(%s) %s-%s' % (number[0:3],number[3:6],number[6:]) }}
 						{% else %}
 							{{ phone.number }}
@@ -183,6 +187,14 @@
 			{% endif %}
 		</div>
 	</div>
+
+	{% if map_url %}
+	<div class="row">
+		<div class="col-lg-10">
+			<a href="https://www.google.com/maps?q={{ studio.address.get().location.lat }},{{ studio.address.get().location.lon }}"><img src="{{ map_url }}"></a>
+		</div>
+	</div>
+	{% endif %}
 
 	<div class="row">
 		<div class="col-lg-10">

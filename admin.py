@@ -3,8 +3,9 @@
 ''' Admin Interface Handlers '''
 
 # internal
-from main import *
 from google.appengine.datastore.datastore_query import Cursor
+
+from main import *
 
 class ValidationError(Exception):
 	def __init__(self, value):
@@ -24,16 +25,29 @@ class AdminModels(BaseHandler):
 		if studios:
 			studios = [{'name':studio.name, 
 						'last_edited':studio.last_edited, 
-						'link':'/admin/models/studio/view%s' % (self.key_to_path(studio.key))} 
+						'link':'/admin/models/studio/view%s' % \
+								(self.key_to_path(studio.key))} 
 							for studio in studios]
-			self.render('admin_models.html', title='Data Models', active = 'models', studios = studios, next_curs = next_curs.urlsafe(), more = more)
+			self.render('admin_models.html', 
+						title='Data Models', 
+						active = 'models', 
+						studios = studios, 
+						next_curs = next_curs.urlsafe(), 
+						more = more)
 		else:
-			self.render('admin_models.html', title='Data Models', active = 'models', studios = [], next_curs = '', more = '')
+			self.render('admin_models.html', 
+						title='Data Models', 
+						active = 'models', 
+						studios = [], 
+						next_curs = '', 
+						more = '')
 
 class AdminStudio(BaseHandler):
 	def get(self, pagename):
 		try:
-			self.render('admin_studio_%s.html' % (pagename), active='models', active_nav = 'studio')
+			self.render('admin_studio_%s.html' % (pagename), 
+						active='models',
+						active_nav = 'studio')
 		except jinja2.TemplateNotFound:
 			self.redirect('/admin/models')
 
@@ -46,7 +60,7 @@ class AdminStudio(BaseHandler):
 		return EMAIL_RE.match(email)
 
 	def valid_phone_number(self, phone_number):
-		PHONE_NUMBER_RE = re.compile(r"^[0-9-\s()+]+$")
+		PHONE_NUMBER_RE = re.compile(r"^[0-9-.\s()+]+$")
 		return PHONE_NUMBER_RE.match(phone_number)
 
 	def valid_country_code(self, country_code):
@@ -84,10 +98,13 @@ class AdminStudio(BaseHandler):
 		return LOCALITY_RE.match(locality)
 
 	def valid_country(self, country):
-		return country in ["AF","AX","AL","DZ","AS","AD","AO","AI","AQ","AG","AR","AM","AW","AU","AT","AZ","BS","BH","BD","BB","BY","BE","BZ","BJ","BM","BT","BO","BQ","BA","BW","BV","BR","IO","BN","BG","BF","BI","KH","CM","CA","CV","KY","CF","TD","CL","CN","CX","CC","CO","KM","CG","CD","CK","CR","CI","HR","CU","CW","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","ET","FK","FO","FJ","FI","FR","GF","PF","TF","GA","GM","GE","DE","GH","GI","GR","GL","GD","GP","GU","GT","GG","GN","GW","GY","HT","HM","VA","HN","HK","HU","IS","IN","ID","IR","IQ","IE","IM","IL","IT","JM","JP","JE","JO","KZ","KE","KI","KP","KR","KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MO","MK","MG","MW","MY","MV","ML","MT","MH","MQ","MR","MU","YT","MX","FM","MD","MC","MN","ME","MS","MA","MZ","MM","NA","NR","NP","NL","NC","NZ","NI","NE","NG","NU","NF","MP","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PN","PL","PT","PR","QA","RE","RO","RU","RW","BL","SH","KN","LC","MF","PM","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SX","SK","SI","SB","SO","ZA","GS","SS","ES","LK","SD","SR","SJ","SZ","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TK","TO","TT","TN","TR","TM","TC","TV","UG","UA","AE","GB","US","UM","UY","UZ","VU","VE","VN","VG","VI","WF","EH","YE","ZM","ZW"]
+		return country in COUNTRIES
 
 	def valid_subdivision(self, subdivision):
-		return subdivision in ["US-AL","US-AK","US-AS","US-AZ","US-AR","US-CA","US-CO","US-CT","US-DE","US-DC","US-FL","US-GA","US-GU","US-HI","US-ID","US-IL","US-IN","US-IA","US-KS","US-KY","US-LA","US-ME","US-MD","US-MA","US-MI","US-MN","US-MS","US-MO","US-MT","US-NE","US-NV","US-NH","US-NJ","US-NM","US-NY","US-NC","US-ND","US-MP","US-OH","US-OK","US-OR","US-PA","US-PR","US-RI","US-SC","US-SD","US-TN","US-TX","US-UM","US-UT","US-VT","US-VI","US-VA","US-WA","US-WV","US-WI","US-WY","DE-BW","DE-BY","DE-BE","DE-BB","DE-HB","DE-HH","DE-HE","DE-MV","DE-NI","DE-NW","DE-RP","DE-SL","DE-SN","DE-ST","DE-SH","DE-TH"]
+		subdivisions = [[sub for sub in COUNTRIES[country].get('subdivisions')] 
+			for country in COUNTRIES if COUNTRIES[country]['subdivisions']]
+		subdivisions = [item for sublist in subdivisions for item in sublist]
+		return subdivision in subdivisions			
 
 	def valid_postal_code(self, postal_code):
 		POSTAL_CODE_RE = re.compile(r"^.[a-zA-Z0-9-\s]+$")
@@ -110,15 +127,20 @@ class AdminStudio(BaseHandler):
 		for arg in args:
 			if args.get(arg):
 				# Handle multi_field args
-				if arg.split('-')[0] in Contact.prop_names() or arg.split('-')[0] in ['phone_number','phone_type','country_code']:
+				if arg.split('-')[0] in Contact.prop_names() \
+				or arg.split('-')[0] in ['phone_number','phone_type','country_code']:
 					if not self.validation_funcs[arg.split('-')[0]](self, args[arg]):
-						error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg.capitalize(), args[arg])
+						error += '%s field: "%s" is in a wrong format. Try again. # ' \
+								 % (arg.capitalize(), args[arg])
 						raise_it = True
 
 					# Special case to make sure all 3 phone fields are filled out
 					ext = ''
 					if len(arg.split('-')) > 1: ext = '-%s' % (arg.split('-',1)[1],)
-					if arg.startswith('phone_number') and (not args['country_code%s' % (ext,)] or not args['phone_type%s' % (ext,)] or not args['phone_number%s' % (ext,)]):
+					if arg.startswith('phone_number') \
+						and (not args['country_code%s' % (ext,)] \
+						or not args['phone_type%s' % (ext,)] \
+						or not args['phone_number%s' % (ext,)]):
 						error += 'Please fill in all three phone fields. #'
 						raise_it = True
 				# Single field args
@@ -172,7 +194,9 @@ class AdminCreate(AdminStudio):
 				new_studio = self.path_to_key(args['skey']).get()
 				new_studio.name = args['name']
 			else:
-				new_studio = Studio(parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision'], 'Locality', args['locality']),
+				new_studio = Studio(parent = ndb.Key('Country', args['country'], 
+													 'Subdivision', args['subdivision'], 
+													 'Locality', args['locality']),
 								name = args['name'])
 			new_studio.put()
 
@@ -241,14 +265,22 @@ class AdminCreate(AdminStudio):
 							primary = primary
 							).put()
 					elif arg == 'country':
-						Address(
+						add = Address(
 							contact = new_studio.key,
 							street = args['street'],
 							locality = args['locality'],
 							subdivision = args['subdivision'],
 							country = args[arg],
-							postal_code = args['postal_code']
-							).put()
+							postal_code = args['postal_code'],
+							location=self.geo_pt('%s %s %s %s %s' %
+												(args['street'],
+												args['locality'],
+												args['subdivision'].split('-')[1],
+												args['country'],
+												args['postal_code']))
+							)
+						add.put()
+						add.update_location()
 						Country(
 							id = '%s' % (args[arg],),
 							display_name = COUNTRIES[args[arg]]['name']
@@ -515,12 +547,24 @@ class AdminEdit(AdminStudio):
 
 			# Put new address
 			put_it = False
-			studio_address = studio.address.get()
-			for arg in ['street','locality','subdivision','country','postal_code']:
-				if args[arg] != getattr(studio_address,arg):
-					setattr(studio_address,arg,args[arg])
+			sa = studio.address.get()
+			for arg in ['street',
+						'locality',
+						'subdivision',
+						'country',
+						'postal_code']:
+				if args[arg] != getattr(sa,arg):
+					setattr(sa,arg,args[arg])
 					put_it = True
-			if put_it: studio_address.put()
+			if put_it:
+				sa.location = self.geo_pt('%s %s %s %s %s' %
+												(sa.street,
+												sa.locality,
+												sa.subdivision.split('-')[1],
+												sa.country,
+												sa.postal_code))
+				sa.update_location()
+				sa.put()
 
 			# Put new mailing address
 			put_it = False
@@ -631,7 +675,13 @@ class AdminView(BaseHandler):
 		studio.delete = '/admin/models/studio/delete/%s' % (pagename,)
 
 		# Call the template
-		self.render('admin_studio_view.html', active='models', active_nav = 'studio', studio = studio, breadcrumbs=self.path_to_breadcrumbs(pagename))
+		info('map_url',self.static_map_url(studio.address.get().location))
+		self.render('admin_studio_view.html', 
+						active='models', 
+						active_nav='studio', 
+						studio=studio, 
+						breadcrumbs=self.path_to_breadcrumbs(pagename),
+						map_url=self.static_map_url(studio.address.get().location))
 
 class AdminDelete(BaseHandler):
 	def get(self, pagename):
@@ -681,7 +731,7 @@ class AdminBrowseRegion(BaseHandler):
 		ancestor_key = self.path_to_key(pagename)
 		results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
-		
+
 		self.render('admin_studio_browse_region.html', active='models', active_nav='studio', results=results, breadcrumbs=self.path_to_breadcrumbs(pagename))
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),

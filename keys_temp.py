@@ -4,3 +4,6 @@
 IG_CLIENTID = ''
 IG_CLIENTSECRET = ''
 IG_REDIRECTURI = ''
+
+# Google Maps Static API
+GMAPS_STATIC_API_KEY = ''
