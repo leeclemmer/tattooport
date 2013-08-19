@@ -191,7 +191,7 @@
 	{% if map_url %}
 	<div class="row">
 		<div class="col-lg-10">
-			<a href="https://www.google.com/maps?q={{ studio.address.get().location.lat }},{{ studio.address.get().location.lon }}"><img src="{{ map_url }}"></a>
+			<a target="_blank" href="https://www.google.com/maps?q={{ studio.address.get().location.lat }},{{ studio.address.get().location.lon }}"><img src="{{ map_url }}"></a>
 		</div>
 	</div>
 	{% endif %}

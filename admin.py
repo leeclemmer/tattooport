@@ -150,6 +150,144 @@ class AdminStudio(BaseHandler):
 
 		return (raise_it,error)
 
+	def put_studio(self, country, subdivision, locality, name):
+		parent = ndb.Key('Country', country,
+					  'Subdivision', subdivision,
+					  'Locality', locality)
+		new_studio = Studio(parent=parent, name=name)
+		new_studio.put()
+		return new_studio
+
+	def put_email(self, key, email, primary):
+		Email(
+			contact=key,
+			email=email,
+			primary=primary
+			).put()
+
+	def put_phone(self, key, phone_type,
+				  country_code, number, primary):
+		Phone(
+			contact=key,
+			phone_type=phone_type,
+			country_code=country_code,
+			number=number,
+			primary=primary
+			).put()
+
+	def put_website(self, key, url, primary):
+		Website(
+			contact=key,
+			url=url,
+			primary=primary
+			).put()
+
+	def put_gallery(self, key, url, primary):
+		Gallery(
+			contact=key,
+			url=url,
+			primary=primary
+			).put()
+
+	def put_instagram(self, key, instagram, primary):
+		Instagram(
+			contact=key,
+			instagram=instagram,
+			primary=primary
+			).put()
+
+	def put_foursquare(self, key, foursquare, primary):
+		Foursquare(
+			contact=key,
+			foursquare=foursquare,
+			primary=primary
+			).put()
+
+	def put_facebook(self, key, facebook, primary):
+		Facebook(
+			contact=key,
+			facebook=facebook,
+			primary=primary
+			).put()
+
+	def put_twitter(self, key, twitter, primary):
+		Twitter(
+			contact=key,
+			twitter=twitter,
+			primary=primary
+			).put()
+
+	def put_tumblr(self, key, tumblr, primary):
+		Tumblr(
+			contact=key,
+			tumblr=tumblr,
+			primary=primary
+			).put()
+
+	def put_mailing_address(self, key, street, locality,
+							subdivision, country, postal_code):
+		MailingAddress(
+			contact=key,
+			street=street,
+			locality=locality,
+			subdivision=subdivision,
+			country=country,
+			postal_code=postal_code
+			).put()
+
+	def put_address(self, key, street, locality, subdivision,
+					country, postal_code):
+		addr = Address(
+			contact=key,
+			street=street,
+			locality=locality,
+			subdivision=subdivision,
+			country=country,
+			postal_code=postal_code,
+			location=self.geo_pt('%s %s %s %s %s' %
+							(street,
+							locality,
+							subdivision.split('-')[1],
+							country,
+							postal_code)))
+		addr.put()
+		addr.update_location()
+
+		coun = Country(
+			id=country,
+			display_name=COUNTRIES[country]['name'],
+			location=self.geo_pt('%s' % \
+				(COUNTRIES[country]['name'],))
+			)
+		coun.put()
+		coun.update_location()
+
+		info('self.geo_pt',self.geo_pt('%s %s' % \
+				(COUNTRIES[country]['subdivisions'][subdivision],
+					COUNTRIES[country]['name'])))
+
+		subd = Subdivision(
+			parent=ndb.Key('Country', country),
+			id=subdivision,
+			display_name=COUNTRIES[country]['subdivisions'][subdivision],
+			location=self.geo_pt('%s %s' % \
+				(COUNTRIES[country]['subdivisions'][subdivision],
+					COUNTRIES[country]['name'])))
+		subd.put()
+		subd.update_location()
+
+		loca = Locality(
+			parent=ndb.Key('Country', country,'Subdivision', subdivision),
+			id=locality,
+			display_name=locality,
+			location=self.geo_pt('%s %s %s %s' %
+							(locality,
+							subdivision.split('-')[1],
+							country,
+							postal_code)))
+		loca.put()
+		loca.update_location()
+
 	# Validation functions
 	validation_funcs = {'name':valid_name,
 						'email':valid_email,
@@ -190,120 +328,82 @@ class AdminCreate(AdminStudio):
 			if raise_it: raise ValidationError(error)
 
 			# Put form fields into database
-			if args.get('skey'):
-				new_studio = self.path_to_key(args['skey']).get()
-				new_studio.name = args['name']
-			else:
-				new_studio = Studio(parent = ndb.Key('Country', args['country'], 
-													 'Subdivision', args['subdivision'], 
-													 'Locality', args['locality']),
-								name = args['name'])
-			new_studio.put()
+			new_studio = self.put_studio(
+				country=args['country'],
+				subdivision=args['subdivision'],
+				locality=args['locality'],
+				name=args['name'])
 
-			# Traverse arguments and put if exist
-			for arg in args:
-				if args.get(arg):
-					primary = False
-					ext = ''
-					if len(arg.split('-')) <= 1: primary = True
-					else: ext = '-%s' % (arg.split('-')[1])
+			# Traverse non-empty arguments
+			for k,v in {k:v for k,v in args.iteritems() if v}.iteritems():
+				primary = False
+				ext = ''
+				if len(k.split('-')) <= 1: primary = True
+				else: ext = '-%s' % (k.split('-')[1])
 
-					if arg.startswith('email'):
-						Email(
-							contact = new_studio.key,
-							email = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('phone_number'):
-						Phone(
-							contact = new_studio.key,
-							phone_type = args['phone_type%s' % (ext,)],
-							country_code = args['country_code%s' % (ext,)],
-							number = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('website'):
-						Website(
-							contact = new_studio.key,
-							url = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('gallery'):
-						Gallery(
-							contact = new_studio.key,
-							url = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('instagram'):
-						Instagram(
-							contact = new_studio.key,
-							instagram = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('foursquare'):
-						Foursquare(
-							contact = new_studio.key,
-							foursquare = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('facebook'):
-						Facebook(
-							contact = new_studio.key,
-							facebook = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('twitter'):
-						Twitter(
-							contact = new_studio.key,
-							twitter = args[arg],
-							primary = primary
-							).put()
-					elif arg.startswith('tumblr'):
-						Tumblr(
-							contact = new_studio.key,
-							tumblr = args[arg],
-							primary = primary
-							).put()
-					elif arg == 'country':
-						add = Address(
-							contact = new_studio.key,
-							street = args['street'],
-							locality = args['locality'],
-							subdivision = args['subdivision'],
-							country = args[arg],
-							postal_code = args['postal_code'],
-							location=self.geo_pt('%s %s %s %s %s' %
-												(args['street'],
-												args['locality'],
-												args['subdivision'].split('-')[1],
-												args['country'],
-												args['postal_code']))
-							)
-						add.put()
-						add.update_location()
-						Country(
-							id = '%s' % (args[arg],),
-							display_name = COUNTRIES[args[arg]]['name']
-							).put()
-						Subdivision(
-							parent = ndb.Key('Country', args['country']),
-							id = args['subdivision'],
-							display_name = COUNTRIES[args[arg]]['subdivisions'][args['subdivision']]
-							).put()
-						Locality(
-							parent = ndb.Key('Country', args['country'], 'Subdivision', args['subdivision']),
-							id = args['locality'],
-							display_name = args['locality']
-							).put()
-					elif arg == 'ma_country':
-						MailingAddress(
-							contact = new_studio.key,
-							street = args['ma_street'],
-							locality = args['ma_locality'],
-							subdivision = args['ma_subdivision'],
-							country = args[arg],
-							postal_code = args['ma_postal_code']
-							).put()
+				if k.startswith('email'):
+					self.put_email(
+						key=new_studio.key,
+						email=v,
+						primary=primary)
+				elif k.startswith('phone_number'):
+					self.put_phone(
+						key=new_studio.key,
+						phone_type=args['phone_type%s' % (ext,)],
+						country_code=args['country_code%s' % (ext,)],
+						number=v,
+						primary=primary)
+				elif k.startswith('website'):
+					self.put_website(
+						key=new_studio.key,
+						url=v,
+						primary=primary)
+				elif k.startswith('gallery'):
+					self.put_gallery(
+						key=new_studio.key,
+						url=v,
+						primary=primary)
+				elif k.startswith('instagram'):
+					self.put_instagram(
+						key=new_studio.key,
+						instagram=v,
+						primary=primary)
+				elif k.startswith('foursquare'):
+					self.put_foursquare(
+						key=new_studio.key,
+						foursquare=v,
+						primary=primary)
+				elif k.startswith('facebook'):
+					self.put_facebook(
+						key=new_studio.key,
+						facebook=v,
+						primary=primary)
+				elif k.startswith('twitter'):
+					self.put_twitter(
+						key=new_studio.key,
+						twitter=v,
+						primary=primary)
+				elif k.startswith('tumblr'):
+					self.put_tumblr(
+						key=new_studio.key,
+						tumblr=v,
+						primary=primary)
+				elif k == 'country':
+					self.put_address(
+						key=new_studio.key,
+						street=args['street'],
+						locality=args['locality'],
+						subdivision=args['subdivision'],
+						country=v,
+						postal_code=args['postal_code'])
+				elif k == 'ma_country':
+					self.put_mailing_address(
+						key=new_studio.key,
+						street=args['ma_street'],
+						locality=args['ma_locality'],
+						subdivision=args['ma_subdivision'],
+						country=v,
+						postal_code=args['ma_postal_code'])
 
 			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(new_studio.key)))
 		except ValidationError:
@@ -347,11 +447,15 @@ class AdminEdit(AdminStudio):
 				if prop == 'email':
 					args['email'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.email) for item in value] or [('','')]
 				elif prop == 'phone':
-					args['phone'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),{'phone_number':item.number,
-															  'phone_type':item.phone_type,
-															  'country_code':item.country_code}) for item in value] or [('',{'phone_number':'',
-															  																 'phone_type':'',
-															  																 'country_code':''})]
+					args['phone'] = True and \
+						[('%s-%s' % (value.index(item)+1, \
+						 	item.key.id()),
+							{'phone_number':item.number,
+							 'phone_type':item.phone_type,
+						 	 'country_code':item.country_code}) \
+						 	for item in value] or [('',{'phone_number':'',
+						   			  					'phone_type':'',
+						   			  					'country_code':''})]
 				elif prop == 'website':
 					args['website'] = True and [('%s-%s' % (value.index(item)+1,item.key.id()),item.url) for item in value] or [('','')]
 				elif prop == 'gallery':
@@ -461,64 +565,56 @@ class AdminEdit(AdminStudio):
 							item_db = ''
 
 						if not item_db and item[1]:		# New field
-							if arg == 'email':								
-								Email(
-									contact = studio.key,
-									email = item[1],
-									primary = primary
-									).put()
-							elif arg == 'phone' and item[1]['phone_type'] and \
-													item[1]['phone_number'] and \
-													item[1]['country_code']:
-								Phone(
-									contact = studio.key,
-									phone_type = item[1]['phone_type'],
+							if arg == 'email':
+								self.put_email(
+									studio.key,
+									item[1],
+									primary)
+							elif arg == 'phone' \
+								and item[1]['phone_type'] \
+								and item[1]['phone_number'] \
+								and item[1]['country_code']:
+								self.put_phone(
+									key=studio.key,
+									phone_type=item[1]['phone_type'],
 									country_code = item[1]['country_code'],
 									number = item[1]['phone_number'],
-									primary = primary										
-									).put()
+									primary = primary)
 							elif arg == 'website':
-								Website(
-									contact = studio.key,
-									url = item[1],
-									primary = primary
-									).put()
+								self.put_website(
+									key=studio.key,
+									url=item[1],
+									primary=primary)
 							elif arg == 'gallery':
-								Gallery(
-									contact = studio.key,
-									url = item[1],
-									primary = primary
-									).put()
+								self.put_gallery(
+									key=studio.key,
+									url=item[1],
+									primary=primary)
 							elif arg == 'instagram':
-								Instagram(
-									contact = studio.key,
-									instagram = item[1],
-									primary = primary
-									).put()
+								self.put_instagram(
+									key=studio.key,
+									instagram=item[1],
+									primary=primary)
 							elif arg == 'foursquare':
-								Foursquare(
-									contact = studio.key,
-									foursquare = item[1],
-									primary = primary
-									).put()
+								self.put_foursquare(
+									key=studio.key,
+									foursquare=item[1],
+									primary=primary)
 							elif arg == 'facebook':
-								Facebook(
-									contact = studio.key,
-									facebook = item[1],
-									primary = primary
-									).put()
+								self.put_facebook(
+									key=studio.key,
+									facebook=item[1],
+									primary=primary)
 							elif arg == 'twitter':
-								Twitter(
-									contact = studio.key,
-									twitter = item[1],
-									primary = primary
-									).put()
+								self.put_twitter(
+									key=studio.key,
+									twitter=item[1],
+									primary=primary)
 							elif arg == 'tumblr':
-								Tumblr(
-									contact = studio.key,
-									tumblr = item[1],
-									primary = primary
-									).put()
+								self.put_tumblr(
+									key=studio.key,
+									tumblr=item[1],
+									primary=primary)
 						elif item_db:
 							# Removed field
 							if item[1] == '' or (arg == 'phone' and item[1]['phone_number'] == ''):
@@ -528,18 +624,24 @@ class AdminEdit(AdminStudio):
 								item_db.email = item[1]
 							elif arg in ['website','gallery'] and item_db.url != item[1]:
 								item_db.url = item[1]
-							elif arg in ['instagram','foursquare','facebook','twitter','tumblr'] and getattr(item_db,arg) != item[1]:
+							elif arg in ['instagram','foursquare','facebook',
+										 'twitter','tumblr'] \
+									 and getattr(item_db,arg) != item[1]:
 								setattr(item_db,arg,item[1])
 							# Phone special case
-							elif arg == 'phone' and (item[1]['phone_number'] != item_db.number or \
-													 item[1]['phone_type'] != item_db.phone_type or \
-													 item[1]['country_code'] != item_db.country_code):
+							elif arg == 'phone' and \
+								(item[1]['phone_number'] != item_db.number or\
+								item[1]['phone_type'] != item_db.phone_type or\
+								item[1]['country_code'] != \
+														item_db.country_code):
 								item_db.number = item[1]['phone_number']
 								item_db.phone_type = item[1]['phone_type']
 								item_db.country_code = item[1]['country_code']
 
 							# Put it
-							if item[1] and arg != 'phone' or arg == 'phone' and item[1]['phone_number']:
+							if item[1] and arg != 'phone' \
+										or arg == 'phone' \
+										and item[1]['phone_number']:
 								item_db.primary = primary
 								item_db.put()
 				except IndexError:
@@ -568,24 +670,30 @@ class AdminEdit(AdminStudio):
 
 			# Put new mailing address
 			put_it = False
-			studio_mailing_address = studio.mailing_address.get()
-			if args.get('ma_toggle') == 'no' and studio_mailing_address: studio_mailing_address.key.delete()
+			sma = studio.mailing_address.get()
+
+			if args.get('ma_toggle') == 'no' and sma: sma.key.delete()
 			else:			
-				for arg in ['ma_street','ma_locality','ma_subdivision','ma_country','ma_postal_code']:
-					if studio_mailing_address and args.get(arg) != getattr(studio_mailing_address,arg.split('ma_')[1]):
-						setattr(studio_mailing_address,arg.split('ma_')[1],args[arg])
+				for arg in ['ma_street','ma_locality','ma_subdivision',
+							'ma_country','ma_postal_code']:
+					if sma and \
+						args.get(arg) != \
+						getattr(sma,arg.split('ma_')[1]):
+						setattr(sma,
+								arg.split('ma_')[1],
+								args[arg])
 						put_it = True
-					elif not studio_mailing_address and args.get(arg):
-						studio_mailing_address = MailingAddress(
-																contact = studio.key,
-																street = args['ma_street'],
-																locality = args['ma_locality'],
-																subdivision = args['ma_subdivision'],
-																country = args['ma_country'],
-																postal_code = args['ma_postal_code']
-																)
+					elif not sma and args.get(arg):
+						sma = MailingAddress(
+							contact = studio.key,
+							street = args['ma_street'],
+							locality = args['ma_locality'],
+							subdivision = args['ma_subdivision'],
+							country = args['ma_country'],
+							postal_code = args['ma_postal_code'])
 						put_it = True
-				if put_it: studio_mailing_address.put()
+				if put_it:
+					sma.put()
 
 			# Put new name
 			if args['name'] != studio.name:
@@ -594,14 +702,6 @@ class AdminEdit(AdminStudio):
 
 			# Update key if address has changed
 			if self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())) != studio.key:
-				'''
-				New key needed.
-				Need to change key for:
-				- Contact
-				- All query props
-				'''
-
-				''' Getting all query props '''
 				# Set new and old key
 				new_key = self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id()))
 				old_key = studio.key
@@ -639,7 +739,8 @@ class AdminEdit(AdminStudio):
 					display_name = COUNTRIES[country]['subdivisions'][subdivision]
 					).put()
 				Locality(
-					parent = ndb.Key('Country', country, 'Subdivision', subdivision),
+					parent = ndb.Key('Country', country, 
+									 'Subdivision', subdivision),
 					id = locality,
 					display_name = locality
 					).put()

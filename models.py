@@ -38,6 +38,22 @@ class Contact(polymodel.PolyModel):
 	last_edited = ndb.DateTimeProperty(auto_now = True)
 
 	@property
+	def email(self):
+		return Email.query(Email.contact == self.key)
+
+	@property
+	def phone(self):
+		return Phone.query(Phone.contact == self.key)
+
+	@property
+	def website(self):
+		return Website.query(Website.contact == self.key)
+
+	@property
+	def gallery(self):
+		return Gallery.query(Gallery.contact == self.key)
+
+	@property
 	def instagram(self):
 		return Instagram.query(Instagram.contact == self.key)
 
@@ -64,22 +80,6 @@ class Contact(polymodel.PolyModel):
 	@property
 	def mailing_address(self):
 		return MailingAddress.query(MailingAddress.contact == self.key)
-
-	@property
-	def email(self):
-		return Email.query(Email.contact == self.key)
-
-	@property
-	def phone(self):
-		return Phone.query(Phone.contact == self.key)
-
-	@property
-	def website(self):
-		return Website.query(Website.contact == self.key)
-
-	@property
-	def gallery(self):
-		return Gallery.query(Gallery.contact == self.key)
 
 	def props(self):
 		# for a bit of background on this method, see http://bit.ly/19yzgya
@@ -129,16 +129,16 @@ class Foursquare(ndb.Model):
 	foursquare = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
-class Twitter(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
-
-	twitter = ndb.StringProperty()
-	primary = ndb.BooleanProperty()
-
 class Facebook(ndb.Model):
 	contact = ndb.KeyProperty(kind = Contact)
 
 	facebook = ndb.StringProperty()
+	primary = ndb.BooleanProperty()
+
+class Twitter(ndb.Model):
+	contact = ndb.KeyProperty(kind = Contact)
+
+	twitter = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Tumblr(ndb.Model):

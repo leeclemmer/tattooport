@@ -72,7 +72,10 @@ class BaseHandler(webapp2.RequestHandler):
 	def geo_pt(self, address):
 		''' Returns ndb.GeoPt for given address.'''
 		g = geocoders.GoogleV3()
-		return ndb.GeoPt(g.geocode(address)[1][0],g.geocode(address)[1][1])
+		try:
+			return ndb.GeoPt(g.geocode(address)[1][0],g.geocode(address)[1][1])
+		except:
+			return None
 
 	def static_map_url(self, geo_pt, height=150, width=500):
 		base_url = 'http://maps.googleapis.com/maps/api/staticmap?'

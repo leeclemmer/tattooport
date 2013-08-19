@@ -114,23 +114,23 @@
 				</div>
 			{% endfor %}
 
-			<!-- Twitter -->
-			{% for arg in args['twitter'] %}
-				<div class="form-group">
-					<label for="twitter-{{ arg[0] }}" class="col-lg-2 control-label">Twitter name</label>
-					<div class="col-lg-9">
-						<input type="text" name="twitter-{{ arg[0] }}" id="twitter-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
-					</div>
-					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
-				</div>
-			{% endfor %}
-
 			<!-- Facebook -->
 			{% for arg in args['facebook'] %}
 				<div class="form-group">
 					<label for="facebook-{{ arg[0] }}" class="col-lg-2 control-label">Facebook page</label>
 					<div class="col-lg-9">
 						<input type="url" name="facebook-{{ arg[0] }}" id="facebook-{{ arg[0] }}" class="form-control" placeholder="For example: http://www.facebook.com/page/tattooport" value="{{ arg[1] }}">
+					</div>
+					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
+				</div>
+			{% endfor %}
+
+			<!-- Twitter -->
+			{% for arg in args['twitter'] %}
+				<div class="form-group">
+					<label for="twitter-{{ arg[0] }}" class="col-lg-2 control-label">Twitter name</label>
+					<div class="col-lg-9">
+						<input type="text" name="twitter-{{ arg[0] }}" id="twitter-{{ arg[0] }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ arg[1] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
