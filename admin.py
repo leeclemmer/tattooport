@@ -262,10 +262,6 @@ class AdminStudio(BaseHandler):
 		coun.put()
 		coun.update_location()
 
-		info('self.geo_pt',self.geo_pt('%s %s' % \
-				(COUNTRIES[country]['subdivisions'][subdivision],
-					COUNTRIES[country]['name'])))
-
 		subd = Subdivision(
 			parent=ndb.Key('Country', country),
 			id=subdivision,
@@ -728,22 +724,38 @@ class AdminEdit(AdminStudio):
 				country = args['country']
 				subdivision = args['subdivision']
 				locality = args['locality']
+				postal_code = args['postal_code']
 
-				Country(
-					id = '%s' % (country,),
-					display_name = COUNTRIES[country]['name']
-					).put()
-				Subdivision(
-					parent = ndb.Key('Country', country),
-					id = args['subdivision'],
-					display_name = COUNTRIES[country]['subdivisions'][subdivision]
-					).put()
-				Locality(
-					parent = ndb.Key('Country', country, 
-									 'Subdivision', subdivision),
-					id = locality,
-					display_name = locality
-					).put()
+				coun = Country(
+					id=country,
+					display_name=COUNTRIES[country]['name'],
+					location=self.geo_pt('%s' % \
+						(COUNTRIES[country]['name'],))
+					)
+				coun.put()
+				coun.update_location()
+
+				subd = Subdivision(
+					parent=ndb.Key('Country', country),
+					id=subdivision,
+					display_name=COUNTRIES[country]['subdivisions'][subdivision],
+					location=self.geo_pt('%s %s' % \
+						(COUNTRIES[country]['subdivisions'][subdivision],
+							COUNTRIES[country]['name'])))
+				subd.put()
+				subd.update_location()
+
+				loca = Locality(
+					parent=ndb.Key('Country', country,'Subdivision', subdivision),
+					id=locality,
+					display_name=locality,
+					location=self.geo_pt('%s %s %s %s' %
+									(locality,
+									subdivision.split('-')[1],
+									country,
+									postal_code)))
+				loca.put()
+				loca.update_location()
 
 			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(studio.key)))
 		except ValidationError:
@@ -776,7 +788,6 @@ class AdminView(BaseHandler):
 		studio.delete = '/admin/models/studio/delete/%s' % (pagename,)
 
 		# Call the template
-		info('map_url',self.static_map_url(studio.address.get().location))
 		self.render('admin_studio_view.html', 
 						active='models', 
 						active_nav='studio', 
@@ -830,7 +841,16 @@ class AdminBrowse(BaseHandler):
 class AdminBrowseRegion(BaseHandler):
 	def get(self, pagename):
 		ancestor_key = self.path_to_key(pagename)
-		results = Studio.query_location(ancestor_key).order(Studio.name)
+		if ancestor_key.kind() == 'Locality':
+			region_pt = ancestor_key.get().location
+			results = Address.proximity_fetch(
+				Address.query(),
+				region_pt,
+				max_results=10,
+				max_distance=80467)
+			results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
+		else:
+			results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
 
 		self.render('admin_studio_browse_region.html', active='models', active_nav='studio', results=results, breadcrumbs=self.path_to_breadcrumbs(pagename))

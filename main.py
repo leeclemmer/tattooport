@@ -72,8 +72,9 @@ class BaseHandler(webapp2.RequestHandler):
 	def geo_pt(self, address):
 		''' Returns ndb.GeoPt for given address.'''
 		g = geocoders.GoogleV3()
+		geocodes = g.geocode(address,exactly_one=False)
 		try:
-			return ndb.GeoPt(g.geocode(address)[1][0],g.geocode(address)[1][1])
+			return ndb.GeoPt(geocodes[0][1][0],geocodes[0][1][1])
 		except:
 			return None
 
