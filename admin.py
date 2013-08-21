@@ -250,8 +250,8 @@ class AdminStudio(BaseHandler):
 							subdivision.split('-')[1],
 							country,
 							postal_code)))
-		addr.put()
 		addr.update_location()
+		addr.put()
 
 		coun = Country(
 			id=country,
@@ -259,8 +259,8 @@ class AdminStudio(BaseHandler):
 			location=self.geo_pt('%s' % \
 				(COUNTRIES[country]['name'],))
 			)
-		coun.put()
 		coun.update_location()
+		coun.put()
 
 		subd = Subdivision(
 			parent=ndb.Key('Country', country),
@@ -269,8 +269,8 @@ class AdminStudio(BaseHandler):
 			location=self.geo_pt('%s %s' % \
 				(COUNTRIES[country]['subdivisions'][subdivision],
 					COUNTRIES[country]['name'])))
-		subd.put()
 		subd.update_location()
+		subd.put()
 
 		loca = Locality(
 			parent=ndb.Key('Country', country,'Subdivision', subdivision),
@@ -281,8 +281,8 @@ class AdminStudio(BaseHandler):
 							subdivision.split('-')[1],
 							country,
 							postal_code)))
-		loca.put()
 		loca.update_location()
+		loca.put()
 
 	# Validation functions
 	validation_funcs = {'name':valid_name,
@@ -849,6 +849,9 @@ class AdminBrowseRegion(BaseHandler):
 				max_results=10,
 				max_distance=80467)
 			results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
+			info('region_pt',region_pt)
+			info('Address.query()',Address.query().fetch())
+			info('results',results)
 		else:
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
