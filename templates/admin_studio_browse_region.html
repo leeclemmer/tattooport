@@ -23,6 +23,16 @@
 
 	<h1>{{ breadcrumbs[-1][0] }}</h1>
 
+	{% if regions %}
+	<ul class="list-unstyled">
+		{% for region in regions %}
+		<li>
+			<a href="/admin/models/studio/browse/{{ breadcrumbs[-1][1] }}/{{ region.key.pairs()[-1][1] }}">{{ region.display_name }}</a>
+		</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+
 	<ul class="list-unstyled">
 	{% for result in results %}
 		<li>

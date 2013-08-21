@@ -16,7 +16,9 @@ class ValidationError(Exception):
 
 class AdminMain(BaseHandler):
 	def get(self):
-		self.render('admin_main.html',title='Main', active = 'admin')
+		self.render('admin_main.html', 
+					title='Main',
+					active = 'admin')
 
 class AdminModels(BaseHandler):
 	def get(self):
@@ -311,7 +313,10 @@ class AdminStudio(BaseHandler):
 
 class AdminCreate(AdminStudio):
 	def get(self):
-		self.render('admin_studio_create.html', active_nav = 'studio', args = {}, num_fields = {})
+		self.render('admin_studio_create.html',
+					active_nav = 'studio',
+					args = {},
+					num_fields = {})
 
 	def post(self):
 		# Collect all POSTed arguments
@@ -406,7 +411,11 @@ class AdminCreate(AdminStudio):
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-			self.render('admin_studio_create.html', active_nav = 'studio', args = args, num_fields = self.num_fields(self.request.arguments()), error = error)
+			self.render('admin_studio_create.html',
+						active_nav = 'studio',
+						args = args,
+						num_fields = self.num_fields(self.request.arguments()),
+						error = error)
 
 class AdminEdit(AdminStudio):
 	def get(self, pagename):
@@ -488,7 +497,10 @@ class AdminEdit(AdminStudio):
 
 		args['skey'] = pagename
 
-		self.render('admin_studio_edit.html', active_nav = 'studio', args = args, num_fields = self.num_fields(args))
+		self.render('admin_studio_edit.html',
+					active_nav = 'studio',
+					args = args,
+					num_fields = self.num_fields(args))
 
 	def post(self, pagename):
 		# Collect all POSTed arguments
@@ -766,7 +778,11 @@ class AdminEdit(AdminStudio):
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-			self.render('admin_studio_edit.html', active_nav = 'studio', args = args, num_fields = self.num_fields(args), error = error)		
+			self.render('admin_studio_edit.html',
+						active_nav = 'studio',
+						args = args,
+						num_fields = self.num_fields(args),
+						error = error)		
 
 class AdminView(BaseHandler):
 	def get(self, pagename):
@@ -793,11 +809,11 @@ class AdminView(BaseHandler):
 
 		# Call the template
 		self.render('admin_studio_view.html', 
-						active='models', 
-						active_nav='studio', 
-						studio=studio, 
-						breadcrumbs=self.path_to_breadcrumbs(pagename),
-						map_url=self.static_map_url(studio.address.get().location))
+					active='models', 
+					active_nav='studio', 
+					studio=studio, 
+					breadcrumbs=self.path_to_breadcrumbs(pagename),
+					map_url=self.static_map_url(studio.address.get().location))
 
 class AdminDelete(BaseHandler):
 	def get(self, pagename):
@@ -809,7 +825,10 @@ class AdminDelete(BaseHandler):
 		studio.view = '/admin/models/studio/view/%s' % (pagename,)
 
 		# Call the template
-		self.render('admin_studio_delete.html', active='models', active_nave = 'studio', studio = studio)
+		self.render('admin_studio_delete.html',
+					active='models',
+					active_nave = 'studio',
+					studio = studio)
 
 	def post(self, pagename):
 		# Create ancestor key from URL path
@@ -827,7 +846,11 @@ class AdminDelete(BaseHandler):
 					pass
 			# Delete studio
 			ancestor_key.delete()
-			self.render('admin_studio_delete.html', active='models', active_nav='studio', name=name, confirmation=True)
+			self.render('admin_studio_delete.html',
+						active='models',
+						active_nav='studio',
+						name=name,
+						confirmation=True)
 		else:
 			self.redirect('/admin/models/studio/delete/%s' % (pagename,))
 
@@ -840,12 +863,18 @@ class AdminBrowse(BaseHandler):
 					for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
 				for country in Country.query().order(Country.display_name).fetch()]
 
-		self.render('admin_studio_browse.html', active='models', active_nav='studio', regions=regions)
+		self.render('admin_studio_browse.html',
+					active='models',
+					active_nav='studio',
+					regions=regions)
 
 class AdminBrowseRegion(BaseHandler):
 	def get(self, pagename):
 		ancestor_key = self.path_to_key(pagename)
+		regions = ''
+
 		if ancestor_key.kind() == 'Locality':
+			# If browsing city, search is a proximity search
 			region_pt = ancestor_key.get().location
 			results = Address.proximity_fetch(
 				Address.query(),
@@ -853,14 +882,21 @@ class AdminBrowseRegion(BaseHandler):
 				max_results=10,
 				max_distance=80467)
 			results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
-			info('region_pt',region_pt)
-			info('Address.query()',Address.query().fetch())
-			info('results',results)
 		else:
+			if ancestor_key.kind() == 'Country':
+				regions = Subdivision.query_location(ancestor_key).fetch()
+			elif ancestor_key.kind() == 'Subdivision':
+				regions = Locality.query_location(ancestor_key).fetch()
+			# Otherwise, results are direct members
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
-
-		self.render('admin_studio_browse_region.html', active='models', active_nav='studio', results=results, breadcrumbs=self.path_to_breadcrumbs(pagename))
+		info('regions',regions)
+		self.render('admin_studio_browse_region.html',
+					active='models',
+					active_nav='studio',
+					results=results,
+					regions=regions,
+					breadcrumbs=self.path_to_breadcrumbs(pagename))
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models/?', AdminModels),
