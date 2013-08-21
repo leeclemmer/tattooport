@@ -115,40 +115,44 @@ class AdminStudio(BaseHandler):
 	def valid_toggle(self, toggle):
 		return toggle in ['yes','no']
 
-	def validate_args(self, args):
+	def validate_args(self, args, model_kind):
 		''' Takes list of args and validates them against validation rules.
 			Returns (True/False, error)'''
 		error = ''
 		raise_it = False
 
 		# Name validation
-		if not args.get('name'):
+		if model_kind == 'studio' and not args.get('name'):
 			error += 'Studio must have a name'
-			raise_it = True# Traverse arguments and run against validation function
+			raise_it = True
+		elif model_kind == 'artist' and not args.get('display_name'):
+			error += 'Artist must have a display name'
+			raise_it = True
 
-		for arg in args:
-			if args.get(arg):
-				# Handle multi_field args
-				if arg.split('-')[0] in Contact.prop_names() \
-				or arg.split('-')[0] in ['phone_number','phone_type','country_code']:
-					if not self.validation_funcs[arg.split('-')[0]](self, args[arg]):
-						error += '%s field: "%s" is in a wrong format. Try again. # ' \
-								 % (arg.capitalize(), args[arg])
-						raise_it = True
-
-					# Special case to make sure all 3 phone fields are filled out
-					ext = ''
-					if len(arg.split('-')) > 1: ext = '-%s' % (arg.split('-',1)[1],)
-					if arg.startswith('phone_number') \
-						and (not args['country_code%s' % (ext,)] \
-						or not args['phone_type%s' % (ext,)] \
-						or not args['phone_number%s' % (ext,)]):
-						error += 'Please fill in all three phone fields. #'
-						raise_it = True
-				# Single field args
-				elif arg != 'skey' and not self.validation_funcs[arg.split('-')[0]](self, args.get(arg)):
-					error += '%s field: "%s" is in a wrong format. Try again. # ' % (arg, args[arg])
+		# Traverse arguments and run against validation function
+		for k,v in {k:v for k,v in args.iteritems() if v}.iteritems():
+			arg = k.split('-')[0]
+			# Handle multi_field args
+			if arg in Contact.prop_names() \
+			or arg in ['phone_number','phone_type','country_code']:
+				if not self.validation_funcs[arg](self, v):
+					error += '%s field: "%s" is in a wrong format. Try again. # ' \
+							 % (k.capitalize(), v)
 					raise_it = True
+
+				# Special case to make sure all 3 phone fields are filled out
+				ext = ''
+				if len(k.split('-')) > 1: ext = '-%s' % (k.split('-',1)[1],)
+				if k.startswith('phone_number') \
+					and (not args['country_code%s' % (ext,)] \
+					or not args['phone_type%s' % (ext,)] \
+					or not args['phone_number%s' % (ext,)]):
+					error += 'Please fill in all three phone fields. #'
+					raise_it = True
+			# Single field args
+			elif k != 'skey' and not self.validation_funcs[arg](self, args.get(k)):
+				error += '%s field: "%s" is in a wrong format. Try again. # ' % (k, v)
+				raise_it = True
 
 		return (raise_it,error)
 
@@ -159,6 +163,13 @@ class AdminStudio(BaseHandler):
 		new_studio = Studio(parent=parent, name=name)
 		new_studio.put()
 		return new_studio
+
+	def put_artist(self, display_name, first_name='', last_name=''):
+		new_artist = Artist(display_name=display_name,
+							first_name=first_name,
+							last_name=last_name)
+		new_artist.put()
+		return new_artist
 
 	def put_email(self, key, email, primary):
 		Email(
@@ -288,6 +299,9 @@ class AdminStudio(BaseHandler):
 
 	# Validation functions
 	validation_funcs = {'name':valid_name,
+						'display_name':valid_name,
+						'first_name':valid_name,
+						'last_name':valid_name,
 						'email':valid_email,
 						'phone_number':valid_phone_number,
 						'country_code':valid_country_code,
@@ -312,28 +326,34 @@ class AdminStudio(BaseHandler):
 						'ma_postal_code':valid_postal_code}
 
 class AdminCreate(AdminStudio):
-	def get(self):
-		self.render('admin_studio_create.html',
-					active_nav = 'studio',
-					args = {},
-					num_fields = {})
+	def get(self, model_kind):
+		self.render('admin_create.html',
+					active_nav=model_kind,
+					args={},
+					num_fields={})
 
-	def post(self):
+	def post(self, model_kind):
 		# Collect all POSTed arguments
 		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
 			
 		try:
-			raise_it, error = self.validate_args(args)
+			raise_it, error = self.validate_args(args, model_kind)
 
 			# if any of the fields failed validation
 			if raise_it: raise ValidationError(error)
 
 			# Put form fields into database
-			new_studio = self.put_studio(
-				country=args['country'],
-				subdivision=args['subdivision'],
-				locality=args['locality'],
-				name=args['name'])
+			if model_kind == 'studio':
+				new_model = self.put_studio(
+					country=args['country'],
+					subdivision=args['subdivision'],
+					locality=args['locality'],
+					name=args['name'])
+			elif model_kind == 'artist':
+				new_model = self.put_artist(
+					display_name=args['display_name'],
+					first_name=args.get('first_name'),
+					last_name=args.get('last_name'))
 
 			# Traverse non-empty arguments
 			for k,v in {k:v for k,v in args.iteritems() if v}.iteritems():
@@ -344,54 +364,54 @@ class AdminCreate(AdminStudio):
 
 				if k.startswith('email'):
 					self.put_email(
-						key=new_studio.key,
+						key=new_model.key,
 						email=v,
 						primary=primary)
 				elif k.startswith('phone_number'):
 					self.put_phone(
-						key=new_studio.key,
+						key=new_model.key,
 						phone_type=args['phone_type%s' % (ext,)],
 						country_code=args['country_code%s' % (ext,)],
 						number=v,
 						primary=primary)
 				elif k.startswith('website'):
 					self.put_website(
-						key=new_studio.key,
+						key=new_model.key,
 						url=v,
 						primary=primary)
 				elif k.startswith('gallery'):
 					self.put_gallery(
-						key=new_studio.key,
+						key=new_model.key,
 						url=v,
 						primary=primary)
 				elif k.startswith('instagram'):
 					self.put_instagram(
-						key=new_studio.key,
+						key=new_model.key,
 						instagram=v,
 						primary=primary)
 				elif k.startswith('foursquare'):
 					self.put_foursquare(
-						key=new_studio.key,
+						key=new_model.key,
 						foursquare=v,
 						primary=primary)
 				elif k.startswith('facebook'):
 					self.put_facebook(
-						key=new_studio.key,
+						key=new_model.key,
 						facebook=v,
 						primary=primary)
 				elif k.startswith('twitter'):
 					self.put_twitter(
-						key=new_studio.key,
+						key=new_model.key,
 						twitter=v,
 						primary=primary)
 				elif k.startswith('tumblr'):
 					self.put_tumblr(
-						key=new_studio.key,
+						key=new_model.key,
 						tumblr=v,
 						primary=primary)
 				elif k == 'country':
 					self.put_address(
-						key=new_studio.key,
+						key=new_model.key,
 						street=args['street'],
 						locality=args['locality'],
 						subdivision=args['subdivision'],
@@ -399,42 +419,42 @@ class AdminCreate(AdminStudio):
 						postal_code=args['postal_code'])
 				elif k == 'ma_country':
 					self.put_mailing_address(
-						key=new_studio.key,
+						key=new_model.key,
 						street=args['ma_street'],
 						locality=args['ma_locality'],
 						subdivision=args['ma_subdivision'],
 						country=v,
 						postal_code=args['ma_postal_code'])
 
-			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(new_studio.key)))
+			self.redirect('/admin/models/%s/view%s' % (model_kind, self.key_to_path(new_model.key)))
 		except ValidationError:
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-			self.render('admin_studio_create.html',
-						active_nav = 'studio',
-						args = args,
-						num_fields = self.num_fields(self.request.arguments()),
-						error = error)
+			self.render('admin_create.html',
+						active_nav=model_kind,
+						args=args,
+						num_fields=self.num_fields(self.request.arguments()),
+						error=rror)
 
 class AdminEdit(AdminStudio):
-	def get(self, pagename):
+	def get(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
 		
-		# Get studio
-		studio = ancestor_key.get()
+		# Get model
+		model = ancestor_key.get()
 
 		# Assemble args to pass to template
 		db_args = {}
 		args = {}
 
 		# First get all props from db via Contact.props
-		for k, v in studio.props().iteritems():
+		for k, v in model.props().iteritems():
 			try:
 				db_args[k] = v.fetch()
 			except AttributeError:
-				if k != 'class': db_args[k] = getattr(studio,k)
+				if k != 'class': db_args[k] = getattr(model,k)
 
 		# Then translate db props into args dict for template
 		for prop, value in db_args.iteritems():
@@ -497,23 +517,23 @@ class AdminEdit(AdminStudio):
 
 		args['skey'] = pagename
 
-		self.render('admin_studio_edit.html',
-					active_nav = 'studio',
-					args = args,
-					num_fields = self.num_fields(args))
+		self.render('admin_edit.html',
+					active_nav=model_kind,
+					args=args,
+					num_fields=self.num_fields(args))
 
-	def post(self, pagename):
+	def post(self, model_kind, pagename):
 		# Collect all POSTed arguments
 		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
 
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
 		
-		# Get studio
-		studio = ancestor_key.get()
+		# Get model
+		model = ancestor_key.get()
 
 		try:
-			raise_it, error = self.validate_args(args)
+			raise_it, error = self.validate_args(args, model_kind)
 
 			# Convert args to Edit format
 			args_edit = {}
@@ -548,7 +568,7 @@ class AdminEdit(AdminStudio):
 			# Put new data to DB
 			#####################
 
-			studio = self.path_to_key(args['skey']).get()
+			model = self.path_to_key(args['skey']).get()
 
 			info('args',args)
 
@@ -575,7 +595,7 @@ class AdminEdit(AdminStudio):
 						if not item_db and item[1]:		# New field
 							if arg == 'email':
 								self.put_email(
-									studio.key,
+									model.key,
 									item[1],
 									primary)
 							elif arg == 'phone' \
@@ -583,44 +603,44 @@ class AdminEdit(AdminStudio):
 								and item[1]['phone_number'] \
 								and item[1]['country_code']:
 								self.put_phone(
-									key=studio.key,
+									key=model.key,
 									phone_type=item[1]['phone_type'],
 									country_code = item[1]['country_code'],
 									number = item[1]['phone_number'],
 									primary = primary)
 							elif arg == 'website':
 								self.put_website(
-									key=studio.key,
+									key=model.key,
 									url=item[1],
 									primary=primary)
 							elif arg == 'gallery':
 								self.put_gallery(
-									key=studio.key,
+									key=model.key,
 									url=item[1],
 									primary=primary)
 							elif arg == 'instagram':
 								self.put_instagram(
-									key=studio.key,
+									key=model.key,
 									instagram=item[1],
 									primary=primary)
 							elif arg == 'foursquare':
 								self.put_foursquare(
-									key=studio.key,
+									key=model.key,
 									foursquare=item[1],
 									primary=primary)
 							elif arg == 'facebook':
 								self.put_facebook(
-									key=studio.key,
+									key=model.key,
 									facebook=item[1],
 									primary=primary)
 							elif arg == 'twitter':
 								self.put_twitter(
-									key=studio.key,
+									key=model.key,
 									twitter=item[1],
 									primary=primary)
 							elif arg == 'tumblr':
 								self.put_tumblr(
-									key=studio.key,
+									key=model.key,
 									tumblr=item[1],
 									primary=primary)
 						elif item_db:
@@ -655,85 +675,97 @@ class AdminEdit(AdminStudio):
 				except IndexError:
 					pass
 
-			# Put new address
-			put_it = False
-			sa = studio.address.get()
-			for arg in ['street',
-						'locality',
-						'subdivision',
-						'country',
-						'postal_code']:
-				if args[arg] != getattr(sa,arg):
-					setattr(sa,arg,args[arg])
-					put_it = True
-			if put_it:
-				sa.location = self.geo_pt('%s %s %s %s %s' %
-												(sa.street,
-												sa.locality,
-												sa.subdivision.split('-')[1],
-												sa.country,
-												sa.postal_code))
-				sa.update_location()
-				sa.put()
-
-			# Put new mailing address
-			put_it = False
-			sma = studio.mailing_address.get()
-
-			if args.get('ma_toggle') == 'no' and sma: sma.key.delete()
-			else:			
-				for arg in ['ma_street','ma_locality','ma_subdivision',
-							'ma_country','ma_postal_code']:
-					if sma and \
-						args.get(arg) != \
-						getattr(sma,arg.split('ma_')[1]):
-						setattr(sma,
-								arg.split('ma_')[1],
-								args[arg])
-						put_it = True
-					elif not sma and args.get(arg):
-						sma = MailingAddress(
-							contact = studio.key,
-							street = args['ma_street'],
-							locality = args['ma_locality'],
-							subdivision = args['ma_subdivision'],
-							country = args['ma_country'],
-							postal_code = args['ma_postal_code'])
+			if model_kind == 'studio':
+				# Put new address
+				put_it = False
+				sa = model.address.get()
+				for arg in ['street',
+							'locality',
+							'subdivision',
+							'country',
+							'postal_code']:
+					if args[arg] != getattr(sa,arg):
+						setattr(sa,arg,args[arg])
 						put_it = True
 				if put_it:
-					sma.put()
+					sa.location = self.geo_pt('%s %s %s %s %s' %
+													(sa.street,
+													sa.locality,
+													sa.subdivision.split('-')[1],
+													sa.country,
+													sa.postal_code))
+					sa.update_location()
+					sa.put()
 
-			# Put new name
-			if args['name'] != studio.name:
-				studio.name = args['name']
-				studio.put()
+				# Put new mailing address
+				put_it = False
+				sma = model.mailing_address.get()
 
-			# Update key if address has changed
-			path = '%s/%s/%s/%s' % (args['country'],
-									args['subdivision'],
-									args['locality'],
-									studio.key.id())
-			if self.path_to_key(path) != studio.key:
+				if args.get('ma_toggle') == 'no' and sma: sma.key.delete()
+				else:			
+					for arg in ['ma_street','ma_locality','ma_subdivision',
+								'ma_country','ma_postal_code']:
+						if sma and \
+							args.get(arg) != \
+							getattr(sma,arg.split('ma_')[1]):
+							setattr(sma,
+									arg.split('ma_')[1],
+									args[arg])
+							put_it = True
+						elif not sma and args.get(arg):
+							sma = MailingAddress(
+								contact = model.key,
+								street = args['ma_street'],
+								locality = args['ma_locality'],
+								subdivision = args['ma_subdivision'],
+								country = args['ma_country'],
+								postal_code = args['ma_postal_code'])
+							put_it = True
+					if put_it:
+						sma.put()
+
+				# Put new name
+				if args['name'] != model.name:
+					model.name = args['name']
+					model.put()
+
+				# Update key if address has changed
+				path = '%s/%s/%s/%s' % (args['country'],
+										args['subdivision'],
+										args['locality'],
+										model.key.id())
+			elif model_kind == 'artist':
+				if args['display_name'] != model.display_name:
+					model.display_name = args['display_name']
+				if args.get('first_name'):
+					model.first_name = args['first_name']
+				if args.get('last_name'):
+					model.last_name = args['last_name']
+				model.put()
+				
+				path = '%s' % (model.key.id(),)
+
+			if self.path_to_key(path) != model.key:
 				# Set new and old key
-				new_key = self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id()))
-				old_key = studio.key
+				new_key = self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],model.key.id()))
+				old_key = model.key
 
 				# Go through properties and reset all query properties
-				for prop in studio.props():
-					if hasattr(studio,prop):
+				for prop in model.props():
+					if hasattr(model,prop):
 						try:
-							q_attrs = getattr(studio,prop).fetch()
+							q_attrs = getattr(model,prop).fetch()
 							for attr in q_attrs:
 								attr.contact = new_key
 								attr.put()
 						except AttributeError:
 							pass
 
-				# Create new studio
-				studio.key = new_key
-				studio.put()
+				# Create new model
+				model.key = new_key
+				model.put()
 
-				# Delete old studio
+				# Delete old model
 				old_key.delete()
 
 				# Create Country, Subdivision, and/or Locality if they don't already exist
@@ -773,88 +805,103 @@ class AdminEdit(AdminStudio):
 				loca.put()
 				loca.update_location()
 
-			self.redirect('/admin/models/studio/view/%s' % (path,))
+			self.redirect('/admin/models/%s/view/%s' % (model_kind, path))
 		except ValidationError:
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
 
-			self.render('admin_studio_edit.html',
-						active_nav = 'studio',
-						args = args,
-						num_fields = self.num_fields(args),
-						error = error)		
+			self.render('admin_edit.html',
+						active_nav=model_kind,
+						args=args,
+						num_fields=self.num_fields(args),
+						error=error)		
 
 class AdminView(BaseHandler):
-	def get(self, pagename):
+	def get(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
+		info('pagename',pagename)
+		info('ancestor_key',ancestor_key)
 		
 		# Get studio
-		studio = ancestor_key.get()
+		model = ancestor_key.get()
 
-		# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
-		studio.country = COUNTRIES[studio.address.get().country]['name']
-		studio.subdivision = COUNTRIES[studio.address.get().country]['subdivisions'][studio.address.get().subdivision]
+		info('mode',model)
 
-		try:
-			if studio.mailing_address.get():
-				studio.ma_country = COUNTRIES[studio.mailing_address.get().country]['name']
-				studio.ma_subdivision = COUNTRIES[studio.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
-		except:
-			pass
+		if model_kind == 'studio':
+			# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
+			model.country = COUNTRIES[model.address.get().country]['name']
+			model.subdivision = COUNTRIES[model.address.get().country]['subdivisions'][model.address.get().subdivision]
+
+			try:
+				if model.mailing_address.get():
+					model.ma_country = COUNTRIES[model.mailing_address.get().country]['name']
+					model.ma_subdivision = COUNTRIES[model.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
+			except:
+				pass
 
 		# Tag on the edit and delete links
-		studio.edit = '/admin/models/studio/edit/%s' % (pagename,)
-		studio.delete = '/admin/models/studio/delete/%s' % (pagename,)
+		model.edit = '/admin/models/%s/edit/%s' % (model_kind,pagename)
+		model.delete = '/admin/models/%s/delete/%s' % (model_kind,pagename)
 
 		# Call the template
-		self.render('admin_studio_view.html', 
-					active='models', 
-					active_nav='studio', 
-					studio=studio, 
-					breadcrumbs=self.path_to_breadcrumbs(pagename),
-					map_url=self.static_map_url(studio.address.get().location))
+		if model_kind == 'studio':
+			self.render('admin_studio_view.html', 
+						active='models', 
+						active_nav=model_kind, 
+						studio=model, 
+						breadcrumbs=self.path_to_breadcrumbs(pagename),
+						map_url=self.static_map_url(model.address.get().location))
+		elif model_kind == 'artist':
+			self.render('admin_artist_view.html',
+						active='models',
+						active_nav=model_kind,
+						artist=model)
 
 class AdminDelete(BaseHandler):
-	def get(self, pagename):
+	def get(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
 		
-		# Get studio
-		studio = ancestor_key.get()
-		studio.view = '/admin/models/studio/view/%s' % (pagename,)
+		# Get model
+		model = ancestor_key.get()
+		model.view = '/admin/models/model/view/%s' % (pagename,)
 
 		# Call the template
-		self.render('admin_studio_delete.html',
+		self.render('admin_delete.html',
 					active='models',
-					active_nave = 'studio',
-					studio = studio)
+					active_nav=model_kind,
+					model=model)
 
-	def post(self, pagename):
+	def post(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
 		
 		# Get studio
-		name = ancestor_key.get().name
+		if model_kind == 'studio':
+			name = ancestor_key.get().name
+		elif model_kind == 'artist':
+			name = ancestor_key.get().display_name
 
 		# Call the template
 		if self.request.get('delete') and self.request.get('delete') == 'yes':
 			for prop_name,prop in ancestor_key.get().props().iteritems():
 				try:
+					info('deleting %s' % (prop_name,), prop)
 					ndb.delete_multi([p.key for p in prop.fetch()])
 				except AttributeError:
 					pass
 			# Delete studio
 			ancestor_key.delete()
-			self.render('admin_studio_delete.html',
+			self.render('admin_delete.html',
 						active='models',
-						active_nav='studio',
+						active_nav=model_kind,
 						name=name,
 						confirmation=True)
 		else:
 			self.redirect('/admin/models/studio/delete/%s' % (pagename,))
 
-class AdminBrowse(BaseHandler):
+class AdminStudioBrowse(BaseHandler):
 	def get(self):
 		''' Displays tree structure of country, subdivision, locality. '''
 		regions = [[country,
@@ -868,7 +915,7 @@ class AdminBrowse(BaseHandler):
 					active_nav='studio',
 					regions=regions)
 
-class AdminBrowseRegion(BaseHandler):
+class AdminStudioBrowseRegion(BaseHandler):
 	def get(self, pagename):
 		ancestor_key = self.path_to_key(pagename)
 		regions = ''
@@ -898,12 +945,39 @@ class AdminBrowseRegion(BaseHandler):
 					regions=regions,
 					breadcrumbs=self.path_to_breadcrumbs(pagename))
 
+class AdminArtistBrowse(BaseHandler):
+	def get(self):
+		curs = Cursor(urlsafe=self.request.get('cursor'))
+		artists, next_curs, more = Artist.query().order(-Artist.last_edited).fetch_page(10, start_cursor=curs)
+		if artists:
+			artists = [{'name':artist.display_name, 
+						'last_edited':artist.last_edited, 
+						'link':'/admin/models/artist/view%s' % \
+								(self.key_to_path(artist.key))} 
+							for artist in artists]
+			self.render('admin_models.html', 
+						title='Recent Artists', 
+						active='models', 
+						studios=artists, 
+						next_curs=next_curs.urlsafe(), 
+						more=more)
+		else:
+			self.render('admin_models.html', 
+						title='No Recent Artists', 
+						active='models', 
+						studios=[], 
+						next_curs='', 
+						more='')
+
+
+
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models/?', AdminModels),
-							   ('/admin/models/studio/create/?', AdminCreate),
-							   ('/admin/models/studio/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
-							   ('/admin/models/studio/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
-							   ('/admin/models/studio/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
-							   ('/admin/models/studio/browse/?', AdminBrowse),
-							   ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminBrowseRegion),
-							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio)], debug=True)
+							   ('/admin/models/(studio|artist)/create/?', AdminCreate),
+							   ('/admin/models/(studio|artist)/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
+							   ('/admin/models/(studio|artist)/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
+							   ('/admin/models/(studio|artist)/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
+							   ('/admin/models/studio/browse/?', AdminStudioBrowse),
+							   ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminStudioBrowseRegion),
+							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
+							   ('/admin/models/artist/browse/?', AdminArtistBrowse)], debug=True)

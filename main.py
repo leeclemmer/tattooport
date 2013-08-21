@@ -49,7 +49,13 @@ class BaseHandler(webapp2.RequestHandler):
 	def path_to_key(self, path):
 		''' Converts path to key with ancestor path. '''
 		ancestor_kinds = ['Country','Subdivision','Locality','Contact']
-		return ndb.Key(pairs=zip(ancestor_kinds,[int(c) if c.isdigit() else c for c in urllib.unquote_plus(path).split('/')]))
+		if path.isdigit():
+			return ndb.Key('Contact',int(path))
+		else:
+			return ndb.Key(pairs=zip(ancestor_kinds,
+								[int(c) if c.isdigit() \
+										else c for c in \
+										urllib.unquote_plus(path).split('/')]))
 
 	def path_to_breadcrumbs(self, path):
 		''' Converts a path to a list of breadcrumbs 

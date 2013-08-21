@@ -1,0 +1,137 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+<span class="temp-admin-view">
+	<div class="row">
+		<div class="col-lg-10">
+			<h1>{{ artist.display_name }}</h1>
+			<a href="{{ artist.edit }}"><button class="btn btn-primary">Edit</button></a>
+		</div>
+
+		<div class="col-lg-2">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-5">
+			<strong class="section-label">Address</strong>
+
+			<address>
+				<strong>{{ artist.display_name }}</strong><br/>
+
+				{{ artist.first_name }} {{ artist.last_name }}
+
+				<!-- Email -->
+				{% if artist.email %}
+				<p>
+					{% for email in artist.email|sort(reverse=True,attribute='primary') %}
+						<a href="mailto:{{ email.email }}">{{ email.email }}</a><br/>
+					{% endfor %}
+				</p>
+				{% endif %}
+
+				<!-- Phone -->
+				{% if artist.phone %}
+				<p>
+				{% for phone in artist.phone|sort(reverse=True,attribute='primary') %}
+					<abbr title="{{ phone.phone_type.capitalize() }} Phone">{{ phone.phone_type[0].capitalize() }}:</abbr>
+					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
+						+{{ phone.country_code }} 
+						{% if phone.country_code == '1' %}
+							{% set number = phone.number|replace("-","")
+														|replace(" ","")
+														|replace("(","")
+														|replace(")","")
+														|replace(".","") %}
+							{{ '(%s) %s-%s' % (number[0:3],number[3:6],number[6:]) }}
+						{% else %}
+							{{ phone.number }}
+						{% endif %}
+					</a><br/>
+				{% endfor %}
+				</p>
+				{% endif %}
+
+			</address>
+		</div>
+
+		<div class="col-lg-5">
+
+			<!-- Website -->
+			{% if artist.website.get() %}
+				<strong class="section-label">Websites</strong>
+
+				<ul class="list-unstyled">
+				{% for website in artist.website|sort(reverse=True,attribute='primary') %}
+					<li>
+						<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			<!-- Gallery -->
+			{% if artist.gallery.get() %}
+				<strong class="section-label">Galleries</strong>
+
+				<ul class="list-unstyled">
+				{% for gallery in artist.gallery|sort(reverse=True,attribute='primary') %}
+					<li>
+						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			{% if artist.instagram.get() or artist.facebook.get() or artist.twitter.get() or artist.tumblr.get() %}
+			<strong class="section-label">Social</strong>
+			{% endif %}
+
+			{% if artist.instagram.get() %}
+				{% for instagram in artist.instagram|sort(reverse=True,attribute='primary') %}
+					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if artist.foursquare.get() %}
+				{% for foursquare in artist.foursquare|sort(reverse=True,attribute='primary') %}
+					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if artist.twitter.get() %}
+				{% for twitter in artist.twitter|sort(reverse=True,attribute='primary') %}
+					<i class="icon-twitter-sign icon-large"></i> <a target="_blank" href="http://www.twitter.com/{{ twitter.twitter }}">Twitter</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if artist.facebook.get() %}
+				{% for facebook in artist.facebook|sort(reverse=True,attribute='primary') %}
+					<i class="icon-facebook-sign icon-large"></i> <a target="_blank" href="{{ facebook.facebook }}">Facebook</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if artist.tumblr.get() %}
+				{% for tumblr in artist.tumblr|sort(reverse=True,attribute='primary') %}
+					<i class="icon-tumblr-sign icon-large"></i> <a target="_blank" href="{{ tumblr.tumblr }}">Tumblr</a><br/>
+				{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<small class="text-muted">Created on {{ artist.created.ctime() }}. Last updated on {{ artist.last_edited.ctime() }}.</small>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<a href="{{ artist.delete }}"><button class="btn btn-danger">Delete</button></a>
+		</div>
+	</div>
+
+</span>
+{% endblock %}
