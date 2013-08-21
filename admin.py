@@ -697,7 +697,11 @@ class AdminEdit(AdminStudio):
 				studio.put()
 
 			# Update key if address has changed
-			if self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id())) != studio.key:
+			path = '%s/%s/%s/%s' % (args['country'],
+									args['subdivision'],
+									args['locality'],
+									studio.key.id())
+			if self.path_to_key(path) != studio.key:
 				# Set new and old key
 				new_key = self.path_to_key('%s/%s/%s/%s' % (args['country'],args['subdivision'],args['locality'],studio.key.id()))
 				old_key = studio.key
@@ -757,7 +761,7 @@ class AdminEdit(AdminStudio):
 				loca.put()
 				loca.update_location()
 
-			self.redirect('/admin/models/studio/view%s' % (self.key_to_path(studio.key)))
+			self.redirect('/admin/models/studio/view/%s' % (path,))
 		except ValidationError:
 			# Error, so re-render form with error message
 			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
