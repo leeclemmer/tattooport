@@ -54,65 +54,69 @@
 				</p>
 				{% endif %}
 
+				<!-- Website -->
+				{% if artist.website.get() %}
+					<strong class="section-label">Websites</strong>
+
+					<ul class="list-unstyled">
+					{% for website in artist.website|sort(reverse=True,attribute='primary') %}
+						<li>
+							<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+						</li>
+					{% endfor %}
+					</ul>
+				{% endif %}
+
+				<!-- Gallery -->
+				{% if artist.gallery.get() %}
+					<strong class="section-label">Galleries</strong>
+
+					<ul class="list-unstyled">
+					{% for gallery in artist.gallery|sort(reverse=True,attribute='primary') %}
+						<li>
+							<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+						</li>
+					{% endfor %}
+					</ul>
+				{% endif %}
 			</address>
 		</div>
 
 		<div class="col-lg-5">
-
-			<!-- Website -->
-			{% if artist.website.get() %}
-				<strong class="section-label">Websites</strong>
-
-				<ul class="list-unstyled">
-				{% for website in artist.website|sort(reverse=True,attribute='primary') %}
-					<li>
-						<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
-					</li>
-				{% endfor %}
-				</ul>
-			{% endif %}
-
-			<!-- Gallery -->
-			{% if artist.gallery.get() %}
-				<strong class="section-label">Galleries</strong>
-
-				<ul class="list-unstyled">
-				{% for gallery in artist.gallery|sort(reverse=True,attribute='primary') %}
-					<li>
-						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
-					</li>
-				{% endfor %}
-				</ul>
-			{% endif %}
-
+			<!-- Social -->
 			{% if artist.instagram.get() or artist.facebook.get() or artist.twitter.get() or artist.tumblr.get() %}
 			<strong class="section-label">Social</strong>
 			{% endif %}
 
+			<!-- Instagram -->
 			{% if artist.instagram.get() %}
 				{% for instagram in artist.instagram|sort(reverse=True,attribute='primary') %}
 					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
 				{% endfor %}
 			{% endif %}
 
+			<!-- Foursquare -->
 			{% if artist.foursquare.get() %}
 				{% for foursquare in artist.foursquare|sort(reverse=True,attribute='primary') %}
 					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
 				{% endfor %}
 			{% endif %}
 
+			<!-- Twitter -->
 			{% if artist.twitter.get() %}
 				{% for twitter in artist.twitter|sort(reverse=True,attribute='primary') %}
 					<i class="icon-twitter-sign icon-large"></i> <a target="_blank" href="http://www.twitter.com/{{ twitter.twitter }}">Twitter</a><br/>
 				{% endfor %}
 			{% endif %}
 
+			<!-- Facebook -->
 			{% if artist.facebook.get() %}
 				{% for facebook in artist.facebook|sort(reverse=True,attribute='primary') %}
 					<i class="icon-facebook-sign icon-large"></i> <a target="_blank" href="{{ facebook.facebook }}">Facebook</a><br/>
 				{% endfor %}
 			{% endif %}
 
+			<!-- Tumblr -->			
 			{% if artist.tumblr.get() %}
 				{% for tumblr in artist.tumblr|sort(reverse=True,attribute='primary') %}
 					<i class="icon-tumblr-sign icon-large"></i> <a target="_blank" href="{{ tumblr.tumblr }}">Tumblr</a><br/>
