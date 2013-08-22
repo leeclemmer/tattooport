@@ -1,0 +1,29 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+<span class="temp-admin-search">
+	<h1>{{ title }}</h1>
+
+	<form method="get" class="form-inline" role="form">
+		<div class="form-group">
+			<label class="sr-only" for="model-search">Search</label>
+			<input type="text" name="q" id="model-search" class="form-control" placeholder="Search" value="{{ q }}">
+		</div>
+		<button type="submit" class="btn btn-primary">Search</button>
+    	<p class="help-block"><em>Searches beginning of name. Case-sensitive.</em></p>
+	</form>
+
+	{% if results %}
+		<ul class="list-unstyled model-results">
+		{% for result in results %}
+			<li>
+				<span class="date">{{ result.last_edited.ctime() }}</span>
+				<h3><a href="{{ result['link'] }}">{{ result.name }}</a></h3>
+			</li>
+		{% endfor %}
+		</ul>
+	{% endif %}
+</span>
+{% endblock %}

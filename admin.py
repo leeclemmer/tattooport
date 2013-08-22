@@ -969,6 +969,37 @@ class AdminArtistBrowse(BaseHandler):
 						next_curs='', 
 						more='')
 
+class AdminSearch(BaseHandler):
+	def get(self, model_kind):
+		q = self.request.get('q')
+		results = ''
+		if q:
+			if model_kind == 'studio':
+				# Searches beginning of name; see http://bit.ly/gCpc54 for more
+				results = Studio.gql("WHERE name >= :1 AND name < :2",
+					q, q + u"\ufffd").fetch()
+				results = [{'name':result.name, 
+						'last_edited':result.last_edited, 
+						'link':'/admin/models/studio/view%s' % \
+								(self.key_to_path(result.key))} 
+							for result in results]
+				#results = [result.name for result in results]
+			elif model_kind == 'artist':
+				results = Artist.gql("WHERE display_name >= :1 AND display_name < :2",
+					q, q + u"\ufffd").fetch()
+				results = [{'name':result.display_name, 
+						'last_edited':result.last_edited, 
+						'link':'/admin/models/studio/view%s' % \
+								(self.key_to_path(result.key))} 
+							for result in results]
+			info('results',results)
+		self.render('admin_search.html',
+					title='Search %ss' % (model_kind.capitalize(),),
+					active='models',
+					active_nav=model_kind,
+					results=results,
+					q=q)
+
 
 
 app = webapp2.WSGIApplication([('/admin/?', AdminMain),
@@ -979,5 +1010,6 @@ app = webapp2.WSGIApplication([('/admin/?', AdminMain),
 							   ('/admin/models/(studio|artist)/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
 							   ('/admin/models/studio/browse/?', AdminStudioBrowse),
 							   ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminStudioBrowseRegion),
+							   ('/admin/models/(studio|artist)/search/?', AdminSearch),
 							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
 							   ('/admin/models/artist/browse/?', AdminArtistBrowse)], debug=True)

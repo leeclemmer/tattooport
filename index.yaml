@@ -13,8 +13,18 @@ indexes:
 - kind: Contact
   properties:
   - name: class
+  - name: display_name
+
+- kind: Contact
+  properties:
+  - name: class
   - name: last_edited
     direction: desc
+
+- kind: Contact
+  properties:
+  - name: class
+  - name: name
 
 - kind: Contact
   ancestor: yes
