@@ -19,7 +19,6 @@
 		<ul class="list-unstyled model-results">
 		{% for result in results %}
 			<li>
-				<span class="date">{{ result.last_edited.ctime() }}</span>
 				<h3><a href="{{ result['link'] }}">{{ result.name }}</a></h3>
 			</li>
 		{% endfor %}

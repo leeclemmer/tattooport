@@ -144,3 +144,7 @@
 .temp-admin-search .form-inline .help-block {
     margin-top: -10px
 }
+
+.temp-admin-search .model-results h3 {
+    margin-left: 0;
+}
