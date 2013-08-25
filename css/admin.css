@@ -1,5 +1,4 @@
 /*** Global ***/
-
 .container {
     padding-top:50px;
 }
@@ -59,23 +58,14 @@
 /*** Side-Nav ***/
 .tp-sidenav {
     font-size:1.3em;
-    margin-top:20px;
+    margin-top:10px;
     padding-top: 10px;
-	padding-bottom: 10px;
 	text-shadow: 0 1px 0 #fff;
-	background-color: #f7f5fa;
 	border-radius: 5px;
 }
 
-.tp-sidenav .accordion-group {
-    border:none;
-}
-
-.tp-sidenav .accordion-inner {
-    border:none;
-}
-
 .tp-sidenav ul {
+    margin-bottom:0;
     font-size:0.9em;
 }
 
@@ -139,10 +129,6 @@
 .temp-admin-search .form-inline .btn {
     margin-top: 5px;
     margin-bottom: 5px;
-}
-
-.temp-admin-search .form-inline .help-block {
-    margin-top: -10px
 }
 
 .temp-admin-search .model-results h3 {

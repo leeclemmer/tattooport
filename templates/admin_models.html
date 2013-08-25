@@ -5,41 +5,43 @@
 {% endblock %}
 
 {% block sidenav %}
-	<div class="accordion" id="accordion2">
+	<div class="panel-group" id="accordion">
 		<!-- Group 1 -->
-		<div class="accordion-group">
-			<div class="accordion-heading">
-				<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-					Studio
-				</a>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						Studio
+					</a>
+				</h4>
 			</div>
-
-			<div id="collapseOne" class="accordion-body collapse{% if active_nav == 'studio' %} in{% endif %}">
-				<div class="accordion-inner">
+			<div id="collapseOne" class="panel-collapse collapse">
+				<div class="panel-body">
 					<ul class="list-unstyled">
 						<li><a href="/admin/models/studio/create">Create</a></li>
 						<li><a href="/admin/models/studio/browse">Browse</a></li>
 						<li><a href="/admin/models/studio/search">Search</a></li>
-					</ul>
+					</ul>					
 				</div>
 			</div>
 		</div>
 
 		<!-- Group 2 -->
-		<div class="accordion-group">
-			<div class="accordion-heading">
-				<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-					Artist
-				</a>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+						Artist
+					</a>
+				</h4>
 			</div>
-
-			<div id="collapseTwo" class="accordion-body collapse{% if active_nav == 'artist' %} in{% endif %}">
-				<div class="accordion-inner">
+			<div id="collapseTwo" class="panel-collapse collapse">
+				<div class="panel-body">
 					<ul class="list-unstyled">
 						<li><a href="/admin/models/artist/create">Create</a></li>
 						<li><a href="/admin/models/artist/browse">Browse</a></li>
 						<li><a href="/admin/models/artist/search">Search</a></li>
-					</ul>
+					</ul>					
 				</div>
 			</div>
 		</div>
