@@ -9,13 +9,30 @@
 
 	<form method="post" class="form-horizontal" id="create-new-studio">
 		<fieldset>
-			{% if args['skey'] %}
-			<input type="hidden" name="skey" value="{{ args['skey'] }}">
-			{% endif %}
 
 			<legend>
 				General
 			</legend>
+
+			{% if studio or artist %}
+			<div class="form-group">
+				<label for="rel-type" class="col-lg-2 control-label">Rel Type <span class="required">*</span></label>
+				<div class="col-lg-9">
+					{% if studio %}
+					<input type="hidden" name="studio" value="{{ studio }}">
+					{% endif %}
+
+					{% if artist %}
+					<input type="hidden" name="artist" value="{{ artist }}">
+					{% endif %}
+					<select name="relationship" id="rel-type" class="form-control">
+						<option value="artist" selected>Artist</option>
+						<option value="guest">Guest</option>
+						<option value="owner">Owner</option>
+					</select>
+				</div>
+			</div>
+			{% endif %}
 
 			{% if active_nav == 'studio' %}
 			<!-- Name -->

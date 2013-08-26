@@ -10,6 +10,12 @@
 		<div class="form-group">
 			<label class="sr-only" for="model-search">Search</label>
 			<input type="text" name="q" id="model-search" class="form-control" placeholder="Search" value="{{ q }}">
+			{% if studio %}
+				<input type="hidden" name="studio" value="{{ studio }}">
+			{% endif %}
+			{% if artist %}
+				<input type="hidden" name="artist" value="{{ artist }}">
+			{% endif %}
 		</div>
 		<button type="submit" class="btn btn-primary">Search</button>
     	<p class="help-block"><em>Searches beginning of name. Case-sensitive.</em></p>
@@ -20,6 +26,22 @@
 		{% for result in results %}
 			<li>
 				<h3><a href="{{ result['link'] }}">{{ result.name }}</a></h3>
+				{% if studio or artist %}
+				<form method="post">
+					{% if studio %}
+						<input type="hidden" name="studio" value="{{ studio }}">
+						<input type="hidden" name="artist" value="{{ result.link }}">
+						Add {{ result.name }} to studio as:
+					{% elif artist %}
+						<input type="hidden" name="studio" value="{{ result.link }}">
+						<input type="hidden" name="artist" value"{{ artist }}">
+						Add artist to studio as:
+					{% endif %}
+					<button type="submit" name="relationship" value="artist">Artist</button> | 
+					<button type="submit" name="relationship" value="guest">Guest</button> | 
+					<button type="submit" name="relationship" value="owner">Owner</button>
+				</form>
+				{% endif %}
 			</li>
 		{% endfor %}
 		</ul>

@@ -297,6 +297,12 @@ class AdminStudio(BaseHandler):
 		loca.update_location()
 		loca.put()
 
+	def put_relationship(self, studio, artist, relationship):
+		StudioArtist(
+			studio=studio,
+			artist=artist,
+			relationship=relationship).put()
+
 	# Validation functions
 	validation_funcs = {'name':valid_name,
 						'display_name':valid_name,
@@ -327,14 +333,24 @@ class AdminStudio(BaseHandler):
 
 class AdminCreate(AdminStudio):
 	def get(self, model_kind):
+		studio = self.request.get('studio')
+		artist = self.request.get('artist')
+
 		self.render('admin_create.html',
 					active_nav=model_kind,
 					args={},
-					num_fields={})
+					num_fields={},
+					studio=studio,
+					artist=artist)
 
 	def post(self, model_kind):
 		# Collect all POSTed arguments
 		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
+
+		# Vars if created to create relationship
+		if 'studio' in args: studio = args.pop('studio')
+		if 'artist' in args: artist = args.pop('artist')
+		if 'relationship' in args: relationship = args.pop('relationship')
 			
 		try:
 			raise_it, error = self.validate_args(args, model_kind)
@@ -349,11 +365,21 @@ class AdminCreate(AdminStudio):
 					subdivision=args['subdivision'],
 					locality=args['locality'],
 					name=args['name'])
+
+				self.put_relationship(
+					studio=new_model.key,
+					artist=self.path_to_key(artist),
+					relationship=relationship)
 			elif model_kind == 'artist':
 				new_model = self.put_artist(
 					display_name=args['display_name'],
 					first_name=args.get('first_name'),
 					last_name=args.get('last_name'))
+
+				self.put_relationship(
+					studio=self.path_to_key(studio),
+					artist=new_model.key,
+					relationship=relationship)
 
 			# Traverse non-empty arguments
 			for k,v in {k:v for k,v in args.iteritems() if v}.iteritems():
@@ -828,6 +854,11 @@ class AdminView(BaseHandler):
 
 		info('mode',model)
 
+		# Tag on the edit and delete links
+		model.edit = '/admin/models/%s/edit/%s' % (model_kind,pagename)
+		model.delete = '/admin/models/%s/delete/%s' % (model_kind,pagename)
+
+		# Call the template
 		if model_kind == 'studio':
 			# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
 			model.country = COUNTRIES[model.address.get().country]['name']
@@ -840,23 +871,37 @@ class AdminView(BaseHandler):
 			except:
 				pass
 
-		# Tag on the edit and delete links
-		model.edit = '/admin/models/%s/edit/%s' % (model_kind,pagename)
-		model.delete = '/admin/models/%s/delete/%s' % (model_kind,pagename)
+			artists = [{'name':artist.artist.get().display_name,
+					'rel':artist.relationship,
+					'link':'/admin/models/artist/view/%s' % artist.artist.id(),
+					'relid':artist.key.id()} \
+					for artist in model.artists]
 
-		# Call the template
-		if model_kind == 'studio':
 			self.render('admin_studio_view.html', 
 						active='models', 
 						active_nav=model_kind, 
-						studio=model, 
+						studio=model,
+						artists=artists,
 						breadcrumbs=self.path_to_breadcrumbs(pagename),
 						map_url=self.static_map_url(model.address.get().location))
 		elif model_kind == 'artist':
+			studios = [{'name':studio.studio.get().name,
+					'rel':studio.relationship,
+					'link':'/admin/models/studio/view%s' % \
+						self.key_to_path(studio.studio),
+					'relid':studio.key.id()} \
+					for studio in model.studios]
+
 			self.render('admin_artist_view.html',
 						active='models',
 						active_nav=model_kind,
-						artist=model)
+						artist=model,
+						studios=studios)
+
+	def post(self, model_kind, pagename):
+		delrel = self.request.get('del-rel')
+		ndb.Key(StudioArtist, int(delrel)).delete()
+		self.redirect('/admin/models/%s/view/%s' % (model_kind, pagename))
 
 class AdminDelete(BaseHandler):
 	def get(self, model_kind, pagename):
@@ -972,7 +1017,10 @@ class AdminArtistBrowse(BaseHandler):
 class AdminSearch(BaseHandler):
 	def get(self, model_kind):
 		q = self.request.get('q')
+		studio = self.request.get('studio')
+		artist = self.request.get('artist')
 		results = ''
+
 		if q:
 			if model_kind == 'studio':
 				# Searches beginning of name; see http://bit.ly/gCpc54 for more
@@ -983,13 +1031,12 @@ class AdminSearch(BaseHandler):
 						'link':'/admin/models/studio/view%s' % \
 								(self.key_to_path(result.key))} 
 							for result in results]
-				#results = [result.name for result in results]
 			elif model_kind == 'artist':
 				results = Artist.gql("WHERE display_name >= :1 AND display_name < :2",
 					q, q + u"\ufffd").fetch()
 				results = [{'name':result.display_name, 
 						'last_edited':result.last_edited, 
-						'link':'/admin/models/studio/view%s' % \
+						'link':'/admin/models/artist/view%s' % \
 								(self.key_to_path(result.key))} 
 							for result in results]
 			info('results',results)
@@ -998,18 +1045,45 @@ class AdminSearch(BaseHandler):
 					active='models',
 					active_nav=model_kind,
 					results=results,
-					q=q)
+					q=q,
+					studio=studio,
+					artist=artist)
 
+	def post(self, model_kind):
+		studio = self.request.get('studio')
+		artist = self.request.get('artist')
+		relationship = self.request.get('relationship')
 
+		if '/admin/models/studio/view/' in studio:
+			studio = studio.split('/admin/models/studio/view/')[1]
+		studio = self.path_to_key(studio)
 
-app = webapp2.WSGIApplication([('/admin/?', AdminMain),
-							   ('/admin/models/?', AdminModels),
-							   ('/admin/models/(studio|artist)/create/?', AdminCreate),
-							   ('/admin/models/(studio|artist)/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
-							   ('/admin/models/(studio|artist)/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
-							   ('/admin/models/(studio|artist)/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
-							   ('/admin/models/studio/browse/?', AdminStudioBrowse),
-							   ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminStudioBrowseRegion),
-							   ('/admin/models/(studio|artist)/search/?', AdminSearch),
-							   ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
-							   ('/admin/models/artist/browse/?', AdminArtistBrowse)], debug=True)
+		if '/admin/models/artist/view/' in artist:
+			artist = artist.split('/admin/models/artist/view/')[1]
+		artist = self.path_to_key(artist)
+
+		if studio and artist and relationship:
+			StudioArtist(
+				studio=studio,
+				artist=artist,
+				relationship=relationship).put()
+			self.redirect('/admin/models/studio/view%s' % \
+				(self.key_to_path(studio)))
+		else:
+			logging.error('''Couldn't create relationship, something is missing.\nStudio = %s\nArtist=%s\nRelationship=%s''' % (studio,
+																 artist, 
+																 relationship))
+		self.write((studio, artist, relationship))
+
+app = webapp2.WSGIApplication(
+	[('/admin/?', AdminMain),
+	 ('/admin/models/?', AdminModels),
+	 ('/admin/models/(studio|artist)/create/?', AdminCreate),
+	 ('/admin/models/(studio|artist)/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
+	 ('/admin/models/(studio|artist)/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
+	 ('/admin/models/(studio|artist)/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
+	 ('/admin/models/studio/browse/?', AdminStudioBrowse),
+	 ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminStudioBrowseRegion),
+	 ('/admin/models/(studio|artist)/search/?', AdminSearch),
+	 ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
+	 ('/admin/models/artist/browse/?', AdminArtistBrowse)], debug=True)

@@ -1,6 +1,6 @@
 {% extends "admin_models.html" %}
 {% block title %}
-	{{title}}
+	{{title}} - {{ artist.display_name }}
 {% endblock %}
 {% block main %}
 <span class="temp-admin-view">
@@ -15,7 +15,7 @@
 	</div>
 
 	<div class="row">
-		<div class="col-lg-5">
+		<div class="col-lg-4">
 			<strong class="section-label">Address</strong>
 
 			<address>
@@ -82,7 +82,7 @@
 			</address>
 		</div>
 
-		<div class="col-lg-5">
+		<div class="col-lg-4">
 			<!-- Social -->
 			{% if artist.instagram.get() or artist.facebook.get() or artist.twitter.get() or artist.tumblr.get() %}
 			<strong class="section-label">Social</strong>
@@ -123,8 +123,35 @@
 				{% endfor %}
 			{% endif %}
 		</div>
+
+		<div class="col-lg-4">
+		</div>
 	</div>
 
+	<!-- Studios -->
+	<div class="row tp-relationships">
+		<div class="col-lg-12">
+			<ul class="list-inline">
+				<li><strong class="section-label">Studios</strong></li>
+				<li><a href="/admin/models/studio/search?artist={{ artist.key.id() }}"><i class="icon-group icon-large"></i> Add studio</a></li>
+				<li><a href="/admin/models/studio/create?artist={{ artist.key.id() }}"><i class="icon-plus-sign-alt icon-large"></i> Create and add studio</a></li>
+			</ul>
+			{% if studios %}
+			<ul class="list-unstyled">
+				{% for studio in studios %}
+				<li>
+					<a href="{{ studio.link }}">{{ studio.name }}</a> ({{ studio.rel }})
+					<form method="post" class="del-rel">
+						<small><button type="submit" name="del-rel" value="{{ studio.relid }}">remove</button></small>
+					</form>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+		</div>
+	</div>
+
+	<!-- Created on -->
 	<div class="row">
 		<div class="col-lg-10">
 			<small class="text-muted">Created on {{ artist.created.ctime() }}. Last updated on {{ artist.last_edited.ctime() }}.</small>

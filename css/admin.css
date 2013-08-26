@@ -110,9 +110,35 @@
     border-color: #ddd
 }
 
-.temp-admin-view .btn-danger:hover {
+.temp-admin-view .btn-danger:hover {    
     background-color: #d9534f;
     border-color: #d9534f
+}
+
+.temp-admin-view .list-inline li:first-child {
+    padding-left: 0
+}
+
+.temp-admin-view .tp-relationships {
+    margin-top: 1em;
+    margin-bottom: 2em;
+}
+
+.temp-admin-view .tp-relationships ul {
+    margin-bottom: 0;
+}
+
+.temp-admin-view .del-rel button {
+    margin: 0;
+    padding: 0;
+    padding-left: 5px;
+    background: white;
+    border: none;
+    color: #ccc;
+}
+
+.temp-admin-view .del-rel {
+    display: inline
 }
 
 /*** AdminBrowse template ***/
@@ -134,3 +160,15 @@
 .temp-admin-search .model-results h3 {
     margin-left: 0;
 }
+
+.temp-admin-search .model-results button {
+    background: white;
+    border: none;
+    color: #428bca;
+}
+
+.temp-admin-search .model-results form {
+    display: inline;
+    padding-left: 20px
+}
+

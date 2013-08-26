@@ -1,6 +1,6 @@
 {% extends "admin_models.html" %}
 {% block title %}
-	{{title}}
+	{{title}} - {{ studio.name }}
 {% endblock %}
 {% block main %}
 <span class="temp-admin-view">
@@ -22,17 +22,77 @@
 	</ol>
 
 	<div class="row">
-		<div class="col-lg-10">
+		<div class="col-lg-12">
 			<h1>{{ studio.name }}</h1>
 			<a href="{{ studio.edit }}"><button class="btn btn-primary">Edit</button></a>
-		</div>
-
-		<div class="col-lg-2">
 		</div>
 	</div>
 
 	<div class="row">
-		<div class="col-lg-5">
+		<div class="col-lg-4">
+
+			<!-- Website -->
+			{% if studio.website.get() %}
+				<strong class="section-label">Websites</strong>
+
+				<ul class="list-unstyled">
+				{% for website in studio.website|sort(reverse=True,attribute='primary') %}
+					<li>
+						<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			<!-- Gallery -->
+			{% if studio.gallery.get() %}
+				<strong class="section-label">Galleries</strong>
+
+				<ul class="list-unstyled">
+				{% for gallery in studio.gallery|sort(reverse=True,attribute='primary') %}
+					<li>
+						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+			{% if studio.instagram.get() or studio.facebook.get() or studio.twitter.get() or studio.tumblr.get() %}
+			<strong class="section-label">Social</strong>
+			{% endif %}
+
+			{% if studio.instagram.get() %}
+				{% for instagram in studio.instagram|sort(reverse=True,attribute='primary') %}
+					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.foursquare.get() %}
+				{% for foursquare in studio.foursquare|sort(reverse=True,attribute='primary') %}
+					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.twitter.get() %}
+				{% for twitter in studio.twitter|sort(reverse=True,attribute='primary') %}
+					<i class="icon-twitter-sign icon-large"></i> <a target="_blank" href="http://www.twitter.com/{{ twitter.twitter }}">Twitter</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.facebook.get() %}
+				{% for facebook in studio.facebook|sort(reverse=True,attribute='primary') %}
+					<i class="icon-facebook-sign icon-large"></i> <a target="_blank" href="{{ facebook.facebook }}">Facebook</a><br/>
+				{% endfor %}
+			{% endif %}
+
+			{% if studio.tumblr.get() %}
+				{% for tumblr in studio.tumblr|sort(reverse=True,attribute='primary') %}
+					<i class="icon-tumblr-sign icon-large"></i> <a target="_blank" href="{{ tumblr.tumblr }}">Tumblr</a><br/>
+				{% endfor %}
+			{% endif %}
+		</div>
+
+		<div class="col-lg-4">
 			<strong class="section-label">Address</strong>
 
 			<address>
@@ -124,77 +184,36 @@
 			{% endif %}
 		</div>
 
-		<div class="col-lg-5">
-
-			<!-- Website -->
-			{% if studio.website.get() %}
-				<strong class="section-label">Websites</strong>
-
-				<ul class="list-unstyled">
-				{% for website in studio.website|sort(reverse=True,attribute='primary') %}
-					<li>
-						<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
-					</li>
-				{% endfor %}
-				</ul>
-			{% endif %}
-
-			<!-- Gallery -->
-			{% if studio.gallery.get() %}
-				<strong class="section-label">Galleries</strong>
-
-				<ul class="list-unstyled">
-				{% for gallery in studio.gallery|sort(reverse=True,attribute='primary') %}
-					<li>
-						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
-					</li>
-				{% endfor %}
-				</ul>
-			{% endif %}
-
-			{% if studio.instagram.get() or studio.facebook.get() or studio.twitter.get() or studio.tumblr.get() %}
-			<strong class="section-label">Social</strong>
-			{% endif %}
-
-			{% if studio.instagram.get() %}
-				{% for instagram in studio.instagram|sort(reverse=True,attribute='primary') %}
-					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
-				{% endfor %}
-			{% endif %}
-
-			{% if studio.foursquare.get() %}
-				{% for foursquare in studio.foursquare|sort(reverse=True,attribute='primary') %}
-					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
-				{% endfor %}
-			{% endif %}
-
-			{% if studio.twitter.get() %}
-				{% for twitter in studio.twitter|sort(reverse=True,attribute='primary') %}
-					<i class="icon-twitter-sign icon-large"></i> <a target="_blank" href="http://www.twitter.com/{{ twitter.twitter }}">Twitter</a><br/>
-				{% endfor %}
-			{% endif %}
-
-			{% if studio.facebook.get() %}
-				{% for facebook in studio.facebook|sort(reverse=True,attribute='primary') %}
-					<i class="icon-facebook-sign icon-large"></i> <a target="_blank" href="{{ facebook.facebook }}">Facebook</a><br/>
-				{% endfor %}
-			{% endif %}
-
-			{% if studio.tumblr.get() %}
-				{% for tumblr in studio.tumblr|sort(reverse=True,attribute='primary') %}
-					<i class="icon-tumblr-sign icon-large"></i> <a target="_blank" href="{{ tumblr.tumblr }}">Tumblr</a><br/>
-				{% endfor %}
-			{% endif %}
-		</div>
-	</div>
-
-	{% if map_url %}
-	<div class="row">
-		<div class="col-lg-10">
+		<div class="col-lg-4">
+			<!-- Map -->
+			{% if map_url %}
 			<a target="_blank" href="https://www.google.com/maps?q={{ studio.address.get().location.lat }},{{ studio.address.get().location.lon }}"><img src="{{ map_url }}"></a>
+			{% endif %}
 		</div>
 	</div>
-	{% endif %}
+
+	<!-- Artists -->
+	<div class="row tp-relationships">
+		<div class="col-lg-12">
+			<ul class="list-inline">
+				<li><strong class="section-label">Artists</strong></li>
+				<li><a href="/admin/models/artist/search?studio={{ breadcrumbs[-1][1] }}"><i class="icon-user icon-large"></i> Add artist</a></li>
+				<li><a href="/admin/models/artist/create?studio={{ breadcrumbs[-1][1] }}"><i class="icon-plus-sign-alt icon-large"></i> Create and add artist</a></li>
+			</ul>
+			{% if artists %}
+			<ul class="list-unstyled">
+				{% for artist in artists %}
+				<li>
+					<a href="{{ artist.link }}">{{ artist.name }}</a> ({{ artist.rel }})
+					<form method="post" class="del-rel">
+						<small><button type="submit" name="del-rel" value="{{ artist.relid }}">remove</button></small>
+					</form>
+				</li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+		</div>
+	</div>
 
 	<div class="row">
 		<div class="col-lg-10">

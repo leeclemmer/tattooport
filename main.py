@@ -78,13 +78,13 @@ class BaseHandler(webapp2.RequestHandler):
 	def geo_pt(self, address):
 		''' Returns ndb.GeoPt for given address.'''
 		g = geocoders.GoogleV3()
-		geocodes = g.geocode(address,exactly_one=False)
 		try:
+			geocodes = g.geocode(address,exactly_one=False)
 			return ndb.GeoPt(geocodes[0][1][0],geocodes[0][1][1])
 		except:
 			return None
 
-	def static_map_url(self, geo_pt, height=150, width=500):
+	def static_map_url(self, geo_pt, height=200, width=200):
 		base_url = 'http://maps.googleapis.com/maps/api/staticmap?'
 		if not hasattr(geo_pt,'lat'): return None
 		else: return '%ssize=%sx%s&markers=%s,%s&sensor=false&key=%s' % \

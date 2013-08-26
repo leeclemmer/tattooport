@@ -95,60 +95,60 @@ class Contact(polymodel.PolyModel):
 						  if isinstance(attr_value,property)}
 
 class Email(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	email = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Phone(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
-	phone_type = ndb.StringProperty(choices = ('home', 'work', 'fax', 'mobile', 'other'))
+	phone_type = ndb.StringProperty(choices=('home', 'work', 'fax', 'mobile', 'other'))
 	country_code = ndb.StringProperty()
 	number = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Website(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 	
 	url = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Gallery(Website):
-	contact = ndb.KeyProperty(kind = Contact)	
+	contact = ndb.KeyProperty(kind=Contact)	
 
 class Instagram(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	instagram = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Foursquare(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	foursquare = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Facebook(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	facebook = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Twitter(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	twitter = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Tumblr(ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	tumblr = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Address(GeoModel, ndb.Model):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 	street = ndb.StringProperty()
 	locality = ndb.StringProperty()
@@ -158,7 +158,7 @@ class Address(GeoModel, ndb.Model):
 	intersection = ndb.StringProperty()
 
 class MailingAddress(Address):
-	contact = ndb.KeyProperty(kind = Contact)
+	contact = ndb.KeyProperty(kind=Contact)
 
 class Studio(Contact):
 	''' Models a physical tattoo studio. '''
@@ -169,19 +169,28 @@ class Studio(Contact):
 	# locality (e.g. city or town) 
 	@classmethod
 	def query_location(cls, ancestor_key):
-		return cls.query(ancestor = ancestor_key)
+		return cls.query(ancestor=ancestor_key)
 	
-	# Return all artists assigned to studio
+	# Return all StudioArtist relationships assigned to studio
 	@property
 	def artists(self):
-		return Artist.gql('WHERE studios = :1', self.key())
+		return StudioArtist.gql('WHERE studio = :1', self.key)
 
 class Artist(Contact):
 	''' Models a tattoo artist. '''
 	display_name = ndb.StringProperty()
 	first_name = ndb.StringProperty()
 	last_name = ndb.StringProperty()
+	
+	# Return all StudioArtist relationships assigned to artist
+	@property
+	def studios(self):
+		return StudioArtist.gql('WHERE artist = :1', self.key)
 
-	# N-to-N relationship to Studio
-	studios = ndb.KeyProperty(repeated = True)
+class StudioArtist(ndb.Model):
+	''' Models the N-to-N relationship between Studio and Artist. '''
+	studio = ndb.KeyProperty(required=True, kind=Studio)
+	artist = ndb.KeyProperty(required=True, kind=Artist)
+
+	relationship = ndb.StringProperty(choices=('owner', 'artist', 'guest'))
 
