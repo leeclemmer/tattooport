@@ -64,6 +64,6 @@
 	{% endif %}
 
 	{% if more and next_curs %}
-		<a href="/admin/models?cursor={{ next_curs }}">More...</a>
+		<a href="/admin/models{% if title == 'Recent Artists' %}/artist/browse{% endif %}?cursor={{ next_curs }}">More...</a>
 	{% endif %}
 {% endblock %}
