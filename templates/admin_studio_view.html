@@ -51,7 +51,7 @@
 				<ul class="list-unstyled">
 				{% for gallery in studio.gallery|sort(reverse=True,attribute='primary') %}
 					<li>
-						<a target="_blank" href="{{ gallery.url }}">{{ gallery.url.split('://')[1] }}</a>
+						<a target="_blank" href="{{ gallery.url }}">Gallery</a>
 					</li>
 				{% endfor %}
 				</ul>

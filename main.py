@@ -20,6 +20,7 @@ from models import *
 import webapp2
 import jinja2
 from geopy import geocoders
+import general_counter
 
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')

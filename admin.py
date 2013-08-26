@@ -16,9 +16,30 @@ class ValidationError(Exception):
 
 class AdminMain(BaseHandler):
 	def get(self):
+
+		studio_count = general_counter.get_count('Studio')
+		artist_count = general_counter.get_count('Artist')
+		country_count = general_counter.get_count('Country')
+		subd_count = general_counter.get_count('Subdivision')
+		loca_count = general_counter.get_count('Locality')
+
+		info('US artists',general_counter.get_count('US Artist'))
+		info('PA artists',general_counter.get_count('US-PA Artist'))
+		info('Philly artists',general_counter.get_count('Philadelphia Artist'))
+
+		info('US artists',general_counter.get_count('US Artist'))
+		info('MD artists',general_counter.get_count('US-MD Artist'))
+		info('Bmore artists',general_counter.get_count('Baltimore Artist'))
+
 		self.render('admin_main.html', 
 					title='Main',
-					active = 'admin')
+					active='admin',
+					studio_count=studio_count,
+					artist_count=artist_count,
+					country_count=country_count,
+					subd_count=subd_count,
+					loca_count=loca_count
+					)
 
 class AdminModels(BaseHandler):
 	def get(self):
@@ -162,6 +183,7 @@ class AdminStudio(BaseHandler):
 					  'Locality', locality)
 		new_studio = Studio(parent=parent, name=name)
 		new_studio.put()
+		self.kind_incr('Studio',country, subdivision, locality)
 		return new_studio
 
 	def put_artist(self, display_name, first_name='', last_name=''):
@@ -169,6 +191,7 @@ class AdminStudio(BaseHandler):
 							first_name=first_name,
 							last_name=last_name)
 		new_artist.put()
+		self.kind_incr('Artist')
 		return new_artist
 
 	def put_email(self, key, email, primary):
@@ -265,7 +288,12 @@ class AdminStudio(BaseHandler):
 							postal_code)))
 		addr.update_location()
 		addr.put()
+		info('Country%s.get()' % (country,),ndb.Key('Country',country).get())
+		# Increment Country
+		if ndb.Key('Country',country).get() is None:
+			general_counter.increment('Country')
 
+		# Put Country
 		coun = Country(
 			id=country,
 			display_name=COUNTRIES[country]['name'],
@@ -275,6 +303,11 @@ class AdminStudio(BaseHandler):
 		coun.update_location()
 		coun.put()
 
+		# Increment Subdivision
+		if ndb.Key('Subdivision',subdivision).get() is None:
+			general_counter.increment('Subdivision')
+
+		# Put Subdivisioon
 		subd = Subdivision(
 			parent=ndb.Key('Country', country),
 			id=subdivision,
@@ -285,6 +318,11 @@ class AdminStudio(BaseHandler):
 		subd.update_location()
 		subd.put()
 
+		# Increment Locality
+		if ndb.Key('Locality',locality).get() is None:
+			general_counter.increment('Locality')
+
+		# Put Locality
 		loca = Locality(
 			parent=ndb.Key('Country', country,'Subdivision', subdivision),
 			id=locality,
@@ -302,6 +340,26 @@ class AdminStudio(BaseHandler):
 			studio=studio,
 			artist=artist,
 			relationship=relationship).put()
+
+		# Now, an artist is tied to a location, so we'll increase those counters
+		address = studio.get().address.get()
+		info('creating rel', address)
+		self.kind_incr('Artist',address.country, 
+			address.subdivision, address.locality, self_incr=False)
+
+	def kind_incr(self, kind, country='', subdivision='', 
+				  locality='', self_incr=True):
+		if self_incr: general_counter.increment('%s' % (kind,))
+		if country: general_counter.increment('%s %s' % (country, kind))
+		if subdivision: general_counter.increment('%s %s' % (subdivision, kind))
+		if locality: general_counter.increment('%s %s' % (locality, kind))
+
+	def kind_decr(self, kind, country='', subdivision='', 
+				  locality='', self_decr=True):
+		if self_decr: general_counter.decrement('%s' % (kind,))
+		if country: general_counter.decrement('%s %s' % (country, kind))
+		if subdivision: general_counter.decrement('%s %s' % (subdivision, kind))
+		if locality: general_counter.decrement('%s %s' % (locality, kind))
 
 	# Validation functions
 	validation_funcs = {'name':valid_name,
@@ -348,6 +406,9 @@ class AdminCreate(AdminStudio):
 		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
 
 		# Vars if created to create relationship
+		studio = ''
+		artist = ''
+		relationship = ''
 		if 'studio' in args: studio = args.pop('studio')
 		if 'artist' in args: artist = args.pop('artist')
 		if 'relationship' in args: relationship = args.pop('relationship')
@@ -366,20 +427,22 @@ class AdminCreate(AdminStudio):
 					locality=args['locality'],
 					name=args['name'])
 
-				self.put_relationship(
-					studio=new_model.key,
-					artist=self.path_to_key(artist),
-					relationship=relationship)
+				if artist:
+					self.put_relationship(
+						studio=new_model.key,
+						artist=self.path_to_key(artist),
+						relationship=relationship)
 			elif model_kind == 'artist':
 				new_model = self.put_artist(
 					display_name=args['display_name'],
 					first_name=args.get('first_name'),
 					last_name=args.get('last_name'))
 
-				self.put_relationship(
-					studio=self.path_to_key(studio),
-					artist=new_model.key,
-					relationship=relationship)
+				if studio:
+					self.put_relationship(
+						studio=self.path_to_key(studio),
+						artist=new_model.key,
+						relationship=relationship)
 
 			# Traverse non-empty arguments
 			for k,v in {k:v for k,v in args.iteritems() if v}.iteritems():
@@ -800,6 +863,11 @@ class AdminEdit(AdminStudio):
 				locality = args['locality']
 				postal_code = args['postal_code']
 
+				# Increment country
+				if ndb.Key('Country',country) is None:
+					general_counter.increment('Country')
+
+				# Put country
 				coun = Country(
 					id=country,
 					display_name=COUNTRIES[country]['name'],
@@ -809,6 +877,11 @@ class AdminEdit(AdminStudio):
 				coun.put()
 				coun.update_location()
 
+				# Increment subdivision
+				if ndb.Key('Subdivision',subdivision) is None:
+					general_counter.increment('Subdivision')
+
+				# Put Subdivision
 				subd = Subdivision(
 					parent=ndb.Key('Country', country),
 					id=subdivision,
@@ -819,6 +892,11 @@ class AdminEdit(AdminStudio):
 				subd.put()
 				subd.update_location()
 
+				# Increment Locality
+				if ndb.Key('Locality',locality) is None:
+					general_counter.increment('Locality')
+
+				# Put Locality
 				loca = Locality(
 					parent=ndb.Key('Country', country,'Subdivision', subdivision),
 					id=locality,
@@ -903,7 +981,7 @@ class AdminView(BaseHandler):
 		ndb.Key(StudioArtist, int(delrel)).delete()
 		self.redirect('/admin/models/%s/view/%s' % (model_kind, pagename))
 
-class AdminDelete(BaseHandler):
+class AdminDelete(AdminStudio):
 	def get(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
@@ -925,11 +1003,31 @@ class AdminDelete(BaseHandler):
 		# Get studio
 		if model_kind == 'studio':
 			name = ancestor_key.get().name
+			rels = ancestor_key.get().artists
 		elif model_kind == 'artist':
 			name = ancestor_key.get().display_name
+			rels = ancestor_key.get().studios
 
 		# Call the template
 		if self.request.get('delete') and self.request.get('delete') == 'yes':
+			# Decrease counter
+			if model_kind == 'studio':
+				country = ancestor_key.get().address.get().country
+				subdivision = ancestor_key.get().address.get().subdivision
+				locality = ancestor_key.get().address.get().locality
+
+				self.kind_decr('Studio', country, subdivision, locality)
+			elif model_kind == 'artist':
+				self.kind_decr('Artist')
+
+			for rel in rels:
+				# Removing artist regional counts
+				address = rel.studio.get().address.get()
+				self.kind_decr('Artist', address.country, address.subdivision, address.locality, self_decr=False)
+
+			# Delete relationships
+			ndb.delete_multi([rel.key for rel in rels])
+
 			for prop_name,prop in ancestor_key.get().props().iteritems():
 				try:
 					info('deleting %s' % (prop_name,), prop)
@@ -938,6 +1036,7 @@ class AdminDelete(BaseHandler):
 					pass
 			# Delete studio
 			ancestor_key.delete()
+
 			self.render('admin_delete.html',
 						active='models',
 						active_nav=model_kind,
@@ -1014,7 +1113,7 @@ class AdminArtistBrowse(BaseHandler):
 						next_curs='', 
 						more='')
 
-class AdminSearch(BaseHandler):
+class AdminSearch(AdminStudio):
 	def get(self, model_kind):
 		q = self.request.get('q')
 		studio = self.request.get('studio')
@@ -1063,10 +1162,10 @@ class AdminSearch(BaseHandler):
 		artist = self.path_to_key(artist)
 
 		if studio and artist and relationship:
-			StudioArtist(
+			self.put_relationship(
 				studio=studio,
 				artist=artist,
-				relationship=relationship).put()
+				relationship=relationship)
 			self.redirect('/admin/models/studio/view%s' % \
 				(self.key_to_path(studio)))
 		else:
