@@ -83,6 +83,7 @@ class BaseHandler(webapp2.RequestHandler):
 			geocodes = g.geocode(address,exactly_one=False)
 			return ndb.GeoPt(geocodes[0][1][0],geocodes[0][1][1])
 		except:
+			utils.catch_exception()
 			return None
 
 	def static_map_url(self, geo_pt, height=200, width=200):
@@ -94,8 +95,7 @@ class BaseHandler(webapp2.RequestHandler):
 					height, 
 					geo_pt.lat, 
 					geo_pt.lon,
-					keys.GMAPS_STATIC_API_KEY)
-		
+					keys.GMAPS_STATIC_API_KEY)		
 
 class Welcome(BaseHandler):
 	def get(self):

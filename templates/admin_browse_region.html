@@ -15,7 +15,7 @@
 			</li>
 		{% else %}
 			<li>
-				<a href="/admin/models/studio/browse/{{ crumb[1] }}">{{ crumb[0] }}</a>
+				<a href="/admin/models/{{ active_nav }}/browse/{{ crumb[1] }}">{{ crumb[0] }}</a>
 			</li>
 		{% endif %}
 	{% endfor %}
@@ -27,7 +27,7 @@
 	<ul class="list-unstyled">
 		{% for region in regions %}
 		<li>
-			<a href="/admin/models/studio/browse/{{ breadcrumbs[-1][1] }}/{{ region.key.pairs()[-1][1] }}">{{ region.display_name }}</a>
+			<a href="/admin/models/{{ active_nav }}/browse/{{ breadcrumbs[-1][1] }}/{{ region.key.pairs()[-1][1] }}">{{ region.display_name }}</a>
 		</li>
 		{% endfor %}
 	</ul>
@@ -37,8 +37,8 @@
 	{% for result in results %}
 		<li>
 			<h3>
-				<a href="/admin/models/studio/view{{ result[1] }}">
-					{{ result[0].name }}
+				<a href="/admin/models/{{ active_nav }}/view{{ result[1] }}">
+					{{ result[0].name }}{{ result[0].display_name}}
 				</a>
 			</h3>
 		</li>

@@ -156,3 +156,7 @@ def avg_dol(d):
 def numbers_only(s):
 	''' Takes string s and removes any non digits. '''
 	return ''.join([d for d in s if d.isdigit()])
+
+def flatten_list(l):
+	''' Flattens a list in the form [[a,b],[c,d]]. '''
+	return[i for sl in l for i in sl]

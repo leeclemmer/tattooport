@@ -11,19 +11,19 @@
 			<ul class="list-unstyled">
 			{% for country in regions %}
 				<li>
-					<a href="/admin/models/studio/browse/{{ country[0].key.id() }}">
+					<a href="/admin/models/{{ active_nav }}/browse/{{ country[0].key.id() }}">
 						{{ country[0].display_name }}
 					</a>
 					<ul class="list-unstyled">
 					{% for subdivision in country[1] %}
 						<li>
-							<a href="/admin/models/studio/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}">
+							<a href="/admin/models/{{ active_nav }}/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}">
 								{{ subdivision[0].display_name }}
 							</a>
 							<ul class="list-unstyled">
 							{% for locality in subdivision[1] %}
 								<li>
-									<a href="/admin/models/studio/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}/{{ locality[1] }}">
+									<a href="/admin/models/{{ active_nav }}/browse/{{ country[0].key.id() }}/{{ subdivision[0].key.id() }}/{{ locality[1] }}">
 										{{ locality[0].display_name }}
 									</a>
 								</li>

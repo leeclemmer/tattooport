@@ -43,24 +43,29 @@ class AdminMain(BaseHandler):
 class AdminModels(BaseHandler):
 	def get(self):
 		curs = Cursor(urlsafe = self.request.get('cursor'))
-		studios, next_curs, more = Studio.query().order(-Studio.last_edited).fetch_page(10, start_cursor = curs)
-		if studios:
-			studios = [{'name':studio.name, 
-						'last_edited':studio.last_edited, 
-						'link':'/admin/models/studio/view%s' % \
-								(self.key_to_path(studio.key))} 
-							for studio in studios]
+		contacts, next_curs, more = Contact.query().order(-Contact.last_edited).fetch_page(10, start_cursor = curs)
+		if contacts:
+			contacts = [{'name':contact.name, 
+						'last_edited':contact.last_edited, 
+						'link':'/admin/models/contact/view%s' % \
+								(self.key_to_path(contact.key))} \
+							if contact.class_[-1] == 'Studio' else
+						{'name':contact.display_name, 
+						'last_edited':contact.last_edited, 
+						'link':'/admin/models/contact/view%s' % \
+								(self.key_to_path(contact.key))}
+							for contact in contacts]
 			self.render('admin_models.html', 
 						title='Data Models', 
 						active = 'models', 
-						studios = studios, 
+						contacts = contacts, 
 						next_curs = next_curs.urlsafe(), 
 						more = more)
 		else:
 			self.render('admin_models.html', 
 						title='Data Models', 
 						active = 'models', 
-						studios = [], 
+						contacts = [], 
 						next_curs = '', 
 						more = '')
 
@@ -1015,7 +1020,7 @@ class AdminDelete(AdminStudio):
 			self.redirect('/admin/models/studio/delete/%s' % (pagename,))
 
 class AdminStudioBrowse(BaseHandler):
-	def get(self):
+	def get(self, model_kind):
 		''' Displays tree structure of country, subdivision, locality. '''
 		regions = [[country,
 					[[subdivision,
@@ -1023,27 +1028,31 @@ class AdminStudioBrowse(BaseHandler):
 					for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
 				for country in Country.query().order(Country.display_name).fetch()]
 
-		self.render('admin_studio_browse.html',
+		self.render('admin_browse.html',
 					active='models',
-					active_nav='studio',
+					active_nav=model_kind,
 					regions=regions)
 
-class AdminStudioBrowseRegion(BaseHandler):
-	def get(self, pagename):
+class AdminBrowseRegion(BaseHandler):
+	def get(self, model_kind, pagename):
 		ancestor_key = self.path_to_key(pagename)
 		regions = ''
 
 		region_name = ancestor_key.pairs()[-1][1]
-		result_count = general_counter.get_count('%s Studio' % (region_name,))
+		result_count = general_counter.get_count('%s %s' % (region_name, model_kind.capitalize()))
 
 		if ancestor_key.kind() == 'Locality':
 			# If browsing city, search is a proximity search
 			region_pt = ancestor_key.get().location
-			results = Address.proximity_fetch(
-				Address.query(),
-				region_pt,
-				max_results=10,
-				max_distance=80467)
+			try:
+				results = Address.proximity_fetch(
+					Address.query(),
+					region_pt,
+					max_results=10,
+					max_distance=80467)
+			except AttributeError:
+				utils.catch_exception()
+				results = ''
 			results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
 		else:
 			if ancestor_key.kind() == 'Country':
@@ -1052,39 +1061,23 @@ class AdminStudioBrowseRegion(BaseHandler):
 				regions = Locality.query_location(ancestor_key).fetch()
 			# Otherwise, results are direct members
 			results = Studio.query_location(ancestor_key).order(Studio.name)
-		results = zip(results,[self.key_to_path(result.key) for result in results])
 
-		self.render('admin_studio_browse_region.html',
+		info('results',results)
+		#if model_kind == 'studio':
+		if model_kind == 'artist':
+			results = [[rel.artist.get() for rel in studio.artists.fetch()] for studio in results]
+			results = utils.flatten_list(results)
+			info('results',results)
+		results = zip(results,[self.key_to_path(result.key) for result in results])
+		
+
+		self.render('admin_browse_region.html',
 					active='models',
-					active_nav='studio',
+					active_nav=model_kind,
 					results=results,
 					result_count=result_count,
 					regions=regions,
 					breadcrumbs=self.path_to_breadcrumbs(pagename))
-
-class AdminArtistBrowse(BaseHandler):
-	def get(self):
-		curs = Cursor(urlsafe=self.request.get('cursor'))
-		artists, next_curs, more = Artist.query().order(-Artist.last_edited).fetch_page(10, start_cursor=curs)
-		if artists:
-			artists = [{'name':artist.display_name, 
-						'last_edited':artist.last_edited, 
-						'link':'/admin/models/artist/view%s' % \
-								(self.key_to_path(artist.key))} 
-							for artist in artists]
-			self.render('admin_models.html', 
-						title='Recent Artists', 
-						active='models', 
-						studios=artists, 
-						next_curs=next_curs.urlsafe(), 
-						more=more)
-		else:
-			self.render('admin_models.html', 
-						title='No Recent Artists', 
-						active='models', 
-						studios=[], 
-						next_curs='', 
-						more='')
 
 class AdminSearch(AdminStudio):
 	def get(self, model_kind):
@@ -1154,8 +1147,7 @@ app = webapp2.WSGIApplication(
 	 ('/admin/models/(studio|artist)/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminView),
 	 ('/admin/models/(studio|artist)/edit/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminEdit),
 	 ('/admin/models/(studio|artist)/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminDelete),
-	 ('/admin/models/studio/browse/?', AdminStudioBrowse),
-	 ('/admin/models/studio/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminStudioBrowseRegion),
+	 ('/admin/models/(studio|artist)/browse/?', AdminStudioBrowse),
+	 ('/admin/models/(studio|artist)/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminBrowseRegion),
 	 ('/admin/models/(studio|artist)/search/?', AdminSearch),
-	 ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
-	 ('/admin/models/artist/browse/?', AdminArtistBrowse)], debug=True)
+	 ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio)], debug=True)

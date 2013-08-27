@@ -52,12 +52,12 @@
 	<h1>{{ title }}</h1>
 	<p>Most recently edited or created:</p>
 
-	{% if studios %}
-		<ul class="list-unstyled model-results studio-results">
-		{% for studio in studios %}
+	{% if contacts %}
+		<ul class="list-unstyled model-results contact-results">
+		{% for contact in contacts %}
 			<li>
-				<span class="date">{{ studio.last_edited.ctime() }}</span>
-				<h3><a href="{{ studio['link'] }}">{{ studio['name'] }}</a></h3>
+				<span class="date">{{ contact.last_edited.ctime() }}</span>
+				<h3><a href="{{ contact['link'] }}">{{ contact['name'] }}</a></h3>
 			</li>
 		{% endfor %}
 		</ul>
