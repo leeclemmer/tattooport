@@ -47,12 +47,12 @@ class AdminModels(BaseHandler):
 		if contacts:
 			contacts = [{'name':contact.name, 
 						'last_edited':contact.last_edited, 
-						'link':'/admin/models/contact/view%s' % \
+						'link':'/admin/models/studio/view%s' % \
 								(self.key_to_path(contact.key))} \
 							if contact.class_[-1] == 'Studio' else
 						{'name':contact.display_name, 
 						'last_edited':contact.last_edited, 
-						'link':'/admin/models/contact/view%s' % \
+						'link':'/admin/models/artist/view%s' % \
 								(self.key_to_path(contact.key))}
 							for contact in contacts]
 			self.render('admin_models.html', 
