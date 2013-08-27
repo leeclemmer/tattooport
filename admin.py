@@ -16,7 +16,6 @@ class ValidationError(Exception):
 
 class AdminMain(BaseHandler):
 	def get(self):
-
 		studio_count = general_counter.get_count('Studio')
 		artist_count = general_counter.get_count('Artist')
 		country_count = general_counter.get_count('Country')
@@ -288,7 +287,12 @@ class AdminStudio(BaseHandler):
 							postal_code)))
 		addr.update_location()
 		addr.put()
-		info('Country%s.get()' % (country,),ndb.Key('Country',country).get())
+
+		self.put_country(country)
+		self.put_subdivision(country, subdivision)
+		self.put_locality(country, subdivision, locality, postal_code)
+
+	def put_country(self, country):
 		# Increment Country
 		if ndb.Key('Country',country).get() is None:
 			general_counter.increment('Country')
@@ -300,11 +304,14 @@ class AdminStudio(BaseHandler):
 			location=self.geo_pt('%s' % \
 				(COUNTRIES[country]['name'],))
 			)
+
 		coun.update_location()
 		coun.put()
 
+	def put_subdivision(self, country, subdivision):
 		# Increment Subdivision
-		if ndb.Key('Subdivision',subdivision).get() is None:
+		if ndb.Key('Country', country, 
+				   'Subdivision',subdivision).get() is None:
 			general_counter.increment('Subdivision')
 
 		# Put Subdivisioon
@@ -315,11 +322,15 @@ class AdminStudio(BaseHandler):
 			location=self.geo_pt('%s %s' % \
 				(COUNTRIES[country]['subdivisions'][subdivision],
 					COUNTRIES[country]['name'])))
+
 		subd.update_location()
 		subd.put()
 
+	def put_locality(self, country, subdivision, locality, postal_code):
 		# Increment Locality
-		if ndb.Key('Locality',locality).get() is None:
+		if ndb.Key('Country', country, 
+				   'Subdivision',subdivision,
+				   'Locality',locality).get() is None:
 			general_counter.increment('Locality')
 
 		# Put Locality
@@ -524,7 +535,7 @@ class AdminCreate(AdminStudio):
 						active_nav=model_kind,
 						args=args,
 						num_fields=self.num_fields(self.request.arguments()),
-						error=rror)
+						error=error)
 
 class AdminEdit(AdminStudio):
 	def get(self, model_kind, pagename):
@@ -863,51 +874,9 @@ class AdminEdit(AdminStudio):
 				locality = args['locality']
 				postal_code = args['postal_code']
 
-				# Increment country
-				if ndb.Key('Country',country) is None:
-					general_counter.increment('Country')
-
-				# Put country
-				coun = Country(
-					id=country,
-					display_name=COUNTRIES[country]['name'],
-					location=self.geo_pt('%s' % \
-						(COUNTRIES[country]['name'],))
-					)
-				coun.put()
-				coun.update_location()
-
-				# Increment subdivision
-				if ndb.Key('Subdivision',subdivision) is None:
-					general_counter.increment('Subdivision')
-
-				# Put Subdivision
-				subd = Subdivision(
-					parent=ndb.Key('Country', country),
-					id=subdivision,
-					display_name=COUNTRIES[country]['subdivisions'][subdivision],
-					location=self.geo_pt('%s %s' % \
-						(COUNTRIES[country]['subdivisions'][subdivision],
-							COUNTRIES[country]['name'])))
-				subd.put()
-				subd.update_location()
-
-				# Increment Locality
-				if ndb.Key('Locality',locality) is None:
-					general_counter.increment('Locality')
-
-				# Put Locality
-				loca = Locality(
-					parent=ndb.Key('Country', country,'Subdivision', subdivision),
-					id=locality,
-					display_name=locality,
-					location=self.geo_pt('%s %s %s %s' %
-									(locality,
-									subdivision.split('-')[1],
-									country,
-									postal_code)))
-				loca.put()
-				loca.update_location()
+				self.put_country(country)
+				self.put_subdivision(country, subdivision)
+				self.put_locality(country, subdivision, locality, postal_code)
 
 			self.redirect('/admin/models/%s/view/%s' % (model_kind, path))
 		except ValidationError:
@@ -1064,6 +1033,9 @@ class AdminStudioBrowseRegion(BaseHandler):
 		ancestor_key = self.path_to_key(pagename)
 		regions = ''
 
+		region_name = ancestor_key.pairs()[-1][1]
+		result_count = general_counter.get_count('%s Studio' % (region_name,))
+
 		if ancestor_key.kind() == 'Locality':
 			# If browsing city, search is a proximity search
 			region_pt = ancestor_key.get().location
@@ -1081,11 +1053,12 @@ class AdminStudioBrowseRegion(BaseHandler):
 			# Otherwise, results are direct members
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
-		info('regions',regions)
+
 		self.render('admin_studio_browse_region.html',
 					active='models',
 					active_nav='studio',
 					results=results,
+					result_count=result_count,
 					regions=regions,
 					breadcrumbs=self.path_to_breadcrumbs(pagename))
 

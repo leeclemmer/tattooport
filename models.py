@@ -193,4 +193,3 @@ class StudioArtist(ndb.Model):
 	artist = ndb.KeyProperty(required=True, kind=Artist)
 
 	relationship = ndb.StringProperty(choices=('owner', 'artist', 'guest'))
-

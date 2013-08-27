@@ -160,7 +160,21 @@ COUNTRIES = {
 	},
 	"CA":{
 		"name":"Canada",
-		"subdivisions":{},
+		"subdivisions":{
+			"CA-AB":"Alberta",
+			"CA-BC":"British Columbia",
+			"CA-MB":"Manitoba",
+			"CA-NB":"New Brunswick",
+			"CA-NL":"Newfoundland and Labrador",
+			"CA-NS":"Nova Scotia",
+			"CA-ON":"Ontario",
+			"CA-PE":"Prince Edward Island",
+			"CA-QC":"Quebec",
+			"CA-SK":"Saskatchewan",
+			"CA-NT":"Northwest Territories",
+			"CA-NU":"Nunavut",
+			"CA-YT":"Yukon Territory"
+		},
 	},
 	"CV":{
 		"name":"Cape Verde",
