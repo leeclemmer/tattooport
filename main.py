@@ -1,5 +1,5 @@
-# builtins
 import re
+import time
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'lib'))
@@ -19,7 +19,7 @@ from models import *
 # external
 import webapp2
 import jinja2
-from geopy import geocoders
+from ggeocode.ggeocode import GGeocode
 import general_counter
 
 
@@ -72,19 +72,20 @@ class BaseHandler(webapp2.RequestHandler):
 					 		for p in paths],paths)
 
 	def num_fields(self, args):
-		''' Returns dictionary of how many Contact.prop_names in args there are for each arg. '''		
-		# num_fields is a dict which counts the number of each Contact.prop_name; passed to template so that it outputs correct number of fields
-		return {field:len([arg for arg in args if arg.startswith(field)]) for field in Contact.prop_names()}
+		''' Returns dictionary of how many Contact.prop_names in args 
+			there are for each arg. '''		
+		return {field:len([arg for arg in args if arg.startswith(field)]) \
+				for field in Contact.prop_names()}
 
 	def geo_pt(self, address):
 		''' Returns ndb.GeoPt for given address.'''
-		g = geocoders.GoogleV3()
 		try:
-			geocodes = g.geocode(address,exactly_one=False)
-			return ndb.GeoPt(geocodes[0][1][0],geocodes[0][1][1])
+			gg = GGeocode(address=address)
+			return ndb.GeoPt(gg.lat,gg.lon)
 		except:
 			utils.catch_exception()
 			return None
+		time.sleep(2) # Prevent too many queries in quick succession
 
 	def static_map_url(self, geo_pt, height=200, width=200):
 		base_url = 'http://maps.googleapis.com/maps/api/staticmap?'

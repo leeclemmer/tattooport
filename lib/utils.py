@@ -12,8 +12,10 @@ def info(id, *a):
 	logging.info(s)
 
 def catch_exception():
-	e = sys.exc_info()[1]
-	logging.error(e)
+	e0 = sys.exc_info()[0]
+	e1 = sys.exc_info()[1]
+	e2 = sys.exc_info()[2]
+	logging.error('%s: %s, %s' %(e0,e1,e2))
 
 def listInString(s,l):
 	''' Takes a string s and returns True if at least one of the 

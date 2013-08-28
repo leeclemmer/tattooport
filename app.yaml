@@ -7,6 +7,8 @@ threadsafe: true
 libraries:
 - name: jinja2
   version: latest
+- name: lxml
+  version: latest
 
 builtins:
 - appstats: on

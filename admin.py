@@ -302,16 +302,16 @@ class AdminStudio(BaseHandler):
 		if ndb.Key('Country',country).get() is None:
 			general_counter.increment('Country')
 
-		# Put Country
-		coun = Country(
-			id=country,
-			display_name=COUNTRIES[country]['name'],
-			location=self.geo_pt('%s' % \
-				(COUNTRIES[country]['name'],))
-			)
+			# Put Country
+			coun = Country(
+				id=country,
+				display_name=COUNTRIES[country]['name'],
+				location=self.geo_pt('%s' % \
+					(COUNTRIES[country]['name'],))
+				)
 
-		coun.update_location()
-		coun.put()
+			coun.update_location()
+			coun.put()
 
 	def put_subdivision(self, country, subdivision):
 		# Increment Subdivision
@@ -319,37 +319,40 @@ class AdminStudio(BaseHandler):
 				   'Subdivision',subdivision).get() is None:
 			general_counter.increment('Subdivision')
 
-		# Put Subdivisioon
-		subd = Subdivision(
-			parent=ndb.Key('Country', country),
-			id=subdivision,
-			display_name=COUNTRIES[country]['subdivisions'][subdivision],
-			location=self.geo_pt('%s %s' % \
-				(COUNTRIES[country]['subdivisions'][subdivision],
-					COUNTRIES[country]['name'])))
+			# Put Subdivisioon
+			subd = Subdivision(
+				parent=ndb.Key('Country', country),
+				id=subdivision,
+				display_name=COUNTRIES[country]['subdivisions'][subdivision],
+				location=self.geo_pt('%s %s' % \
+					(COUNTRIES[country]['subdivisions'][subdivision],
+						COUNTRIES[country]['name'])))
 
-		subd.update_location()
-		subd.put()
+			subd.update_location()
+			subd.put()
 
 	def put_locality(self, country, subdivision, locality, postal_code):
+		info('loca-key is',ndb.Key('Country', country, 
+				   'Subdivision',subdivision,
+				   'Locality',locality).get())
 		# Increment Locality
 		if ndb.Key('Country', country, 
 				   'Subdivision',subdivision,
 				   'Locality',locality).get() is None:
 			general_counter.increment('Locality')
 
-		# Put Locality
-		loca = Locality(
-			parent=ndb.Key('Country', country,'Subdivision', subdivision),
-			id=locality,
-			display_name=locality,
-			location=self.geo_pt('%s %s %s %s' %
-							(locality,
-							subdivision.split('-')[1],
-							country,
-							postal_code)))
-		loca.update_location()
-		loca.put()
+			# Put Locality
+			loca = Locality(
+				parent=ndb.Key('Country', country,'Subdivision', subdivision),
+				id=locality,
+				display_name=locality,
+				location=self.geo_pt('%s %s %s %s' %
+								(locality,
+								subdivision.split('-')[1],
+								country,
+								postal_code)))
+			loca.update_location()
+			loca.put()
 
 	def put_relationship(self, studio, artist, relationship):
 		StudioArtist(
@@ -912,16 +915,19 @@ class AdminView(BaseHandler):
 
 		# Call the template
 		if model_kind == 'studio':
-			# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
-			model.country = COUNTRIES[model.address.get().country]['name']
-			model.subdivision = COUNTRIES[model.address.get().country]['subdivisions'][model.address.get().subdivision]
+			try:
+				# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
+				model.country = COUNTRIES[model.address.get().country]['name']
+				model.subdivision = COUNTRIES[model.address.get().country]['subdivisions'][model.address.get().subdivision]
+			except:
+				utils.catch_exception()
 
 			try:
 				if model.mailing_address.get():
 					model.ma_country = COUNTRIES[model.mailing_address.get().country]['name']
 					model.ma_subdivision = COUNTRIES[model.mailing_address.get().country]['subdivisions'][studio.mailing_address.get().subdivision]
 			except:
-				pass
+				utils.catch_exception()
 
 			artists = [{'name':artist.artist.get().display_name,
 					'rel':artist.relationship,
@@ -962,7 +968,7 @@ class AdminDelete(AdminStudio):
 		
 		# Get model
 		model = ancestor_key.get()
-		model.view = '/admin/models/model/view/%s' % (pagename,)
+		model.view = '/admin/models/%s/view/%s' % (model_kind, pagename)
 
 		# Call the template
 		self.render('admin_delete.html',
