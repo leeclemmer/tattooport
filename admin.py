@@ -22,14 +22,6 @@ class AdminMain(BaseHandler):
 		subd_count = general_counter.get_count('Subdivision')
 		loca_count = general_counter.get_count('Locality')
 
-		info('US artists',general_counter.get_count('US Artist'))
-		info('PA artists',general_counter.get_count('US-PA Artist'))
-		info('Philly artists',general_counter.get_count('Philadelphia Artist'))
-
-		info('US artists',general_counter.get_count('US Artist'))
-		info('MD artists',general_counter.get_count('US-MD Artist'))
-		info('Bmore artists',general_counter.get_count('Baltimore Artist'))
-
 		self.render('admin_main.html', 
 					title='Main',
 					active='admin',
@@ -332,9 +324,6 @@ class AdminStudio(BaseHandler):
 			subd.put()
 
 	def put_locality(self, country, subdivision, locality, postal_code):
-		info('loca-key is',ndb.Key('Country', country, 
-				   'Subdivision',subdivision,
-				   'Locality',locality).get())
 		# Increment Locality
 		if ndb.Key('Country', country, 
 				   'Subdivision',subdivision,
@@ -362,7 +351,6 @@ class AdminStudio(BaseHandler):
 
 		# Now, an artist is tied to a location, so we'll increase those counters
 		address = studio.get().address.get()
-		info('creating rel', address)
 		self.kind_incr('Artist',address.country, 
 			address.subdivision, address.locality, self_incr=False)
 
@@ -901,13 +889,9 @@ class AdminView(BaseHandler):
 	def get(self, model_kind, pagename):
 		# Create ancestor key from URL path
 		ancestor_key = self.path_to_key(pagename)
-		info('pagename',pagename)
-		info('ancestor_key',ancestor_key)
 		
 		# Get studio
 		model = ancestor_key.get()
-
-		info('mode',model)
 
 		# Tag on the edit and delete links
 		model.edit = '/admin/models/%s/edit/%s' % (model_kind,pagename)
@@ -1010,7 +994,6 @@ class AdminDelete(AdminStudio):
 
 			for prop_name,prop in ancestor_key.get().props().iteritems():
 				try:
-					info('deleting %s' % (prop_name,), prop)
 					ndb.delete_multi([p.key for p in prop.fetch()])
 				except AttributeError:
 					pass
@@ -1068,12 +1051,10 @@ class AdminBrowseRegion(BaseHandler):
 			# Otherwise, results are direct members
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 
-		info('results',results)
 		#if model_kind == 'studio':
 		if model_kind == 'artist':
 			results = [[rel.artist.get() for rel in studio.artists.fetch()] for studio in results]
 			results = utils.flatten_list(results)
-			info('results',results)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
 		
 
@@ -1110,7 +1091,6 @@ class AdminSearch(AdminStudio):
 						'link':'/admin/models/artist/view%s' % \
 								(self.key_to_path(result.key))} 
 							for result in results]
-			info('results',results)
 		self.render('admin_search.html',
 					title='Search %ss' % (model_kind.capitalize(),),
 					active='models',
