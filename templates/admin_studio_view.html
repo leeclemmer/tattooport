@@ -63,13 +63,15 @@
 
 			{% if studio.instagram.get() %}
 				{% for instagram in studio.instagram|sort(reverse=True,attribute='primary') %}
-					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
+					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a>
+					{% if instagram.user_id %}<abbr title="{{ instagram.user_id }}">id</abbr>{% endif %}<br/>
 				{% endfor %}
 			{% endif %}
 
 			{% if studio.foursquare.get() %}
 				{% for foursquare in studio.foursquare|sort(reverse=True,attribute='primary') %}
-					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
+					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a>
+					{% if foursquare.location_id %}<abbr title="{{ foursquare.location_id }}">id</abbr> (<a target="_blank" href="http://web.stagram.com/location/{{ foursquare.location_id }}">w</a>){% endif %}<br/>
 				{% endfor %}
 			{% endif %}
 

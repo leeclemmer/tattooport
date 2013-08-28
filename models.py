@@ -121,12 +121,14 @@ class Instagram(ndb.Model):
 	contact = ndb.KeyProperty(kind=Contact)
 
 	instagram = ndb.StringProperty()
+	user_id = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Foursquare(ndb.Model):
 	contact = ndb.KeyProperty(kind=Contact)
 
 	foursquare = ndb.StringProperty()
+	location_id = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Facebook(ndb.Model):

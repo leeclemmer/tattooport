@@ -222,16 +222,38 @@ class AdminStudio(BaseHandler):
 			).put()
 
 	def put_instagram(self, key, instagram, primary):
+		# Fetch IG id info
+		user_id = ''
+
+		try:
+			ig = InstagramAPI(client_id=keys.IG_CLIENTID,
+							  client_secret=keys.IG_CLIENTSECRET)
+			user_id = ig.user_search(instagram)[0].id
+		except:
+			utils.catch_exception()
+
 		Instagram(
 			contact=key,
 			instagram=instagram,
+			user_id=user_id,
 			primary=primary
 			).put()
 
 	def put_foursquare(self, key, foursquare, primary):
+		location_id = ''
+
+		try:
+			ig = InstagramAPI(client_id=keys.IG_CLIENTID,
+							  client_secret=keys.IG_CLIENTSECRET)
+			fsq_id = foursquare.rsplit('/',1)[1].split('?')[0]
+			location_id = ig.location_search(foursquare_v2_id=fsq_id)[0].id
+		except:
+			utils.catch_exception()
+
 		Foursquare(
 			contact=key,
 			foursquare=foursquare,
+			location_id=location_id,
 			primary=primary
 			).put()
 
@@ -896,6 +918,16 @@ class AdminView(BaseHandler):
 		# Tag on the edit and delete links
 		model.edit = '/admin/models/%s/edit/%s' % (model_kind,pagename)
 		model.delete = '/admin/models/%s/delete/%s' % (model_kind,pagename)
+
+		# Instagram user recent media
+		ig_user = model.instagram.filter(Instagram.primary == True).fetch()
+		if len(ig_user) > 0:
+			#ig = InstagramAPI(client_id=keys.IG_CLIENTID,
+			#				  client_secret=keys.IG_CLIENTSECRET)
+			pass
+		else:
+			ig_media = ''
+		info(model.instagram.filter(Instagram.primary == True).fetch())
 
 		# Call the template
 		if model_kind == 'studio':

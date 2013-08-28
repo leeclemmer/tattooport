@@ -21,6 +21,7 @@ import webapp2
 import jinja2
 from ggeocode.ggeocode import GGeocode
 import general_counter
+from instagram.client import InstagramAPI 
 
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')

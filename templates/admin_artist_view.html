@@ -91,14 +91,16 @@
 			<!-- Instagram -->
 			{% if artist.instagram.get() %}
 				{% for instagram in artist.instagram|sort(reverse=True,attribute='primary') %}
-					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a><br/>
+					<i class="icon-instagram icon-large"></i> <a target="_blank" href="http://www.instagram.com/{{ instagram.instagram }}">Instagram</a>
+					{% if instagram.user_id %}<abbr title="{{ instagram.user_id }}">id</abbr>{% endif %}<br/>
 				{% endfor %}
 			{% endif %}
 
 			<!-- Foursquare -->
 			{% if artist.foursquare.get() %}
 				{% for foursquare in artist.foursquare|sort(reverse=True,attribute='primary') %}
-					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a><br/>
+					<i class="icon-foursquare icon-large"></i> <a target="_blank" href="{{ foursquare.foursquare }}">Foursquare</a>
+					{% if foursquare.location_id %}<abbr title="{{ foursquare.location_id }}">id</abbr>{% endif %}<br/>
 				{% endfor %}
 			{% endif %}
 
