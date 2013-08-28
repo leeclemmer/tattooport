@@ -61,7 +61,7 @@
 					<ul class="list-unstyled">
 					{% for website in artist.website|sort(reverse=True,attribute='primary') %}
 						<li>
-							<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1] }}</a>
+							<a target="_blank" href="{{ website.url }}">{{ website.url.split('://')[1].split('/')[0] }}</a>
 						</li>
 					{% endfor %}
 					</ul>
