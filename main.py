@@ -19,7 +19,7 @@ from models import *
 # external
 import webapp2
 import jinja2
-from ggeocode.ggeocode import GGeocode
+import mapq
 import general_counter
 from instagram.client import InstagramAPI 
 
@@ -81,12 +81,12 @@ class BaseHandler(webapp2.RequestHandler):
 	def geo_pt(self, address):
 		''' Returns ndb.GeoPt for given address.'''
 		try:
-			gg = GGeocode(address=address)
-			return ndb.GeoPt(gg.lat,gg.lon)
+			mapq.key(keys.MAPQUEST_API_KEY)
+			latlng = mapq.latlng(address)
+			return ndb.GeoPt(latlng['lat'],latlng['lng'])
 		except:
-			utils.catch_exception()
+			utils.log_tb()
 			return None
-		time.sleep(2) # Prevent too many queries in quick succession
 
 	def static_map_url(self, geo_pt, height=200, width=200):
 		base_url = 'http://maps.googleapis.com/maps/api/staticmap?'
@@ -97,7 +97,15 @@ class BaseHandler(webapp2.RequestHandler):
 					height, 
 					geo_pt.lat, 
 					geo_pt.lon,
-					keys.GMAPS_STATIC_API_KEY)		
+					keys.GMAPS_STATIC_API_KEY)	
+
+	def regions_in_db(self):
+		''' Returns a list of list of lists with all used regions. '''
+		return [[country,
+					[[subdivision,
+						[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
+					for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
+				for country in Country.query().order(Country.display_name).fetch()]	
 
 class Welcome(BaseHandler):
 	def get(self):

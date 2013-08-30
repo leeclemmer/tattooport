@@ -1,0 +1,49 @@
+{% extends "admin_settings.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+	<h1>{{ title }}</h1>
+
+	{% if region %}
+		{% if region_count_stu == 0 and region_count_art == 0 %}
+			<h3>Are you sure you want to delete {{ region_name }}?</h3>
+			<p class="delete">This cannot be undone! Seriously!</p>
+
+			<form method="post" name="delete-region">
+				<a href="/admin/settings/regions/delete"><button type="button" class="btn btn-success btn-lg">No, take me back...</button></a>
+
+				<input type="hidden" name="delete" value="yes">
+				<input type="hidden" name="region" value="{{ region }}">
+				<button type="submit" class="btn btn-danger btn-xs">Yes</button>
+			</form>
+		{% else %}
+			<h3>Not so fast</h3>
+			<p>There are <a href="/admin/models/studio/browse/{{ region }}">{{ region_count_stu }} studios</a> and <a href="/admin/models/artist/browse/{{ region }}">{{ region_count_art }} artists</a> in this region, please delete these first</p>
+		{% endif %}
+	{% else %}
+	<ul class="list-unstyled delete">
+		{% for country in regions %}
+		<li>
+			<a href="?region={{ country[0].key.id() }}">{{ country[0].display_name|replace("+"," ") }}</a>
+			
+			<ul class="list-unstyled">
+			{% for subd in country[1] %}
+			<li>
+				<a href="?region={{ country[0].key.id() }}/{{ subd[0].key.id() }}">{{ subd[0].display_name|replace("+"," ") }}</a>
+
+					<ul class="list-unstyled">
+					{% for loca in subd[1] %}
+					<li>
+						<a href="?region={{ country[0].key.id() }}/{{ subd[0].key.id() }}/{{ loca[0].key.id() }}">{{ loca[1]|replace("+"," ") }}</a>
+					</li>
+					{% endfor %}
+					</ul>
+			</li>
+			{% endfor %}
+			</ul>
+		</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+{% endblock %}

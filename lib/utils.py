@@ -4,6 +4,7 @@ import sys
 import re
 import hashlib
 import logging
+import traceback
 
 def info(id, *a):
 	s = '########## %s: ' % (id,)
@@ -12,10 +13,13 @@ def info(id, *a):
 	logging.info(s)
 
 def catch_exception():
-	e0 = sys.exc_info()[0]
-	e1 = sys.exc_info()[1]
-	e2 = sys.exc_info()[2]
-	logging.error('%s: %s, %s' %(e0,e1,e2))
+	exc_type = sys.exc_info()[0]
+	exc_value = sys.exc_info()[1]
+	logging.error('%s: %s' %(exc_type,exc_value))
+
+def log_tb():
+	exc_type, exc_name, exc_tb = sys.exc_info()
+	logging.error(''.join(traceback.format_exception(exc_type, exc_name, exc_tb)))
 
 def listInString(s,l):
 	''' Takes a string s and returns True if at least one of the 

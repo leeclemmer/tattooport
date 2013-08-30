@@ -7,3 +7,6 @@ IG_REDIRECTURI = ''
 
 # Google Maps Static API
 GMAPS_STATIC_API_KEY = ''
+
+# MapQuest API Key
+MAPQUEST_API_KEY = ''

@@ -20,6 +20,12 @@ handlers:
   static_dir: js
 - url: /img
   static_dir: img
+- url: /admin/settings.*
+  script: admin_settings.app
+  login: admin
+- url: /admin/models.*
+  script: admin_models.app
+  login: admin
 - url: /admin.*
   script: admin.app
   login: admin

@@ -1,0 +1,50 @@
+{% extends "admin_base.html" %}
+
+{% block title %}
+	{{title}}
+{% endblock %}
+
+{% block sidenav %}
+	<div class="panel-group" id="accordion">
+		<!-- Group 1 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						Stats
+					</a>
+				</h4>
+			</div>
+			<div id="collapseOne" class="panel-collapse collapse in">
+				<div class="panel-body">
+					<ul class="list-unstyled">
+						<li><a href="/admin/settings/stats/counters">Counters</a></li>
+					</ul>					
+				</div>
+			</div>
+		</div>
+
+		<!-- Group 2 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+						Regions
+					</a>
+				</h4>
+			</div>
+			<div id="collapseTwo" class="panel-collapse collapse in">
+				<div class="panel-body">
+					<ul class="list-unstyled">
+						<li><a href="/admin/settings/regions/delete">Delete</a></li>
+					</ul>					
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block main %}
+	<h1>{{ title }}</h1>
+	<p>How may I configure for you?</p>
+{% endblock %}

@@ -21,6 +21,8 @@ import random
 from google.appengine.api import memcache
 from google.appengine.ext import ndb
 
+import logging
+
 
 SHARD_KEY_TEMPLATE = 'shard-{}-{:d}'
 
@@ -147,3 +149,21 @@ def increase_shards(name, num_shards):
     if config.num_shards < num_shards:
         config.num_shards = num_shards
         config.put()
+
+def delete_counter(name):
+    config = GeneralCounterShardConfig.get_by_id(name)
+    if config:
+        _delete_counter_shards(name, config.num_shards)
+
+def _delete_counter_shards(name, num_shards):
+    counters = []
+    for i in range(0, num_shards - 1):
+        shard_key_string = SHARD_KEY_TEMPLATE.format(name, i)
+        shard = GeneralCounterShard.get_by_id(shard_key_string)
+        if shard:
+            logging.info('%s' % (shard,))
+            shard.key.delete()
+    config = GeneralCounterShardConfig.get_by_id(name)
+    config.key.delete()
+
+

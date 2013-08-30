@@ -1,4 +1,8 @@
 /*** Global ***/
+ul li li {
+    padding-left: 2em;
+}
+
 .container {
     padding-top:50px;
 }
@@ -8,6 +12,10 @@
 }
 
 .required {
+    color: red;
+}
+
+.delete, .delete a {
     color: red;
 }
 
@@ -139,11 +147,6 @@
 
 .temp-admin-view .del-rel {
     display: inline
-}
-
-/*** AdminBrowse template ***/
-.temp-admin-browse li li {
-    padding-left: 2em;
 }
 
 /*** AdminSearch template ***/
