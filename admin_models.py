@@ -354,9 +354,12 @@ class AdminStudio(BaseHandler):
 			relationship=relationship).put()
 
 		# Now, an artist is tied to a location, so we'll increase those counters
-		address = studio.get().address.get()
-		self.kind_incr('Artist',address.country, 
-			address.subdivision, address.locality, self_incr=False)
+		country = studio.pairs()[0][1]
+		subdivision = studio.pairs()[1][1]
+		locality = studio.pairs()[2][1]
+
+		self.kind_incr('Artist',country, 
+			subdivision, locality, self_incr=False)
 
 	def kind_incr(self, kind, country='', subdivision='', 
 				  locality='', self_incr=True):
