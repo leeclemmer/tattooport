@@ -23,9 +23,7 @@ from google.appengine.ext import ndb
 
 import logging
 
-
 SHARD_KEY_TEMPLATE = 'shard-{}-{:d}'
-
 
 class GeneralCounterShardConfig(ndb.Model):
     """Tracks the number of shards for each named counter."""
@@ -161,7 +159,6 @@ def _delete_counter_shards(name, num_shards):
         shard_key_string = SHARD_KEY_TEMPLATE.format(name, i)
         shard = GeneralCounterShard.get_by_id(shard_key_string)
         if shard:
-            logging.info('%s' % (shard,))
             shard.key.delete()
     config = GeneralCounterShardConfig.get_by_id(name)
     config.key.delete()

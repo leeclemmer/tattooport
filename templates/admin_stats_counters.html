@@ -4,43 +4,28 @@
 {% endblock %}
 {% block main %}
 	<h1>{{ title }}</h1>
-	{% if count %}
-	<p>Count for {{ counter }}: {{ count }}</p>
-	{% endif %}
 	<form method="post" role="form">
 		<div class="form-group">
 			<label for="counter">Adjust Counter Count</label>
 			<select name="counter" id="counter" class="form-control col-lg-4">
-				<option value="Country" {% if 'Country' == counter %}selected{% endif %}>Country</option>
-				<option value="Subdivision" {% if 'Subdivision' == counter %}selected{% endif %}>Subdivision</option>
-				<option value="Locality" {% if 'Locality' == counter %}selected{% endif %}>Locality</option>
-				<option value="Artist" {% if 'Artist' == counter %}selected{% endif %}>Artist</option>
-				{% for country in regions %}
-				<option value="{{ country[0].key.id() }} Artist" {% if country[0].key.id() + ' Artist' == counter %}selected{% endif %}>{{ country[0].display_name }} Artist</option>
-					{% for subd in country[1] %}
-					<option value="{{ subd[0].key.id() }} Artist" {% if subd[0].key.id() + ' Artist' == counter %}selected{% endif %}> - {{ subd[0].display_name }} Artist</option>
-						{% for loca in subd[1] %}
-						<option value="{{ loca[0].key.id() }} Artist" {% if loca[0].key.id() + ' Artist' == counter %}selected{% endif %}> -- {{ loca[1] }} Artist</option>
-						{% endfor %}
-					{% endfor %}
-				{% endfor %}
-				<option></option>
-				<option value="Studio" {% if 'Studio' == counter %}selected{% endif %}>Studio</option>
-				{% for country in regions %}
-				<option value="{{ country[0].key.id() }} Studio" {% if country[0].key.id() + ' Studio' == counter %}selected{% endif %}>{{ country[0].display_name }} Studio</option>
-					{% for subd in country[1] %}
-					<option value="{{ subd[0].key.id() }} Studio" {% if subd[0].key.id() + ' Studio' == counter %}selected{% endif %}> - {{ subd[0].display_name }} Studio</option>
-						{% for loca in subd[1] %}
-						<option value="{{ loca[0].key.id() }} Studio" {% if loca[0].key.id() + ' Studio' == counter %}selected{% endif %}> -- {{ loca[1] }} Studio</option>
-						{% endfor %}
-					{% endfor %}
+				{% for c in counters %}
+				<option value="{{ c[0] }}"{% if counter == c[0] %} selected{% endif %}>{{ c[0] }} ({{ c[1] }})</option>
 				{% endfor %}
 			</select>
 		</div>
+
 		<button type="submit" class="btn btn-primary">Get Count</button>
-		{% if counter %}
 		<button type="submit" name="plusorminus" value="plus" class="btn btn-success"> +1 </button>
 		<button type="submit" name="plusorminus" value="minus" class="btn btn-warning"> -1 </button>
-		{% endif %}
+		<button type="submit" name="delete" value="yes" class="btn btn-danger" style="float:right">Delete</button>
 	</form>
+
+	<ul class="list-unstyled">
+	{% for c in counters %}
+	<li{% if c[1] == 0 %} class="delete"{% endif %}>
+		{{ c[0] }} ({{ c[1] }})
+	</li>
+	{% endfor %}
+	</ul>
+
 {% endblock %}

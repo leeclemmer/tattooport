@@ -6,52 +6,47 @@ from main import *
 
 class AdminSettings(BaseHandler):
 	def get(self):
-		'''studio_count = general_counter.get_count('Studio')
-		artist_count = general_counter.get_count('Artist')
-		country_count = general_counter.get_count('Country')
-		subd_count = general_counter.get_count('Subdivision')
-		loca_count = general_counter.get_count('Locality')'''
-
 		self.render('admin_settings.html', 
 					title='Settings',
 					active='settings'
 					)
 
 class AdminStatsCounters(BaseHandler):
-	def get(self):		
-		studio_count = general_counter.get_count('Studio')
-		artist_count = general_counter.get_count('Artist')
-		country_count = general_counter.get_count('Country')
-		subd_count = general_counter.get_count('Subdivision')
-		loca_count = general_counter.get_count('Locality')
-
+	def get(self):
 		self.render('admin_stats_counters.html',
 					title='Counters',
 					active='settings',
-					studio_count=studio_count,
-					artist_count=artist_count,
-					country_count=country_count,
-					subd_count=subd_count,
-					loca_count=loca_count,
-					regions=self.regions_in_db()
+					counters=self.counters()
 					)
 
 	def post(self):
+		delete = self.request.get('delete')
 		counter = self.request.get('counter')
-		plusorminus = self.request.get('plusorminus')
-		if plusorminus == 'plus':
-			general_counter.increment(counter)
-		elif plusorminus == 'minus':
-			general_counter.decrement(counter)
-		count = str(general_counter.get_count(counter))
+		if delete == 'yes':
+			general_counter.delete_counter(counter)
+			self.redirect('/admin/settings/stats/counters')
+		else:
+			counters = self.request.get('counters')
+			plusorminus = self.request.get('plusorminus')
+			if plusorminus == 'plus':
+				general_counter.increment(counter)
+			elif plusorminus == 'minus':
+				general_counter.decrement(counter)
 
-		self.render('admin_stats_counters.html',
-					title='Counters',
-					active='settings',
-					regions=self.regions_in_db(),
-					counter=counter,
-					count=count
-					)
+			self.render('admin_stats_counters.html',
+						title='Counters',
+						active='settings',
+						counters=self.counters(),
+						counter=counter
+						)
+
+	def counters(self):
+		''' Returns all available counters. '''
+		counters = general_counter.GeneralCounterShardConfig.query().fetch()
+		counters = sorted([counter.key.id() for counter in counters])
+		counters = zip(counters, [general_counter.get_count(counter) for counter in counters])
+		return counters
+
 
 class AdminRegionsDelete(BaseHandler):
 	def get(self):
