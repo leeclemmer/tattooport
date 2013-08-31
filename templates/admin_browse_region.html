@@ -1,7 +1,9 @@
 {% extends "admin_models.html" %}
+
 {% block title %}
-	{{title}}
+	Browse {{ breadcrumbs[-1][0] }}
 {% endblock %}
+
 {% block main %}
 <span class="temp-admin-browse-region">
 	<ol class="breadcrumb">

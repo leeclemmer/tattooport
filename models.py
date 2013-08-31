@@ -9,6 +9,8 @@ from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
 from geo.geomodel import GeoModel
 
+from utils import info
+
 class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.
 		See http://en.wikipedia.org/wiki/ISO_3166-1 for more. '''
@@ -195,3 +197,42 @@ class StudioArtist(ndb.Model):
 	artist = ndb.KeyProperty(required=True, kind=Artist)
 
 	relationship = ndb.StringProperty(choices=('owner', 'artist', 'guest'))
+
+def user_parent_key(group):
+	return ndb.Key('users',group)
+
+class User(ndb.Model):
+	''' Models a user. '''
+	user_name = ndb.StringProperty(required=True)
+
+	@classmethod
+	def by_name(cls, name):
+		return User.query(User.user_name == name)
+
+	@classmethod
+	def by_id(cls, uid, group='default'):
+		return User.get_by_id(uid, parent=user_parent_key(group))
+
+class InstagramUser(User):
+	''' Models an Instagram user. '''
+	user_id = ndb.StringProperty(required=True)
+	full_name = ndb.StringProperty()
+	profile_picture = ndb.StringProperty()
+
+	@classmethod
+	def by_id(cls, uid, group='default'):
+		return InstagramUser.get_by_id(uid, parent=user_parent_key(group))
+
+	@classmethod
+	def by_ig_id(cls, uid):
+		return InstagramUser.query(InstagramUser.user_id == uid)
+
+	@classmethod
+	def register(cls, user_name, user_id, 
+				 full_name=None, profile_picture=None, 
+				 group='default'):
+		return InstagramUser(parent=user_parent_key(group),
+							 user_name=user_name,
+							 user_id=user_id,
+							 full_name=full_name,
+							 profile_picture=profile_picture)

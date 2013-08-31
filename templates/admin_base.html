@@ -1,85 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	{% block head %}
-	<title>[TP Admin] {% block title %}{% endblock %}</title>
+{% extends "base_template.html" %}
 
-    <!-- Make sure latest rendering mode for IE is used -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+{% block base_title %}[TP Admin] {% block title %}{% endblock %}{% endblock %}
 
-    <!-- Set the layout viewport equal to device width. (Much) more on this here:
-    http://www.quirksmode.org/mobile/viewports2.html -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block css %}<link rel="stylesheet" href="/css/admin.css" type="text/css">{% endblock %}
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="/css/bootstrap.min.css">
+{% block container %}
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/" target="_blank"><i class="icon-compass icon-large"></i> tattooport</a>
+		</div>
 
-    <!-- Font Awesome -->
-	<link rel="stylesheet" href="/css/font-awesome/css/font-awesome.min.css">
-
-    <!-- Chosen -->
-	<link href="/js/chosen/chosen.css" rel="stylesheet">
-
-    <!-- Custom -->
-	<link rel="stylesheet" href="/css/admin.css" type="text/css">
-	{% endblock %}
-</head>
-
-<body>
-	<div class="container">
-		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="/" target="_blank"><i class="icon-compass icon-large"></i> tattooport</a>
-			</div>
-
-			<!-- Collect the nav links, forms, and other content for toggling -->
-			<div class="collapse navbar-collapse navbar-responsive-collapse">
-				<ul class="nav navbar-nav">
-					{% block topmenu %}
-					<li{% if active == 'admin' %} class="active" {% endif %}><a href="/admin">Admin</a></li>
-					<li{% if active == 'models' %} class="active" {% endif %}><a href="/admin/models">Data Models</a></li>
-					<li{% if active == 'settings' %} class="active" {% endif %}><a href="/admin/settings">Settings</a></li>
-					{% endblock %}
-				</ul>				
-			</div>
-		</nav>
-
-		<div class="row">
-			<div class="col-lg-2 tp-sidenav">
-				{% block sidenav %}
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse navbar-responsive-collapse">
+			<ul class="nav navbar-nav">
+				{% block topmenu %}
+				<li{% if active == 'admin' %} class="active" {% endif %}><a href="/admin">Admin</a></li>
+				<li{% if active == 'models' %} class="active" {% endif %}><a href="/admin/models">Data Models</a></li>
+				<li{% if active == 'settings' %} class="active" {% endif %}><a href="/admin/settings">Settings</a></li>
 				{% endblock %}
-			</div>
+			</ul>				
+		</div>
+	</nav>
 
-			<div class="col-lg-10 tp-main">
-				{% block main %}
-				<h1>Admin Main Page</h1>
-				<p>Fill in block</p>
-				{% endblock %}
-			</div>
+	<div class="row">
+		<div class="col-lg-2 tp-sidenav">
+			{% block sidenav %}
+			{% endblock %}
+		</div>
+
+		<div class="col-lg-10 tp-main">
+			{% block main %}
+			<h1>Admin Main Page</h1>
+			<p>Fill in block</p>
+			{% endblock %}
 		</div>
 	</div>
+{% endblock %}
 
-    <!-- JS plugins -->
-    <script src="/js/jquery.min.js"></script>
-
-    <!-- Bootstrap -->
-    <script src="/js/bootstrap.min.js"></script>
-
-    <!-- Enable responsive features in IE8 -->
-    <script src="/js/respond.min.js"></script>
-
-    <!-- Chosen -->
-    <script src="/js/chosen/chosen.jquery.min.js"></script>
-
-    <!-- Custom -->
-    <script src="/js/countries.js"></script>
-    <script src="/js/app.js"></script>
-</body>
-</html>
+{% block javascript %}<script src="/js/countries.js"></script>
+<script src="/js/app.js"></script>{% endblock %}

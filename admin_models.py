@@ -1102,7 +1102,6 @@ class AdminSearch(AdminStudio):
 								(self.key_to_path(result.key))} 
 							for result in results]
 		self.render('admin_search.html',
-					title='Search %ss' % (model_kind.capitalize(),),
 					active='models',
 					active_nav=model_kind,
 					results=results,

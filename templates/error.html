@@ -1,0 +1,10 @@
+{% extends "base_template.html" %}
+
+{% block base_title %}{{ title }} | TattooPort{% endblock %}
+
+{% block css %}<link rel="stylesheet" href="/css/styles.css" type="text/css">{% endblock %}
+
+{% block container %}
+	<h1>{{ title }}</h1>
+	<p>{{ error_message|safe }}</p>
+{% endblock %}

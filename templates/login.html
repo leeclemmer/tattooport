@@ -1,0 +1,11 @@
+{% extends "base_template.html" %}
+
+{% block base_title %}TattooPort: The Instagram App for Tattoo Lovers{% endblock %}
+
+{% block css %}<link rel="stylesheet" href="/css/styles.css" type="text/css">{% endblock %}
+
+{% block container %}
+	<h1>TattooPort</h1>
+	<h2 class="text-muted">The Instagram App for Tattoo Lovers</h2>
+	<a href="{{ authentication_url }}"><button type="text" class="btn btn-lg btn-primary">Sign In with Instagram</button></a>
+{% endblock %}

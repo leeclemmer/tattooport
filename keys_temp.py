@@ -1,4 +1,6 @@
 ''' Placeholder for your API keys. Rename file to 'keys.py' '''
+# Secret for secure cookie authentication
+SECRET = ''
 
 # Instagram
 IG_CLIENTID = ''

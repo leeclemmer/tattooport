@@ -1,0 +1,10 @@
+/*** Global ***/
+.btn-primary {
+	background-color: #21B883;
+	border-color: #21B883;
+}
+
+.btn-primary:hover {
+	background-color: #358A6C;
+	border-color: #358A6C;
+}
