@@ -1,10 +1,149 @@
 /*** Global ***/
+body {
+	background-color: #2a2a2a;
+	color: #eee;
+}
+
+a {
+	color: #5bb6c3;
+}
+
+.tagline {
+	font-family: 'Montserrat', sans-serif;
+	color: #7a7a7a;
+	font-size: 1.3em;
+	font-weight: 400;
+	letter-spacing: -0.1em;
+}
+
 .btn-primary {
-	background-color: #21B883;
-	border-color: #21B883;
+	background-color: #8dc233;
+	border-color: #8dc233;
 }
 
 .btn-primary:hover {
-	background-color: #358A6C;
-	border-color: #358A6C;
+	background-color: #84b72c;
+	border-color: #84b72c;
+}
+
+/*** Navbar ***/
+@media (min-width: 877px) {
+	.navbar-nav {
+		font-size: 1.4em;
+	}
+}
+
+@media (min-width: 768px) {
+	.navbar-header {
+		margin-right: 3em;
+	}
+}
+
+.navbar-nav li a {
+	line-height: 30px;
+}
+
+.navbar-inverse .navbar-left li a {	
+	color: #ccc;
+}
+
+.navbar-inverse .navbar-left li a:hover,
+.navbar-inverse .navbar-left li a:focus {
+	color: #8dc233;
+}
+
+.navbar-right {
+	background-color: #1a1a1a;
+}
+
+.navbar-brand {
+	display: inline-block;
+	max-width: 220px;
+}
+
+@media (min-width: 369px) {
+	.navbar-brand {
+		max-width: 310px;
+	}
+}
+
+.navbar-absolute {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.dropdown-menu>li>a:hover,
+.dropdown-menu>li>a:focus {
+	color: black;
+	background-color: #eee;
+	font-weight: bold;
+}
+
+/*** Login ***/
+.login-page {
+	text-align: center;
+}
+
+.login-page .tagline {
+	margin: 7px auto 30px;
+	display: inline-block;
+}
+
+.login-page img {
+	margin: 0 auto;
+}
+
+.login-page a:hover, .login-page a:focus {
+	text-decoration: none;
+}
+
+.login-page .btn {
+	display: block;
+	width: 100%;
+	max-width: 370px;
+	margin:0 auto;
+	border-radius: 0;
+	font-size: 1.7em;
+}
+
+.login-page .btn-lg {
+	padding: 17px 16px;
+}
+
+.login-page .main-col {
+	padding-top: 60%;
+	background: transparent url(/img/bg_login.png) no-repeat top center;
+	-o-background-size:99% auto;
+	-webkit-background-size:100% auto;
+	-moz-background-size:99% auto;
+	background-size:100% auto;
+}
+
+@media (min-width: 768px) {
+	.login-page .main-col {
+		padding-top: 30%;
+	}
+}
+
+@media (min-width: 992px) {
+	.login-page .main-col {
+		padding-top: 29%;
+	}
+}
+
+@media (min-width: 1200px) {
+	.login-page .main-col {
+		padding-top: 28%;
+	}
+}
+
+.login-page .sign-up {
+	padding:20px 0 30px 0;
+	font-weight: 800;
+	font-family: 'Montserrat', sans-serif;
+}
+
+.login-page .sign-up a {
+	color: #8dc233;
 }

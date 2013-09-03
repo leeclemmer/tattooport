@@ -22,7 +22,8 @@ import webapp2
 import jinja2
 import mapq
 import general_counter
-from instagram.client import InstagramAPI 
+from instagram.client import InstagramAPI
+from google.appengine.api import memcache
 
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -129,20 +130,41 @@ class BaseHandler(webapp2.RequestHandler):
 		self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % \
 										 (name, cookie_value))
 
+	def logged_in_user(self):
+		user_id = self.read_secure_cookie('user_id')
+		if user_id:
+			user = memcache.get(user_id)
+			if user is not None:
+				return user
+			else:
+				user = InstagramUser.by_id(int(user_id))
+				memcache.set(user_id, user, time=60*30)
+				return user
+		else: return None
+
+	def get_instagram_api(self,access_token=''):
+		return InstagramAPI(client_id=keys.IG_CLIENTID,
+							client_secret=keys.IG_CLIENTSECRET,
+							access_token=access_token)
+
 	def login(self, user):
 		self.set_secure_cookie('user_id', str(user.key.id()))
 
-	def logoff(self, user):
+	def logoff(self):
 		self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
 
 	def initialize(self, *a, **kw):
 		webapp2.RequestHandler.initialize(self, *a, **kw)
-		user_id = self.read_secure_cookie('user_id')
-		self.user = user_id and InstagramUser.by_id(int(user_id))
+		self.user = self.logged_in_user()
 
-class MainPage(BaseHandler):
+
+class Home(BaseHandler):
 	def get(self):
-		self.render('main_page.html')
+		if not self.user:
+			self.redirect('/login')
+		else:
+			self.render('home.html',
+						user=self.user)
 
 class Login(BaseHandler):
 	def get(self):
@@ -173,10 +195,7 @@ class Login(BaseHandler):
 								error_message=error_message
 								)
 				elif access_token:
-					info('access_token',access_token)
 					api = InstagramAPI(access_token=access_token[0])
-					info('api',api)
-					info('api.user()',api.user())
 					user_id = api.user().id
 					user_name = api.user().username
 					full_name = api.user().full_name
@@ -189,13 +208,15 @@ class Login(BaseHandler):
 											   user_name=user_name,
 											   user_id=user_id,
 											   full_name=full_name,
-											   profile_picture=profile_picture
+											   profile_picture=profile_picture,
+											   access_token=access_token
 											   )
 					else:
 						# Existing user, update information
 						instagram_user.user_name = user_name
 						instagram_user.full_name = full_name
 						instagram_user.profile_picture = profile_picture
+						instagram_user.access_token = access_token[0]
 					instagram_user.put()
 
 					self.login(instagram_user)
@@ -203,8 +224,7 @@ class Login(BaseHandler):
 			except:
 				utils.log_tb()
 		elif self.user:
-			self.render('main_page.html',
-						user=self.user)
+			self.redirect('/')
 		else:
 			try:
 				authentication_url = unauthenticated_api.get_authorize_url(scope=['likes','comments','relationships'])
@@ -213,4 +233,12 @@ class Login(BaseHandler):
 			self.render('login.html',
 						 authentication_url=authentication_url)
 
-app = webapp2.WSGIApplication([('/.*', Login)], debug = True)
+class Logoff(BaseHandler):
+	def get(self):
+		self.logoff()
+		self.redirect('/')
+
+app = webapp2.WSGIApplication([('/?',Home),
+							   ('/login', Login),
+							   ('/logoff', Logoff),
+							   ('/.*', Login)], debug = True)

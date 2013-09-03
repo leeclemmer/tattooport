@@ -218,6 +218,7 @@ class InstagramUser(User):
 	user_id = ndb.StringProperty(required=True)
 	full_name = ndb.StringProperty()
 	profile_picture = ndb.StringProperty()
+	access_token = ndb.StringProperty()
 
 	@classmethod
 	def by_id(cls, uid, group='default'):

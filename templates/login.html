@@ -2,10 +2,31 @@
 
 {% block base_title %}TattooPort: The Instagram App for Tattoo Lovers{% endblock %}
 
-{% block css %}<link rel="stylesheet" href="/css/styles.css" type="text/css">{% endblock %}
+{% block css %}<link rel="stylesheet" href="/css/styles.css" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>{% endblock %}
 
 {% block container %}
-	<h1>TattooPort</h1>
-	<h2 class="text-muted">The Instagram App for Tattoo Lovers</h2>
-	<a href="{{ authentication_url }}"><button type="text" class="btn btn-lg btn-primary">Sign In with Instagram</button></a>
+<span class="login-page">
+	<div class="row">
+		<div class="col-sm-3 col-md-3 col-lg-3"></div>
+
+		<div class="col-sm-6 col-md-6 col-lg-6 main-col">
+			<h1 class="sr-only">TattooPort</h1>
+
+			<img src="/img/logo.png" class="img-responsive" alt="TattooPort: The Instagram App for Tattoo Lovers">
+
+			<strong class="tagline">The Instagram app for tattoo lovers</strong>
+
+			<a href="{{ authentication_url }}">
+				<button type="text" class="btn btn-lg btn-primary">Log in with Instagram</button>
+			</a>
+
+			<p class="sign-up"><a href="http://www.instagram.com/">Sign up for Instagram</a></p>
+		</div>
+
+		<div class="col-sm-3 col-md-3 col-lg-3"></div>
+	</div>
+</span>
 {% endblock %}
+
+{% block javascript %}<script src="/js/app.js"></script>{% endblock %}
