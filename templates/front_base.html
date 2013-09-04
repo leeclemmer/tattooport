@@ -30,8 +30,8 @@
 					</a>
 				</li>
 				<li{% if active == 'models' %} class="active" {% endif %}>
-					<a href="/studios-artists">
-						Studios &amp; Artists
+					<a href="/shops-artists">
+						Shops &amp; Artists
 					</a>
 				</li>
 				{% endblock %}
@@ -49,12 +49,7 @@
 	</nav>
 
 	<div class="row">
-		<div class="col-lg-2 tp-sidenav">
-			{% block sidenav %}
-			{% endblock %}
-		</div>
-
-		<div class="col-lg-10 tp-main">
+		<div class="col-lg-12 tp-main">
 			{% block main %}
 			<h1>Front Base Template</h1>
 			<p>You should not be seeing this!</p>

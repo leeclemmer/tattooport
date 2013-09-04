@@ -180,6 +180,10 @@ class Studio(Contact):
 	def artists(self):
 		return StudioArtist.gql('WHERE studio = :1', self.key)
 
+	@classmethod
+	def by_name(self, name):
+		return Studio.query(Studio.name == name).fetch()
+
 class Artist(Contact):
 	''' Models a tattoo artist. '''
 	display_name = ndb.StringProperty()

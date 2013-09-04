@@ -1,0 +1,26 @@
+{% extends "front_base.html" %}
+
+{% block title %}{{ locality.display_name }}{% endblock %}
+
+{% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
+
+{% block main %}
+    <h1>{{ locality.display_name }}</h1>
+
+    {% if not results %}
+    <p>Hm that's odd, doesn't look like there are any results</p>
+    {% else %}
+    	<ul class="list-unstyled">
+    	{% for result in results %}
+    		<li>
+    			<a href="/shop/{{ result[1] }}/{{ result[0].key.id() }}">{{ result[0].name }}</a>
+    			{% if result[0].key.pairs()[-2][1] != locality.key.pairs()[-1][1] %}
+    			({{ result[0].key.pairs()[-2][1] }})
+    			{% endif %}
+    		</li>
+    	{% endfor %}
+    	</ul>
+    {% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,25 @@
+{% extends "front_base.html" %}
+
+{% block title %}Shops &amp; Artists{% endblock %}
+
+{% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
+
+{% block main %}
+    <h1>Discover Nearby Shops &amp; Artists</h1>
+
+    <h2>Pick a City</h2>
+
+    <ul class="list-unstyled">
+		{% for locality in localities %}
+			<li>
+				<a href="/loc{{ locality[2] }}">
+					{{ locality[0].display_name }}
+				</a>
+			</li>
+		{% endfor %}
+	</ul>
+
+    <p class="help-text">Don't see your city? Drop me a line at lee [at] tattooport [dot] com</p>
+
+{% endblock %}
+

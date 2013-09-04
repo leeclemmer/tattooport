@@ -143,6 +143,9 @@ class BaseHandler(webapp2.RequestHandler):
 		else: return None
 
 	def get_instagram_api(self,access_token=''):
+		''' Helper function for quick access to instagram api. 
+			Access token optional. If not given, API access is limited.
+		'''
 		return InstagramAPI(client_id=keys.IG_CLIENTID,
 							client_secret=keys.IG_CLIENTSECRET,
 							access_token=access_token)
@@ -157,6 +160,10 @@ class BaseHandler(webapp2.RequestHandler):
 		webapp2.RequestHandler.initialize(self, *a, **kw)
 		self.user = self.logged_in_user()
 
+class FourOhFour(BaseHandler):
+	def get(self):
+		self.render('404.html',
+					user=self.user)
 
 class Home(BaseHandler):
 	def get(self):
@@ -238,7 +245,99 @@ class Logoff(BaseHandler):
 		self.logoff()
 		self.redirect('/')
 
+class ShopsArtists(BaseHandler):
+	def get(self):
+		regions = self.regions_in_db()
+		localities = []
+
+		for country in regions:
+			if country[0].key.id() == 'US':
+				for subdivision in country[1]:
+					for locality in subdivision[1]:
+						locality.append(self.key_to_path(locality[0].key))
+						localities.append(locality)
+
+		localities.sort(key=lambda x: x[0].display_name)
+
+		self.render('shops_artists.html',
+					user=self.user,
+					localities=localities)
+
+class LocalityPage(BaseHandler):
+	def get(self, pagename):
+		if pagename.endswith('/'): pagename = pagename[:-1]
+
+		locality = self.path_to_key(pagename).get()
+		
+		# Prevent user from URL hacking
+		if pagename.count('/') is not 2:
+			self.redirect('/shops-artists')
+
+		# Fetch shops
+		region_pt = locality.location
+		try:
+			results = Address.proximity_fetch(
+				Address.query(),
+				region_pt,
+				max_results=10,
+				max_distance=80467)
+		except AttributeError:
+			utils.catch_exception()
+			results = ''
+		results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
+		results = zip(results, [urllib.quote_plus(result.name) for result in results ])
+
+		self.render('locality.html',
+					user=self.user,
+					locality=locality,
+					results=results)
+
+class ShopPage(BaseHandler):
+	def get(self, pagename):
+		shop, sid = pagename.split('/')
+		shop = urllib.unquote_plus(shop)
+
+		# If shops with the same name, compare IDs
+		# There is chance of same ID and same name... 
+		# ... very remote (let's hope)
+		for s in Studio.by_name(shop):
+			if int(sid) == s.key.id():
+				shop = s
+				break
+
+		api = self.get_instagram_api(access_token=self.user.access_token)
+
+		media = None
+		next = None
+		if shop.instagram.get() is not None:
+			for ig in shop.instagram.fetch():
+				if ig.primary == True and ig.user_id:
+					media, next = api.user_recent_media(
+						user_id=ig.user_id,
+						count=30)
+					break
+		elif shop.foursquare.get() is not None:
+			for fsq in shop.foursquare.fetch():
+				if fsq.primary == True and fsq.location_id:
+					location_id = fsq.location_id
+					info('lid',location_id)
+					media, next = api.location_recent_media(
+						count=30, 
+						location_id=fsq.location_id)
+					break
+
+		info('%s' % (shop.instagram.get(),),shop)
+
+		self.render('shop.html',
+					user=self.user,
+					shop=shop,
+					media=media,
+					next=next)
+
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),
 							   ('/logoff', Logoff),
-							   ('/.*', Login)], debug = True)
+							   ('/shops-artists', ShopsArtists),
+							   ('/shop/?(.*)?', ShopPage),
+							   ('/loc/?(.*)?', LocalityPage),
+							   ('/.*', FourOhFour)], debug = True)

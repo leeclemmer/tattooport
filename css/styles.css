@@ -1,11 +1,21 @@
 /*** Global ***/
 body {
+	padding-top: 70px;
 	background-color: #2a2a2a;
 	color: #eee;
 }
 
 a {
 	color: #5bb6c3;
+}
+
+h1 {
+	color: #DD9B3D;
+	font-family: 'Montserrat', sans-serif;
+}
+
+ul li li {
+	padding-left: 2em;
 }
 
 .tagline {
@@ -27,15 +37,19 @@ a {
 }
 
 /*** Navbar ***/
-@media (min-width: 877px) {
+.navbar-nav {
+	font-family: 'Montserrat', sans-serif;
+}
+
+@media (min-width: 939px) {
 	.navbar-nav {
 		font-size: 1.4em;
 	}
 }
 
-@media (min-width: 768px) {
+@media (min-width: 939px) {
 	.navbar-header {
-		margin-right: 3em;
+		margin-right: 2.5em;
 	}
 }
 
@@ -59,16 +73,12 @@ a {
 .navbar-brand {
 	display: inline-block;
 	max-width: 220px;
-}
-
-@media (min-width: 369px) {
-	.navbar-brand {
-		max-width: 310px;
-	}
+	padding-top: 18px;
 }
 
 .navbar-absolute {
 	position: absolute;
+	top: 0;
 	left: 0;
 	right: 0;
 }
@@ -78,6 +88,27 @@ a {
 	color: black;
 	background-color: #eee;
 	font-weight: bold;
+}
+
+.navbar .img-circle {
+	width: 22px;
+}
+
+@media (min-width: 939px) {
+	.navbar-brand {
+		max-width: 310px;
+		padding-top: 15px;
+	}
+
+	.navbar .img-circle {
+		width: 30px;
+	}
+}
+
+/*** Row ***/
+
+.row ul li a {
+	font-size: 1.8em;
 }
 
 /*** Login ***/
@@ -146,4 +177,13 @@ a {
 
 .login-page .sign-up a {
 	color: #8dc233;
+}
+
+/*** Shop Page ***/
+.photo {
+    padding-bottom: 30px;
+}
+
+.photo img {
+    border: 15px solid #111
 }
