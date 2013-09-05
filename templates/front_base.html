@@ -38,12 +38,16 @@
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right">
+				{% if user %}
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">{% block user %}{% endblock %}<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li><a href="/logoff">Sign out</a></li>
 					</ul>
 				</li>
+				{% else %}
+				<li><a href="/login" class="login-link">Log In</a></li>
+				{% endif %}
 			</ul>			
 		</div>
 	</nav>

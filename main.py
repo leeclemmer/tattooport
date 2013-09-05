@@ -13,9 +13,11 @@ import hashlib
 # internal
 import keys
 import utils
+import deferred_tasks
 from countries import COUNTRIES
 from utils import info
 from models import *
+
 
 # external
 import webapp2
@@ -24,6 +26,7 @@ import mapq
 import general_counter
 from instagram.client import InstagramAPI
 from google.appengine.api import memcache
+from google.appengine.ext import deferred
 
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -113,7 +116,8 @@ class BaseHandler(webapp2.RequestHandler):
 					geo_pt.lon,
 					keys.GMAPS_STATIC_API_KEY)	
 
-	def regions_in_db(self):
+	@classmethod
+	def regions_in_db(cls):
 		''' Returns a list of list of lists with all used regions. '''
 		return [[country,
 					[[subdivision,
@@ -142,7 +146,8 @@ class BaseHandler(webapp2.RequestHandler):
 				return user
 		else: return None
 
-	def get_instagram_api(self,access_token=''):
+	@classmethod
+	def get_instagram_api(cls,access_token=''):
 		''' Helper function for quick access to instagram api. 
 			Access token optional. If not given, API access is limited.
 		'''
@@ -305,34 +310,50 @@ class ShopPage(BaseHandler):
 				shop = s
 				break
 
-		api = self.get_instagram_api(access_token=self.user.access_token)
+		if not self.user:
+			# Anonymous User
+			info('pagename "%s"' % (pagename,))
+			info('pagename type', type(pagename))
+			media = memcache.get(pagename)
+			info('media',media)
+			info('media type',type(media))
+			if not media:
+				# kick off cron-job to refresh cache
+				#info('refresh_cache',refresh_cache())
+				deferred.defer(deferred_tasks.refresh_cache)
 
-		media = None
-		next = None
-		if shop.instagram.get() is not None:
-			for ig in shop.instagram.fetch():
-				if ig.primary == True and ig.user_id:
-					media, next = api.user_recent_media(
-						user_id=ig.user_id,
-						count=30)
-					break
-		elif shop.foursquare.get() is not None:
-			for fsq in shop.foursquare.fetch():
-				if fsq.primary == True and fsq.location_id:
-					location_id = fsq.location_id
-					info('lid',location_id)
-					media, next = api.location_recent_media(
-						count=30, 
-						location_id=fsq.location_id)
-					break
+			self.render('shop.html',
+						user=self.user,
+						shop=shop,
+						media=media,
+						next=None)
+		else:
+			# Logged in user
+			api = self.get_instagram_api(access_token=self.user.access_token)
 
-		info('%s' % (shop.instagram.get(),),shop)
+			media = None
+			next = None
+			if shop.instagram.get() is not None:
+				for ig in shop.instagram.fetch():
+					if ig.primary == True and ig.user_id:
+						media, next = api.user_recent_media(
+							user_id=ig.user_id,
+							count=30)
+						break
+			elif shop.foursquare.get() is not None:
+				for fsq in shop.foursquare.fetch():
+					if fsq.primary == True and fsq.location_id:
+						location_id = fsq.location_id
+						media, next = api.location_recent_media(
+							count=30, 
+							location_id=fsq.location_id)
+						break
 
-		self.render('shop.html',
-					user=self.user,
-					shop=shop,
-					media=media,
-					next=next)
+			self.render('shop.html',
+						user=self.user,
+						shop=shop,
+						media=media,
+						next=next)
 
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),

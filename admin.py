@@ -21,6 +21,12 @@ class AdminMain(BaseHandler):
 					subd_count=subd_count,
 					loca_count=loca_count
 					)
+class AdminRefreshCache(BaseHandler):
+	def get(self):
+		''' Cron handler to refresh cache. '''
+		deferred.defer(deferred_tasks.refresh_cache)
+		info('Task added to refresh cache.')
 
 app = webapp2.WSGIApplication(
-	[('/admin/?', AdminMain)], debug=True)
+	[('/admin/?', AdminMain),
+	 ('/admin/refresh_cache')], debug=True)

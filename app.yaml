@@ -12,6 +12,7 @@ libraries:
 
 builtins:
 - appstats: on
+- deferred: on
 
 handlers:
 - url: /css
