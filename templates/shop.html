@@ -27,9 +27,12 @@
     <div class="row more">
         <div class="col-sm-3 col-md-3 col-lg-3"></div>
         <div class="col-sm-6 col-md-6 col-lg-6">
-    {% if user %}
-            <a href=""><button class="btn btn-lg btn-primary">Load more</button></a>
-    {% else %}
+    {% if user and next %}
+            <form method="get">
+                <input type="hidden" name="max_id" value="{{ next }}">
+                <button type="submit" class="btn btn-lg btn-primary">Load more</button>
+            </form>
+    {% elif not user%}
             <a href="/login"><button class="btn btn-lg btn-primary">Log in to see more</button></a>
     {% endif %}
         </div>

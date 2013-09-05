@@ -299,6 +299,7 @@ class LocalityPage(BaseHandler):
 
 class ShopPage(BaseHandler):
 	def get(self, pagename):
+		max_id = self.request.get('max_id')
 		shop_name, sid = pagename.split('/')
 		shop_name = urllib.unquote_plus(shop_name)
 		shop = self.get_shop(shop_name, sid)
@@ -322,7 +323,12 @@ class ShopPage(BaseHandler):
 			# Logged in user
 			api = self.get_instagram_api(access_token=self.user.access_token)
 
-			media, next = self.get_shop_response(api, shop_name)
+			media, next = self.get_shop_response(api, shop, sid, max_id=max_id)
+			if next:
+				for i in next.split('&'):
+					if 'max_id' in i:
+						next = i.split('=')[1]
+						break
 
 			self.render('shop.html',
 						user=self.user,
@@ -341,7 +347,7 @@ class ShopPage(BaseHandler):
 				break
 
 	@classmethod
-	def get_shop_response(cls, api, shop, sid):
+	def get_shop_response(cls, api, shop, sid, max_id=''):
 		media = None
 		next = None
 		if shop.instagram.get() is not None:
@@ -349,7 +355,8 @@ class ShopPage(BaseHandler):
 				if ig.primary == True and ig.user_id:
 					media, next = api.user_recent_media(
 						user_id=ig.user_id,
-						count=30)
+						count=30, 
+						max_id=max_id)
 					break
 		elif shop.foursquare.get() is not None:
 			for fsq in shop.foursquare.fetch():
@@ -357,7 +364,8 @@ class ShopPage(BaseHandler):
 					location_id = fsq.location_id
 					media, next = api.location_recent_media(
 						count=30, 
-						location_id=fsq.location_id)
+						location_id=fsq.location_id,
+						max_id=max_id)
 					break
 
 		return (media, next)
