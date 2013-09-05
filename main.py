@@ -299,16 +299,9 @@ class LocalityPage(BaseHandler):
 
 class ShopPage(BaseHandler):
 	def get(self, pagename):
-		shop, sid = pagename.split('/')
-		shop = urllib.unquote_plus(shop)
-
-		# If shops with the same name, compare IDs
-		# There is chance of same ID and same name... 
-		# ... very remote (let's hope)
-		for s in Studio.by_name(shop):
-			if int(sid) == s.key.id():
-				shop = s
-				break
+		shop_name, sid = pagename.split('/')
+		shop_name = urllib.unquote_plus(shop_name)
+		shop = self.get_shop(shop_name, sid)
 
 		if not self.user:
 			# Anonymous User
@@ -329,29 +322,45 @@ class ShopPage(BaseHandler):
 			# Logged in user
 			api = self.get_instagram_api(access_token=self.user.access_token)
 
-			media = None
-			next = None
-			if shop.instagram.get() is not None:
-				for ig in shop.instagram.fetch():
-					if ig.primary == True and ig.user_id:
-						media, next = api.user_recent_media(
-							user_id=ig.user_id,
-							count=30)
-						break
-			elif shop.foursquare.get() is not None:
-				for fsq in shop.foursquare.fetch():
-					if fsq.primary == True and fsq.location_id:
-						location_id = fsq.location_id
-						media, next = api.location_recent_media(
-							count=30, 
-							location_id=fsq.location_id)
-						break
+			media, next = self.get_shop_response(api, shop_name)
 
 			self.render('shop.html',
 						user=self.user,
 						shop=shop,
 						media=media,
 						next=next)
+
+	@classmethod
+	def get_shop(cls, shop_name, sid):		
+		# If shops with the same name, compare IDs
+		# There is chance of same ID and same name... 
+		# ... very remote (let's hope)
+		for s in Studio.by_name(shop_name):
+			if int(sid) == s.key.id():
+				return s
+				break
+
+	@classmethod
+	def get_shop_response(cls, api, shop, sid):
+		media = None
+		next = None
+		if shop.instagram.get() is not None:
+			for ig in shop.instagram.fetch():
+				if ig.primary == True and ig.user_id:
+					media, next = api.user_recent_media(
+						user_id=ig.user_id,
+						count=30)
+					break
+		elif shop.foursquare.get() is not None:
+			for fsq in shop.foursquare.fetch():
+				if fsq.primary == True and fsq.location_id:
+					location_id = fsq.location_id
+					media, next = api.location_recent_media(
+						count=30, 
+						location_id=fsq.location_id)
+					break
+
+		return (media, next)
 
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),

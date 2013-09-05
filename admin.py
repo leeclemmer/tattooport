@@ -26,6 +26,7 @@ class AdminRefreshCache(BaseHandler):
 		''' Cron handler to refresh cache. '''
 		deferred.defer(deferred_tasks.refresh_cache)
 		info('Task added to refresh cache.')
+		self.redirect('/admin')
 
 app = webapp2.WSGIApplication(
 	[('/admin/?', AdminMain),

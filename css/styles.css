@@ -130,11 +130,12 @@ ul li li {
 	margin: 0 auto;
 }
 
-.login-page a:hover, .login-page a:focus {
+.login-page a:hover, .login-page a:focus,
+.shop-page .more a:hover, .shop-page .more a:focus {
 	text-decoration: none;
 }
 
-.login-page .btn {
+.login-page .btn, .shop-page .btn {
 	display: block;
 	width: 100%;
 	max-width: 370px;
@@ -191,4 +192,13 @@ ul li li {
 
 .photo img {
     border: 15px solid #111
+}
+
+.shop-page .more {
+	padding-top:30px;
+}
+
+/*** Footer ***/
+.footer {
+	height:100px;
 }

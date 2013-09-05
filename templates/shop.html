@@ -5,6 +5,7 @@
 {% block user %}{% if user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% else %}<a href="/login">Log In</a>{% endif %}{% endblock %}
 
 {% block main %}
+    <span class="shop-page">
     <h1>{{ shop.name }}</h1>
 
     {% if media %}
@@ -23,5 +24,17 @@
         {% endfor %}
     {% endif %}
 
+    <div class="row more">
+        <div class="col-sm-3 col-md-3 col-lg-3"></div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+    {% if user %}
+            <a href=""><button class="btn btn-lg btn-primary">Load more</button></a>
+    {% else %}
+            <a href="/login"><button class="btn btn-lg btn-primary">Log in to see more</button></a>
+    {% endif %}
+        </div>
+        <div class="col-sm-3 col-md-3 col-lg-3"></div>
+    </div>
+    </span>
 {% endblock %}
 

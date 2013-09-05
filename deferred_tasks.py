@@ -39,31 +39,13 @@ def refresh_shop(shop_cache_id):
 	# If shops with the same name, compare IDs
 	# There is chance of same ID and same name... 
 	# ... very remote (let's hope)
-	shop, sid = shop_cache_id.split('/')
-	shop = urllib.unquote_plus(shop)
-	for s in Studio.by_name(shop):
-		if int(sid) == s.key.id():
-			shop = s
-			break
+	shop_name, sid = shop_cache_id.split('/')
+	shop_name = urllib.unquote_plus(shop_name)
+	shop = ShopPage.get_shop(shop_name, sid)
 
-	info('caching shop',shop.name)
+	media, next = ShopPage.get_shop_response(api, shop, sid)
 
-	media = None
-	next = None
-	if shop.instagram.get() is not None:
-		for ig in shop.instagram.fetch():
-			if ig.primary == True and ig.user_id:
-				media, next = api.user_recent_media(
-					user_id=ig.user_id,
-					count=30)
-				break
-	elif shop.foursquare.get() is not None:
-		for fsq in shop.foursquare.fetch():
-			if fsq.primary == True and fsq.location_id:
-				media, next = api.location_recent_media(
-					count=30,
-					location_id=fsq.location_id)
-				break
+	info('caching shop', shop.name)
 
 	return memcache.set(shop_cache_id, media, time=60*60*6)
 
