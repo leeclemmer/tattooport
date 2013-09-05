@@ -312,15 +312,13 @@ class ShopPage(BaseHandler):
 
 		if not self.user:
 			# Anonymous User
-			info('pagename "%s"' % (pagename,))
-			info('pagename type', type(pagename))
 			media = memcache.get(pagename)
-			info('media',media)
-			info('media type',type(media))
 			if not media:
 				# kick off cron-job to refresh cache
 				#info('refresh_cache',refresh_cache())
 				deferred.defer(deferred_tasks.refresh_cache)
+			else:
+				media = media[:12]
 
 			self.render('shop.html',
 						user=self.user,

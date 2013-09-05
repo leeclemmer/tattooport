@@ -29,4 +29,4 @@ class AdminRefreshCache(BaseHandler):
 
 app = webapp2.WSGIApplication(
 	[('/admin/?', AdminMain),
-	 ('/admin/refresh_cache')], debug=True)
+	 ('/admin/refresh_cache', AdminRefreshCache)], debug=True)

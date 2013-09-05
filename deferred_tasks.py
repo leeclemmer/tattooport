@@ -26,9 +26,7 @@ def refresh_cache():
 	shops = utils.flatten_list(shops)
 	shops = ['%s/%s' % (urllib.quote_plus(shop.name),shop.key.id()) for shop in shops]
 	for shop_cache_id in shops:
-		shop_cache = memcache.get(shop_cache_id)
-		if not shop_cache:
-			refresh_shop(shop_cache_id)
+		refresh_shop(shop_cache_id)
 
 def refresh_shop(shop_cache_id):
 	from main import *
@@ -48,21 +46,22 @@ def refresh_shop(shop_cache_id):
 			shop = s
 			break
 
-	media = 'Not available'
+	info('caching shop',shop.name)
+
+	media = None
 	next = None
 	if shop.instagram.get() is not None:
 		for ig in shop.instagram.fetch():
 			if ig.primary == True and ig.user_id:
 				media, next = api.user_recent_media(
 					user_id=ig.user_id,
-					count=12)
+					count=30)
 				break
 	elif shop.foursquare.get() is not None:
 		for fsq in shop.foursquare.fetch():
 			if fsq.primary == True and fsq.location_id:
-				location_id = fsq.location_id
 				media, next = api.location_recent_media(
-					count=12, 
+					count=30,
 					location_id=fsq.location_id)
 				break
 
