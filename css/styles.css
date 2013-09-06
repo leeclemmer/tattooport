@@ -48,6 +48,42 @@ ul li li {
 	border-color: #84b72c;
 }
 
+.btn-default {
+	color: #666;
+	background-color: #222;
+	border-color: #222;
+}
+
+.btn-default:hover {
+	color: #555;
+	background-color: #111;
+	border-color: #111;
+}
+
+.btn-lg {
+	padding: 16px;
+}
+
+.button-loading {
+	background: #8dc233 url(/img/ajax-loader-button.gif) no-repeat 90% 1px;
+}
+
+.btn-next,
+.btn-prev {
+	display: inline-block !important;
+	width: auto !important;
+	margin-top: 0.7em;
+	background-color: transparent;
+}
+
+.btn-next {
+	float: right;
+}
+
+.btn-prev {
+	float: left;
+}
+
 /*** Navbar ***/
 .navbar-nav {
 	font-family: 'Montserrat', sans-serif;
@@ -234,11 +270,63 @@ p.backlink a {
 	.shop-header {
 		margin-top: 0;
 	}
-	
+
 	.shop-header img {
 		margin-top: 0.3em;
 		width: 50px;
 	}
+}
+
+/*** Modal ***/
+.modal-dialog {
+	width: 674px;
+}
+
+.modal-content {
+	background-color: #2a2a2a;
+}
+
+.modal-footer {
+	margin-top: 0;
+	padding: 5px 20px 30px;
+	border: none;
+}
+
+.modal-meta {
+	text-align: left;
+	margin-left: 90px;
+	margin-right: 90px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 1.3em;
+}
+
+.modal-meta .photo-author {
+	float: left;
+	color: #555;
+}
+
+.modal-meta .photo-author img {
+	width: 30px;
+	display: inline;
+	vertical-align: middle;
+	margin-right: 10px;
+}
+
+.modal-meta .likes-count {
+	float: right;
+	color: #555;
+	margin-left: 20px;
+}
+
+.modal-meta .comment-count {
+	float: right;
+	color: #555;
+}
+
+.modal-meta .caption {
+	padding-top: 45px;
+	color: #999;
+	font-size
 }
 
 /*** Footer ***/

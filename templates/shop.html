@@ -34,15 +34,25 @@
         {% endblock %}
     </div>
 
+    <!-- Media Modal -->
+    <div class="modal fade" id="media-modal" tabindex="-1" role="dialog" aria-labelledby="Instagram Tattoo Photo" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-prev" aria-hidden="true"><i class="icon-chevron-left icon-3x"></i></button>
+                    <button type="button" class="btn btn-next" aria-hidden="true"><i class="icon-chevron-right icon-3x"></i></button>
+                    <div class="modal-meta">
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
     <div class="row more">
         <div class="col-sm-3 col-md-3 col-lg-3"></div>
         <div class="col-sm-6 col-md-6 col-lg-6">
-    {% if user and next %}
-            <form method="get">
-                <input type="hidden" name="max_id" value="{{ next }}">
-                <button type="submit" class="btn btn-lg btn-primary">Load more</button>
-            </form>
-    {% elif not user%}
+    {% if not user%}
             <a href="/login"><button class="btn btn-lg btn-primary">Log in to see more</button></a>
     {% endif %}
         </div>
