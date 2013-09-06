@@ -51,7 +51,22 @@ $(function() {
 			if (document.width > 768) {
 				$('.img-responsive').bind('click', function() {
 					load_modal.call(this);
-				});				
+				});		
+
+				// Preload standard_res images
+				function preload(arrayOfImages) {
+					$(arrayOfImages).each(function () {
+						console.log('preload')
+			        	$('<img />').attr('src',this).appendTo('body').hide();
+			    	});
+				};
+
+				arrayOfImages = new Array();
+				for (igid in photos) {
+					arrayOfImages.push(photos[igid].images.standard_resolution.url)
+				};
+				console.log(arrayOfImages);
+				preload(arrayOfImages);		
 			} else {
 				$('.photo a').removeAttr('href').on('click', function() { return null; });
 			}
