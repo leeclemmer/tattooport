@@ -124,6 +124,7 @@ class Instagram(ndb.Model):
 
 	instagram = ndb.StringProperty()
 	user_id = ndb.StringProperty()
+	profile_picture = ndb.StringProperty()
 	primary = ndb.BooleanProperty()
 
 class Foursquare(ndb.Model):

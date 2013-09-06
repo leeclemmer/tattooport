@@ -312,29 +312,47 @@ class ShopPage(BaseHandler):
 				#info('refresh_cache',refresh_cache())
 				deferred.defer(deferred_tasks.refresh_cache)
 			else:
-				media = media[:12]
+				media = media[:12] # only show 12 pics on anonymous screen
 
-			self.render('shop.html',
+			self.render('shop_cached.html',
 						user=self.user,
 						shop=shop,
 						media=media,
 						next=None)
 		else:
-			# Logged in user
-			api = self.get_instagram_api(access_token=self.user.access_token)
+			# Logged in user			
+			api_url = self.ig_user_media_recent(shop, self.user.access_token)
 
-			media, next = self.get_shop_response(api, shop, sid, max_id=max_id)
-			if next:
-				for i in next.split('&'):
-					if 'max_id' in i:
-						next = i.split('=')[1]
-						break
-
+			if not api_url:
+				api_url = self.ig_location_media_recent(shop, self.user.access_token)
+			
 			self.render('shop.html',
 						user=self.user,
 						shop=shop,
-						media=media,
-						next=next)
+						next=next,
+						api_url=api_url)
+
+	def ig_url_params(self, access_token):		
+		params = '?access_token=%s' % (access_token,)
+		params += '&count=30'
+		return params
+
+	def ig_user_media_recent(self, shop, access_token):
+		if shop.instagram.get():
+			return '%s%s%s%s' % ('https://api.instagram.com/v1/users/',
+							 shop.instagram.get().user_id,
+							 '/media/recent/',
+							 self.ig_url_params(access_token))
+		else: return None
+
+	def ig_location_media_recent(self, shop, access_token):
+		if shop.foursquare.get():
+			return '%s%s%s%s' % ('https://api.instagram.com/v1/locations/',
+							 shop.foursquare.get().location_id,
+							 '/media/recent/',
+							 self.ig_url_params(access_token))
+		else: return None
+
 
 	@classmethod
 	def get_shop(cls, shop_name, sid):		

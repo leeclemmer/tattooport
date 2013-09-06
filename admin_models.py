@@ -211,6 +211,7 @@ class AdminStudio(BaseHandler):
 			ig = InstagramAPI(client_id=keys.IG_CLIENTID,
 							  client_secret=keys.IG_CLIENTSECRET)
 			user_id = ig.user_search(instagram)[0].id
+			profile_picture = ig.user_search(instagram)[0].profile_picture
 		except:
 			utils.catch_exception()
 
@@ -218,6 +219,7 @@ class AdminStudio(BaseHandler):
 			contact=key,
 			instagram=instagram,
 			user_id=user_id,
+			profile_picture=profile_picture,
 			primary=primary
 			).put()
 

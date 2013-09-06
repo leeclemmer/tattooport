@@ -23,7 +23,7 @@
 
 	<div class="row">
 		<div class="col-lg-12">
-			<h1>{{ studio.name }}</h1>
+			<h1>{% if studio.instagram.get().profile_picture %}<img src="{{ studio.instagram.get().profile_picture }}" class="img-circle" width="50px">{% endif %} {{ studio.name }}</h1>
 			<a href="{{ studio.edit }}"><button class="btn btn-primary">Edit</button></a>
 		</div>
 	</div>
@@ -57,7 +57,7 @@
 				</ul>
 			{% endif %}
 
-			{% if studio.instagram.get() or studio.facebook.get() or studio.twitter.get() or studio.tumblr.get() %}
+			{% if studio.instagram.get() or studio.facebook.get() or studio.twitter.get() or studio.tumblr.get() or studio.foursquare.get() %}
 			<strong class="section-label">Social</strong>
 			{% endif %}
 

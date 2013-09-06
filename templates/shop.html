@@ -6,23 +6,33 @@
 
 {% block main %}
     <span class="shop-page">
-    <h1>{{ shop.name }}</h1>
 
-    {% if media %}
-        {% for item in media %}
-            {% if loop.first or (loop.index-1) is divisibleby(4) %}
-            <div class="row">
-            {% endif %}
+    <!-- Shop Header -->
+    <div class="row">
+        <div class="col-sm-8 col-md-6 col-lg-6 shop-header">
+            {% if shop.instagram.get().profile_picture %}
+            <img src="{{ shop.instagram.get().profile_picture }}" class="img-circle">
+            {% endif %} 
 
-                <div class=" col-sm-3 col-md-3 col-lg-3 photo">
-                    <img src="{{ item.images['low_resolution'].url }}" class="img-responsive">
-                </div>
+            {% set address = shop.address.get() %}
 
-            {% if loop.last or loop.index is divisibleby(4) %}
-            </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+            <p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>
+
+            <h1>{{ shop.name }}</h1>
+        </div>
+
+        <div class="col-sm-4 col-md-6 col-lg-6">
+        </div>
+    </div>
+
+    <!-- Media -->
+    <div class="row" id="media-holder">
+        {% block media %}
+        {% if api_url %}
+        <img src="/img/ajax-loader.gif" id="ajax-loader">
+        {% endif %}
+        {% endblock %}
+    </div>
 
     <div class="row more">
         <div class="col-sm-3 col-md-3 col-lg-3"></div>
@@ -40,4 +50,13 @@
     </div>
     </span>
 {% endblock %}
+
+{% block javascript %}
+<script>
+$_API_URL = "{{ api_url }}&callback=?"
+</script>
+<script src="/js/app.js"></script>
+
+{% endblock %}
+
 

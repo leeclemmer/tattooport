@@ -6,7 +6,7 @@
 <span class="temp-admin-view">
 	<div class="row">
 		<div class="col-lg-10">
-			<h1>{{ artist.display_name }}</h1>
+			<h1>{% if artist.instagram.get().profile_picture %}<img src="{{ artist.instagram.get().profile_picture }}" class="img-circle" width="50px">{% endif %} {{ artist.display_name }}</h1>
 			<a href="{{ artist.edit }}"><button class="btn btn-primary">Edit</button></a>
 		</div>
 
