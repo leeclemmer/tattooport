@@ -1,0 +1,39 @@
+{% extends "admin_models.html" %}
+{% block title %}
+	{{title}} {% if category %}- {{ category[0].name }}{% endif %}
+{% endblock %}
+{% block main %}
+<span class="temp-admin-view">
+	{% if category %}
+	<div class="row">
+		<div class="col-lg-10">
+			<h1>{{ category[0].name }}</h1>
+
+			{% if category[0].instagram_tag %}
+			<p>Instagram tag: <strong>{{ category[0].instagram_tag }}</strong>
+					{% if category[0].instagram_count %}
+						({{ category[0].instagram_count }})
+					{% endif %}
+			</p>
+			{% endif %}
+		</div>
+
+		<div class="col-lg-2">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<a href="/admin/models/category/delete/{{ category[0].key.pairs()[0][-1] }}/{{ category[0].name }}"><button class="btn btn-danger">Delete</button></a>
+		</div>
+	</div>
+	{% else %}
+	<div class="row">
+		<div class="col-lg-10">
+			<h1>Whoopsies</h1>
+			<p>Nothing to display, try to refresh.</p>
+		</div>
+	</div>
+	{% endif %}
+</span>
+{% endblock %}

@@ -1137,6 +1137,170 @@ class AdminSearch(AdminStudio):
 																 relationship))
 		self.write((studio, artist, relationship))
 
+class AdminCategoryCreate(BaseHandler):
+	def get(self):
+		groups = [group.name for group in \
+				  TattooGroup.query().order(TattooGroup.name).fetch()]
+		tattoogroup = self.request.get('tattoogroup')
+		self.render('admin_category_create.html',
+					active='models',
+					active_nav='category',
+					groups=groups,
+					tattoogroup=tattoogroup)
+
+	def post(self):
+		args = {arg:self.request.get(arg) for arg in self.request.arguments()}
+		info('args:',args)
+
+		try:
+			raise_it, error = self.validate_args(args)
+
+			# if any of the fields failed validation
+			if raise_it: raise ValidationError(error)
+
+			if args.get('tattoogroup') == 'Create new group':
+				tattoogroup = args.get('newtattoogroup')
+			else:
+				tattoogroup = args.get('tattoogroup')
+
+			self.put_group(tattoogroup)
+
+			self.put_category(tattoogroup, args.get('categoryname'), 
+							  args.get('instagramtag'))
+
+			if args.get('createagain') == 'yes':
+				info('yes')
+				self.redirect('/admin/models/category/create?tattoogroup=%s' %\
+							  (tattoogroup,))
+			else:
+				self.redirect('/admin/models/category/view/%s/%s' % \
+					(tattoogroup, urllib.quote_plus(args.get('categoryname'))))
+
+		except ValidationError:
+			# Error, so re-render form with error message
+			error += '%s: %s' % (sys.exc_info()[0], sys.exc_info()[1])
+
+			self.render('admin_category_create.html',
+						active='models',
+						active_nav='category',
+						error=error,
+						tattoogroup=tattoogroup,
+						newtattoogroup=args.get('newtattoogroup'),
+						categoryname=args.get('categoryname'),
+						instagramtag=args.get('instagramtag'))
+
+	def valid_tattoogroup(self, tattoogroup):
+		TATTOOGROUP_RE = re.compile(r"^[a-zA-Z\s]{3,250}$")
+		return TATTOOGROUP_RE.match(tattoogroup)
+
+	def valid_categoryname(self, categoryname):
+		CATEGORYNAME_RE = re.compile(r"^[a-zA-Z\s]{3,250}$")
+		return CATEGORYNAME_RE.match(categoryname)
+
+	def valid_instagramtag(self, instagramtag):
+		INSTAGRAMTAG_RE = re.compile(r"^[a-zA-Z]{3,250}$")
+		return INSTAGRAMTAG_RE.match(instagramtag)
+
+	def valid_createagain(self, createagain):
+		return createagain == 'yes'
+
+	def validate_args(self, args):
+		''' Takes list of args and validates them against validation rules.
+			Returns (True/False, error)'''
+		error = ''
+		raise_it = False
+
+		# Group validation 
+		if not args.get('tattoogroup'):
+			error += 'Must have tattoo group'
+		elif args.get('tattoogroup') == 'Create new group' and \
+			 not args.get('newtattoogroup'):
+			error += 'Must provide name of new tattoo group'
+
+		# Name validation
+		if not args.get('categoryname'):
+			error += 'Category must have a name'
+			raise_it = True
+
+		# Traverse arguments and run against validation function
+		for k,v in args.iteritems():
+			if k == 'newtattoogroup' and args.get('tattoogroup') != 'Create new group':
+				continue
+			if not self.validation_funcs[k](self, v):
+				error += '%s field: "%s" is in a wrong format. Try again. # ' % (k, v)
+				raise_it = True
+
+		return (raise_it,error)
+
+	def put_group(self, name):
+		if TattooGroup.query(TattooGroup.name == name).get() == None:
+			TattooGroup(id=name,
+						name=name).put()
+
+	def put_category(self, parent, name, instagram_tag=''):
+		instagram_count = None
+		try:
+			ig = InstagramAPI(client_id=keys.IG_CLIENTID,
+							  client_secret=keys.IG_CLIENTSECRET)
+			instagram_tag = instagram_tag.replace('tattoos','').replace('tattoo','')
+			tags = ['%stattoo' % instagram_tag,
+					'%stattoos' % instagram_tag,
+					'tattoo%s' % instagram_tag,
+					'tattoos%s' % instagram_tag]
+			media_count = 0
+			for tag in tags:
+				if ig.tag(tag).media_count > media_count:
+					media_count = ig.tag(tag).media_count
+					instagram_tag = tag
+			instagram_count = ig.tag(instagram_tag).media_count
+		except:
+			utils.catch_exception()
+
+		TattooCategory(parent=ndb.Key('TattooGroup',parent),
+					id=''.join(name.split(' ')),
+					name=name,
+					instagram_tag=instagram_tag,
+					instagram_count=instagram_count).put()
+
+	# Validation functions
+	validation_funcs = {'tattoogroup':valid_tattoogroup,
+						'newtattoogroup':valid_tattoogroup,
+						'categoryname':valid_categoryname,
+						'instagramtag':valid_instagramtag,
+						'createagain':valid_createagain}
+
+class AdminCategoryView(BaseHandler):
+	def get(self, pagename):
+		parent, category_name = pagename.split('/')
+		category_name = urllib.unquote_plus(category_name)
+
+		info(parent)
+		info(category_name)
+		info(TattooCategory.by_name(category_name).fetch())
+
+		category = TattooCategory.by_name(category_name).fetch()
+
+		self.render('admin_category_view.html',
+					active='models',
+					active_nav='category',
+					category=category)
+
+class AdminCategoryDelete(BaseHandler):
+	def get(self, pagename):
+		parent, category_name = pagename.split('/')
+		category_name = ''.join(category_name.split(' '))
+		
+		ndb.Key('TattooGroup',parent,'TattooCategory',category_name).delete()
+		
+		self.redirect('/admin/models/category/browse')
+
+class AdminCategoryBrowse(BaseHandler):
+	def get(self):
+		self.render('admin_category_browse.html',
+					active='models',
+					active_nav='category',
+					groups = TattooGroup.all_groups())
+
 app = webapp2.WSGIApplication(
 	[('/admin/models/?', AdminModels),
 	 ('/admin/models/(studio|artist)/create/?', AdminCreate),
@@ -1146,4 +1310,9 @@ app = webapp2.WSGIApplication(
 	 ('/admin/models/(studio|artist)/browse/?', AdminStudioBrowse),
 	 ('/admin/models/(studio|artist)/browse/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminBrowseRegion),
 	 ('/admin/models/(studio|artist)/search/?', AdminSearch),
-	 ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio)], debug=True)
+	 ('/admin/models/studio/([0-9a-zA-Z]*?)', AdminStudio),
+	 ('/admin/models/category/create/?', AdminCategoryCreate),
+	 ('/admin/models/category/browse/?', AdminCategoryBrowse),
+	 ('/admin/models/category/view/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminCategoryView),
+	 ('/admin/models/category/delete/([\+\s,.\'()0-9a-zA-Z\/_-]*?)', AdminCategoryDelete),
+	 ('/admin/models/category/browse/?', AdminCategoryBrowse)], debug=True)

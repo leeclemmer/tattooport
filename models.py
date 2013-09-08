@@ -203,20 +203,50 @@ class StudioArtist(ndb.Model):
 
 	relationship = ndb.StringProperty(choices=('owner', 'artist', 'guest'))
 
-def user_parent_key(group):
-	return ndb.Key('users',group)
+def parent_key(group_name, group):
+	return ndb.Key('%s' % group_name,group)
+
+class TattooGroup(ndb.Model):
+	''' Models a tattoo group, like "Animals" '''
+	name = ndb.StringProperty(required=True)
+
+	@classmethod
+	def all_groups(cls):		
+		groups = cls.query().order(cls.name).fetch()
+		return [[group,[category for category in \
+						TattooCategory.by_group(group.name).fetch()]] for group in groups]
+
+class TattooCategory(ndb.Model):
+	''' Models a tattoo category, like "old school tattoo" '''
+	name = ndb.StringProperty(required=True)
+
+	instagram_tag = ndb.StringProperty()
+	instagram_count = ndb.IntegerProperty()
+
+	@classmethod
+	def by_id(cls, uid, group):
+		return TattooCategory.get_by_id(uid, parent=parent_key('TattooGroup',
+			group))
+
+	@classmethod
+	def by_name(cls, name):
+		return TattooCategory.query(TattooCategory.name == name)
+
+	@classmethod
+	def by_group(cls, group):
+		return TattooCategory.query(ancestor=parent_key('TattooGroup',group))
 
 class User(ndb.Model):
 	''' Models a user. '''
 	user_name = ndb.StringProperty(required=True)
 
 	@classmethod
-	def by_name(cls, name):
-		return User.query(User.user_name == name)
+	def by_id(cls, uid, group='default'):
+		return User.get_by_id(uid, parent=parent_key('users',group))
 
 	@classmethod
-	def by_id(cls, uid, group='default'):
-		return User.get_by_id(uid, parent=user_parent_key(group))
+	def by_name(cls, name):
+		return User.query(User.user_name == name)
 
 class InstagramUser(User):
 	''' Models an Instagram user. '''
@@ -227,7 +257,7 @@ class InstagramUser(User):
 
 	@classmethod
 	def by_id(cls, uid, group='default'):
-		return InstagramUser.get_by_id(uid, parent=user_parent_key(group))
+		return InstagramUser.get_by_id(uid, parent=parent_key('users',group))
 
 	@classmethod
 	def by_ig_id(cls, uid):
@@ -237,7 +267,7 @@ class InstagramUser(User):
 	def register(cls, user_name, user_id, 
 				 full_name=None, profile_picture=None, 
 				 group='default'):
-		return InstagramUser(parent=user_parent_key(group),
+		return InstagramUser(parent=parent_key('users',group),
 							 user_name=user_name,
 							 user_id=user_id,
 							 full_name=full_name,

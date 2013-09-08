@@ -46,6 +46,10 @@ def check_secure_val(secure_val):
 	if secure_val == make_secure_val(user_id):
 		return user_id
 
+def format_number_with_commas(number):
+	return '{:,}'.format(number)
+jinja_env.filters['format_number_with_commas'] = format_number_with_commas
+
 class BaseHandler(webapp2.RequestHandler):
 	def write(self, *a, **kw):
 		self.response.out.write(*a, **kw)
@@ -155,6 +159,35 @@ class BaseHandler(webapp2.RequestHandler):
 							client_secret=keys.IG_CLIENTSECRET,
 							access_token=access_token)
 
+	def ig_url_params(self, access_token):		
+		params = '?access_token=%s' % (access_token,)
+		params += '&count=30'
+		return params
+
+	def ig_user_media_recent(self, shop, access_token):
+		if shop.instagram.get():
+			return '%s%s%s%s' % ('https://api.instagram.com/v1/users/',
+								 shop.instagram.get().user_id,
+								 '/media/recent/',
+								 self.ig_url_params(access_token))
+		else: return None
+
+	def ig_location_media_recent(self, shop, access_token):
+		if shop.foursquare.get():
+			return '%s%s%s%s' % ('https://api.instagram.com/v1/locations/',
+								 shop.foursquare.get().location_id,
+								 '/media/recent/',
+								 self.ig_url_params(access_token))
+		else: return None
+
+	def ig_tag_recent_media(self, category, access_token):
+		if category and category.instagram_tag:
+			return '%s%s%s%s' % ('https://api.instagram.com/v1/tags/',
+								 category.instagram_tag,
+								 '/media/recent',
+								 self.ig_url_params(access_token))
+		else: return None
+
 	def login(self, user):
 		self.set_secure_cookie('user_id', str(user.key.id()))
 
@@ -250,6 +283,25 @@ class Logoff(BaseHandler):
 		self.logoff()
 		self.redirect('/')
 
+class Tattoos(BaseHandler):
+	def get(self):
+		self.render('tattoos.html',
+					user=self.user,
+					groups=TattooGroup.all_groups())
+
+class TattooCategoryPage(BaseHandler):
+	def get(self, pagename):
+		parent, category_name = pagename.split('/')
+		category_name = urllib.unquote_plus(category_name)
+		category_name = ''.join(category_name.split(' '))
+		category = ndb.Key('TattooGroup', parent, 
+						   'TattooCategory', category_name).get()
+		api_url = self.ig_tag_recent_media(category, self.user.access_token)
+		self.render('tattoo_category.html',
+					user=self.user,
+					category=category,
+					api_url=api_url)
+
 class ShopsArtists(BaseHandler):
 	def get(self):
 		regions = self.regions_in_db()
@@ -332,28 +384,6 @@ class ShopPage(BaseHandler):
 						next=next,
 						api_url=api_url)
 
-	def ig_url_params(self, access_token):		
-		params = '?access_token=%s' % (access_token,)
-		params += '&count=30'
-		return params
-
-	def ig_user_media_recent(self, shop, access_token):
-		if shop.instagram.get():
-			return '%s%s%s%s' % ('https://api.instagram.com/v1/users/',
-							 shop.instagram.get().user_id,
-							 '/media/recent/',
-							 self.ig_url_params(access_token))
-		else: return None
-
-	def ig_location_media_recent(self, shop, access_token):
-		if shop.foursquare.get():
-			return '%s%s%s%s' % ('https://api.instagram.com/v1/locations/',
-							 shop.foursquare.get().location_id,
-							 '/media/recent/',
-							 self.ig_url_params(access_token))
-		else: return None
-
-
 	@classmethod
 	def get_shop(cls, shop_name, sid):		
 		# If shops with the same name, compare IDs
@@ -391,6 +421,8 @@ class ShopPage(BaseHandler):
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),
 							   ('/logoff', Logoff),
+							   ('/tattoos/?', Tattoos),
+							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
 							   ('/shop/?(.*)?', ShopPage),
 							   ('/loc/?(.*)?', LocalityPage),

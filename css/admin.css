@@ -175,3 +175,9 @@ ul li li {
     padding-left: 20px
 }
 
+/*** AdminCategoryCreate ***/
+#create-new-category strong {
+    display: block;
+    margin: 1em;
+}
+

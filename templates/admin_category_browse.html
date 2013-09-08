@@ -1,0 +1,46 @@
+{% extends "admin_models.html" %}
+
+{% block title %}
+	Browse Categories
+{% endblock %}
+
+{% block main %}
+<span class="temp-admin-browse">
+	<h1>Categories</h1>
+
+	<div class="row">
+		<div class="col-lg-10">
+			<ul class="list-unstyled">
+			{% for group in groups %}
+				<li>
+					<strong>{{ group[0].name }}</strong>
+					<ul class="list-unstyled">
+					{% for category in group[1] %}
+						<li>
+							<strong>	
+								<a href="/admin/models/category/view/{{ group[0].name }}/{{ category.name }}">
+									{{ category.name }}
+								</a>
+							</strong>
+
+							{% if category.instagram_tag %}
+							<span class="text-muted">
+							({{ category.instagram_tag }} {% if category.instagram_count %}&times; {{ category.instagram_count }}{% endif %})
+							</span>	
+							{% endif %}
+
+							<small>
+								<a href="/admin/models/category/delete/{{ group[0].name }}/{{ category.name }}">
+									delete
+								</a>
+							</small>
+						</li>
+					{% endfor %}
+					</ul>
+				</li>
+			{% endfor %}
+			</ul>
+		</div>
+	</div>
+</span>
+{% endblock %}

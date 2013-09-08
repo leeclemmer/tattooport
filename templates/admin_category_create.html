@@ -1,0 +1,51 @@
+{% extends "admin_models.html" %}
+
+{% block title %}Create New Category{% endblock %}
+
+{% block main %}
+	<h1>Create New {{ active_nav.capitalize() }}</h1>
+
+	{% if error %}
+	<p class="text-danger form-error"><b>Form Error:</b> {{ error }}</p>
+	{% endif %}
+
+	<form method="post" class="form-horizontal" id="create-new-category">
+		<div class="form-group">
+			<label for="tattoogroup" class="col-lg-2 control-label">Group <span class="required">*</span></label>
+			<div class="col-lg-9">				
+				<select name="tattoogroup" id="tattoogroup" class="form-control" required>
+					<option {% if not tattoogroup or tattoogroup == 'Create new group' %}selected{% endif %}>Create new group</option>
+					{% for group in groups %}
+					<option value="{{ group }}" {% if tattoogroup == group %}selected{% endif %}>{{ group }}</option>
+					{% endfor %}
+				</select>
+
+				<strong>OR create new group</strong>
+
+				<input type="text" name="newtattoogroup" id="tattoogroup-new" class="form-control" pattern="[a-zA-Z\s]{3,250}" maxlength="250" placeholder="Group in which category belongs. Letters and space only, 3 to 250 characters." value="{{ newtattoogroup }}">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="categoryname" class="col-lg-2 control-label">Category Name <span class="required">*</span></label>
+			<div class="col-lg-9">
+				<input type="text" name="categoryname" id="categoryname" class="form-control" pattern="[a-zA-Z\s]{3,250}" maxlength="250" placeholder="Tattoo category. Letters and space only, 3 to 250 characters." value="{{ categoryname }}">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="instagramtag" class="col-lg-2 control-label">Instagram Tag</label>
+			<div class="col-lg-9">
+				<input type="text" name="instagramtag" id="instagramtag" class="form-control" pattern="[a-zA-Z]{3,250}" maxlength="250" placeholder="Instagram tag. Letters only, 3 to 250 characters." value="{{ instagramtag }}">
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">
+			Create New Category
+		</button>
+
+		<button type="submit" class="btn" name="createagain" value="yes">
+			Create New Category and Create Again
+		</button>
+	</form>
+{% endblock %}

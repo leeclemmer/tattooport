@@ -179,11 +179,11 @@ ul li li {
 }
 
 .login-page a:hover, .login-page a:focus,
-.shop-page .more a:hover, .shop-page .more a:focus {
+.stream-page .more a:hover, .stream-page .more a:focus {
 	text-decoration: none;
 }
 
-.login-page .btn, .shop-page .btn {
+.login-page .btn, .stream-page .btn {
 	display: block;
 	width: 100%;
 	max-width: 370px;
@@ -253,7 +253,7 @@ ul li li {
 	}
 }
 
-.shop-page .more {
+.stream-page .more {
 	padding-top: 30px;
 }
 

@@ -1,0 +1,11 @@
+{% extends "stream.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block pageclass %}category-page{% endblock %}
+
+{% block stream_header %}
+<p class="backlink"><a href="/tattoos">ALL CATEGORIES</a></p>
+
+<h1>{{ category.name }}</h1>
+{% endblock %}
