@@ -1,0 +1,20 @@
+{% extends "admin_settings.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+	<h1>{{ title }}</h1>
+
+	<ul class="list-unstyled">
+		{% for obj_type,objects in otc.iteritems() %}
+		<h2>{{ obj_type|capitalize }}</h2>
+		{% for o in objects %}
+		<li>
+			<span class="{% if o[1] == 'yes'%}text-success{% elif o[1] %}text-danger{% endif %}"><strong>{{ o[1]|upper }}</strong></span> - 
+			{{ o[0] }}
+		</li>
+		{% endfor %}
+		{% endfor %}
+	</ul>
+
+{% endblock %}

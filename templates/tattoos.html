@@ -35,7 +35,7 @@
 							<a href="/tattoos/{{ category.key.pairs()[0][1] }}/{{ category.name }}">
 								{{ category.name }}</a> 
 							{% if category.instagram_count %}
-							({{ category.instagram_count|format_number_with_commas }})
+							<span class="text-muted">&times; {{ category.instagram_count|format_number_with_commas }}</span>
 							{% endif %}
 						</li>
 					</ul>					

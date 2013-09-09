@@ -206,12 +206,15 @@ class AdminStudio(BaseHandler):
 	def put_instagram(self, key, instagram, primary):
 		# Fetch IG id info
 		user_id = ''
+		profile_picture = ''
 
 		try:
 			ig = InstagramAPI(client_id=keys.IG_CLIENTID,
 							  client_secret=keys.IG_CLIENTSECRET)
 			user_id = ig.user_search(instagram)[0].id
 			profile_picture = ig.user_search(instagram)[0].profile_picture
+			if not profile_picture:
+				info('No profile picture found. IG search', ig.user_search(instagram)[0])
 		except:
 			utils.catch_exception()
 
@@ -1044,17 +1047,7 @@ class AdminBrowseRegion(BaseHandler):
 
 		if ancestor_key.kind() == 'Locality':
 			# If browsing city, search is a proximity search
-			region_pt = ancestor_key.get().location
-			try:
-				results = Address.proximity_fetch(
-					Address.query(),
-					region_pt,
-					max_results=10,
-					max_distance=80467)
-			except AttributeError:
-				utils.catch_exception()
-				results = ''
-			results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
+			results = self.nearby_shops(ancestor_key)
 		else:
 			if ancestor_key.kind() == 'Country':
 				regions = Subdivision.query_location(ancestor_key).fetch()
@@ -1063,12 +1056,9 @@ class AdminBrowseRegion(BaseHandler):
 			# Otherwise, results are direct members
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 
-		#if model_kind == 'studio':
 		if model_kind == 'artist':
-			results = [[rel.artist.get() for rel in studio.artists.fetch()] for studio in results]
-			results = utils.flatten_list(results)
+			results = self.shops_artists(results)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
-		
 
 		self.render('admin_browse_region.html',
 					active='models',

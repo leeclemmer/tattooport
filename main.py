@@ -2,7 +2,6 @@ import re
 import time
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'lib'))
 
 import urllib
 import urllib2
@@ -11,12 +10,14 @@ import logging
 import hashlib
 
 # internal
+import fix_path
 import keys
 import utils
-import deferred_tasks
+import cache
 from countries import COUNTRIES
 from utils import info
 from models import *
+import helper
 
 
 # external
@@ -118,46 +119,7 @@ class BaseHandler(webapp2.RequestHandler):
 					height, 
 					geo_pt.lat, 
 					geo_pt.lon,
-					keys.GMAPS_STATIC_API_KEY)	
-
-	@classmethod
-	def regions_in_db(cls):
-		''' Returns a list of list of lists with all used regions. '''
-		return [[country,
-					[[subdivision,
-						[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
-					for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
-				for country in Country.query().order(Country.display_name).fetch()]
-
-	def read_secure_cookie(self, name):
-		value = self.request.cookies.get(name)
-		return value and check_secure_val(value)
-
-	def set_secure_cookie(self, name, value):
-		cookie_value = make_secure_val(value)
-		self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % \
-										 (name, cookie_value))
-
-	def logged_in_user(self):
-		user_id = self.read_secure_cookie('user_id')
-		if user_id:
-			user = memcache.get(user_id)
-			if user is not None:
-				return user
-			else:
-				user = InstagramUser.by_id(int(user_id))
-				memcache.set(user_id, user, time=60*30)
-				return user
-		else: return None
-
-	@classmethod
-	def get_instagram_api(cls,access_token=''):
-		''' Helper function for quick access to instagram api. 
-			Access token optional. If not given, API access is limited.
-		'''
-		return InstagramAPI(client_id=keys.IG_CLIENTID,
-							client_secret=keys.IG_CLIENTSECRET,
-							access_token=access_token)
+					keys.GMAPS_STATIC_API_KEY)
 
 	def ig_url_params(self, access_token):		
 		params = '?access_token=%s' % (access_token,)
@@ -188,6 +150,27 @@ class BaseHandler(webapp2.RequestHandler):
 								 self.ig_url_params(access_token))
 		else: return None
 
+	def read_secure_cookie(self, name):
+		value = self.request.cookies.get(name)
+		return value and check_secure_val(value)
+
+	def set_secure_cookie(self, name, value):
+		cookie_value = make_secure_val(value)
+		self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % \
+										 (name, cookie_value))
+
+	def logged_in_user(self):
+		user_id = self.read_secure_cookie('user_id')
+		if user_id:
+			user = memcache.get(user_id)
+			if user is not None:
+				return user
+			else:
+				user = InstagramUser.by_id(int(user_id))
+				memcache.set(user_id, user, time=60*30)
+				return user
+		else: return None
+
 	def login(self, user):
 		self.set_secure_cookie('user_id', str(user.key.id()))
 
@@ -199,7 +182,9 @@ class BaseHandler(webapp2.RequestHandler):
 		self.user = self.logged_in_user()
 
 class FourOhFour(BaseHandler):
-	def get(self):
+	def get(self, pagename):
+		if pagename in ['shop','artist']:
+			self.redirect('/shops-artists')
 		self.render('404.html',
 					user=self.user)
 
@@ -304,7 +289,7 @@ class TattooCategoryPage(BaseHandler):
 
 class ShopsArtists(BaseHandler):
 	def get(self):
-		regions = self.regions_in_db()
+		regions = regions_in_db()
 		localities = []
 
 		for country in regions:
@@ -322,101 +307,91 @@ class ShopsArtists(BaseHandler):
 
 class LocalityPage(BaseHandler):
 	def get(self, pagename):
+		# Get Locality key
 		if pagename.endswith('/'): pagename = pagename[:-1]
-
-		locality = self.path_to_key(pagename).get()
+		locality = self.path_to_key(pagename)
 		
 		# Prevent user from URL hacking
 		if pagename.count('/') is not 2:
 			self.redirect('/shops-artists')
 
 		# Fetch shops
-		region_pt = locality.location
-		try:
-			results = Address.proximity_fetch(
-				Address.query(),
-				region_pt,
-				max_results=10,
-				max_distance=80467)
-		except AttributeError:
-			utils.catch_exception()
-			results = ''
-		results = sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
-		results = zip(results, [urllib.quote_plus(result.name) for result in results ])
+		shop_results = helper.nearby_shops(locality)
+
+		# Fetch artists
+		artist_results = helper.shops_artists(shop_results)		
+
+		# Add encoded name to shop list
+		shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
+
+		# Add path to artist list
+		artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
 
 		self.render('locality.html',
 					user=self.user,
-					locality=locality,
-					results=results)
+					locality=locality.get(),
+					shop_results=shop_results,
+					artist_results=artist_results)
 
-class ShopPage(BaseHandler):
+class ContactPage(BaseHandler):
 	def get(self, pagename):
-		max_id = self.request.get('max_id')
-		shop_name, sid = pagename.split('/')
-		shop_name = urllib.unquote_plus(shop_name)
-		shop = self.get_shop(shop_name, sid)
-
-		if not self.user:
-			# Anonymous User
-			media = memcache.get(pagename)
-			if not media:
-				# kick off cron-job to refresh cache
-				#info('refresh_cache',refresh_cache())
-				deferred.defer(deferred_tasks.refresh_cache)
-			else:
-				media = media[:12] # only show 12 pics on anonymous screen
-
-			self.render('shop_cached.html',
-						user=self.user,
-						shop=shop,
-						media=media,
-						next=None)
+		if not pagename:
+			self.redirect('/shops-artists')
 		else:
-			# Logged in user			
-			api_url = self.ig_user_media_recent(shop, self.user.access_token)
+			max_id = self.request.get('max_id')
 
-			if not api_url:
-				api_url = self.ig_location_media_recent(shop, self.user.access_token)
-			
-			self.render('shop.html',
-						user=self.user,
-						shop=shop,
-						next=next,
-						api_url=api_url)
+			contact_name, cid = pagename.split('/')
+			contact_name = urllib.unquote_plus(contact_name)
+			self.contact = helper.get_contact(self.contact_type, contact_name, cid)
 
-	@classmethod
-	def get_shop(cls, shop_name, sid):		
-		# If shops with the same name, compare IDs
-		# There is chance of same ID and same name... 
-		# ... very remote (let's hope)
-		for s in Studio.by_name(shop_name):
-			if int(sid) == s.key.id():
-				return s
-				break
+			if not self.user:
+				self.call_cached_page(pagename)
+			else:
+				# Logged in user			
+				self.api_url = self.ig_user_media_recent(self.contact, self.user.access_token)
 
-	@classmethod
-	def get_shop_response(cls, api, shop, sid, max_id=''):
-		media = None
-		next = None
-		if shop.instagram.get() is not None:
-			for ig in shop.instagram.fetch():
-				if ig.primary == True and ig.user_id:
-					media, next = api.user_recent_media(
-						user_id=ig.user_id,
-						count=30, 
-						max_id=max_id)
-					break
-		elif shop.foursquare.get() is not None:
-			for fsq in shop.foursquare.fetch():
-				if fsq.primary == True and fsq.location_id:
-					location_id = fsq.location_id
-					media, next = api.location_recent_media(
-						count=30, 
-						location_id=fsq.location_id,
-						max_id=max_id)
-					break
+				if not self.api_url and self.contact_type == 'shop':
+					self.api_url = self.ig_location_media_recent(self.contact, self.user.access_token)
 
-		return (media, next)
+	def call_cached_page(self, pagename):# Anonymous User
+		self.media = memcache.get(pagename)
+		if self.media:
+			self.media = media[:12] # only show 12 pics on anonymous screen
+
+class ShopPage(ContactPage):
+	def initialize(self, *a, **kw):
+		BaseHandler.initialize(self, *a, **kw)
+		self.contact_type = 'shop'
+
+	def get(self, pagename):
+		super(ShopPage, self).get(pagename)
+				
+		self.render('shop.html',
+					user=self.user,
+					shop=self.contact,
+					api_url=self.api_url)
+
+	def call_cached_page(self, pagename):
+		super(ShopPage, self).call_cached_page(pagename)
+
+		self.render('shop_cached.html',
+					user=self.user,
+					shop=self.contact,
+					media=self.media,
+					next=None)
+
+class ArtistPage(ContactPage):
+	def initialize(self, *a, **kw):
+		BaseHandler.initialize(self, *a, **kw)
+		self.contact_type = 'artist'
+
+	def get(self, pagename):
+		super(ArtistPage, self).get(pagename)
+
+		self.render('artist.html',
+					user=self.user,
+					artist=self.contact,
+					api_url=self.api_url)
 
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),
@@ -424,6 +399,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/tattoos/?', Tattoos),
 							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
-							   ('/shop/?(.*)?', ShopPage),
 							   ('/loc/?(.*)?', LocalityPage),
-							   ('/.*', FourOhFour)], debug = True)
+							   ('/shop/(.*)?', ShopPage),
+							   ('/artist/(.*)?',ArtistPage),
+							   ('/(.*)?', FourOhFour)], debug = True)

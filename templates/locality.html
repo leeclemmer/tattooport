@@ -5,23 +5,45 @@
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
 {% block main %}
-    <p class="backlink"><a href="/shops-artists">SHOPS &amp; ARTISTS</a></p>
+    <p class="backlink"><a href="/shops-artists">ALL CITIES</a></p>
+    
     <h1>{{ locality.display_name }}</h1>
 
-    {% if not results %}
-    <p>Hm that's odd, doesn't look like there are any results</p>
-    {% else %}
-    	<ul class="list-unstyled">
-    	{% for result in results %}
-    		<li>
-    			<a href="/shop/{{ result[1] }}/{{ result[0].key.id() }}">{{ result[0].name }}</a>
-    			{% if result[0].key.pairs()[-2][1] != locality.key.pairs()[-1][1] %}
-    			({{ result[0].key.pairs()[-2][1] }})
-    			{% endif %}
-    		</li>
-    	{% endfor %}
-    	</ul>
-    {% endif %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <h2>Shops</h2>
+            {% if not shop_results %}
+            <p>Hm that's odd, doesn't look like there are any shops.</p>
+            {% else %}
+                <ul class="list-unstyled">
+            	{% for result in shop_results %}
+            		<li>
+            			<a href="/shop/{{ result[1] }}/{{ result[0].key.id() }}">{{ result[0].name }}</a>
+            			{% if result[0].key.pairs()[-2][1] != locality.key.pairs()[-1][1] %}
+            			({{ result[0].key.pairs()[-2][1] }})
+            			{% endif %}
+            		</li>
+            	{% endfor %}
+            	</ul>
+            {% endif %}
+        </div>
 
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <h2>Artists</h2>
+            {% if not artist_results %}
+            <p>Hm that's odd, doesn't look like there are any artists.</p>
+            {% else %}
+                <ul class="list-unstyled">
+                {% for result in artist_results %}
+                    <li>
+                        <a href="/artist/{{ result[1] }}/{{ result[0].key.id() }}">
+                            {{ result[0].display_name }}
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
 

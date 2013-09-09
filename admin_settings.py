@@ -83,8 +83,59 @@ class AdminRegionsDelete(BaseHandler):
 			region_key.delete()
 			self.redirect('/admin/settings/regions/delete')
 
+class AdminCacheStatus(BaseHandler):
+	def get(self):
+		otc = cache.objects_to_cache()
+
+		for obj_type in otc:
+			otc[obj_type] = zip(otc[obj_type],[memcache.get(o) and 'yes' or 'no' for o in otc[obj_type]])
+
+		self.render('admin_cache_status.html',
+					title='Cache Status',
+					active='settings',
+					otc=otc
+					)
+
+class AdminCacheRefresh(BaseHandler):
+	def get(self):
+		self.render('admin_cache_refresh.html',
+					title='Refresh Cache',
+					active='settings'
+					)
+
+	def post(self):
+		refresh_cache_all = self.request.get('refresh_cache_all')
+		if refresh_cache_all:
+			try:
+				if refresh_cache_all == 'yes':
+					deferred.defer(cache.refresh_cache, hard_refresh=True)
+					status_message = 'Cache all objects task added to queue.'
+				elif refresh_cache_all == 'no':
+					deferred.defer(cache.refresh_cache)
+					status_message = 'Cache cold objects only task added to queue.'
+			except:
+				utils.catch_exception()
+				status_message = 'Something went wrong. Check error log.'
+		else:
+			self.redirect('/admin/settings/cache/refresh')
+
+		self.render('admin_cache_refresh.html',
+					title='Refresh Cache',
+					active='settings',
+					status_message=status_message
+					)
+
+		
+
+
+
+
+
 
 app = webapp2.WSGIApplication(
 	[('/admin/settings/?', AdminSettings),
 	 ('/admin/settings/stats/counters/?', AdminStatsCounters),
-	 ('/admin/settings/regions/delete/?', AdminRegionsDelete)], debug=True)
+	 ('/admin/settings/regions/delete/?', AdminRegionsDelete),
+	 ('/admin/settings/cache/status/?', AdminCacheStatus),
+	 ('/admin/settings/cache/refresh/?', AdminCacheRefresh)
+	 ], debug=True)

@@ -4,12 +4,13 @@
 	Cheat Sheet: http://bit.ly/130q3f1
 	Relationships: http://bit.ly/SFQQrl
 '''
+import urllib
+
+from utils import info
 
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
 from geo.geomodel import GeoModel
-
-from utils import info
 
 class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.
@@ -33,6 +34,14 @@ class Locality(GeoModel, ndb.Model):
 	@classmethod
 	def query_location(cls, ancestor_key):
 		return cls.query(ancestor = ancestor_key)
+
+def regions_in_db():
+	''' Returns a list of list of lists with all used regions. '''
+	return [[country,
+				[[subdivision,
+					[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
+				for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
+			for country in Country.query().order(Country.display_name).fetch()]
 
 class Contact(polymodel.PolyModel):
 	''' Superclass that defines common contact properties. '''
@@ -195,6 +204,10 @@ class Artist(Contact):
 	@property
 	def studios(self):
 		return StudioArtist.gql('WHERE artist = :1', self.key)
+
+	@classmethod
+	def by_name(self, name):
+		return Artist.query(Artist.display_name == name).fetch()
 
 class StudioArtist(ndb.Model):
 	''' Models the N-to-N relationship between Studio and Artist. '''

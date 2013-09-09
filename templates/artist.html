@@ -1,0 +1,15 @@
+{% extends "stream.html" %}
+
+{% block title %}{{ artist.display_name }}{% endblock %}
+
+{% block pageclass %}artist-page{% endblock %}
+
+{% block stream_header %}
+{% if artist.instagram.get().profile_picture %}
+<img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
+{% endif %} 
+
+<p class="backlink"><a href="/loc/{{ loc_page }}/">{{ loc_name|upper }}</a></p>
+
+<h1>{{ artist.display_name }}</h1>
+{% endblock %}

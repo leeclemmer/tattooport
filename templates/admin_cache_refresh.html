@@ -1,0 +1,18 @@
+{% extends "admin_settings.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+	<h1>{{ title }}</h1>
+
+	{% if status_message %}
+	<p class="text-default">{{ status_message }}</p>
+	{% endif %}
+
+	<form method="post">
+		<button type="submit" class="btn btn-primary" name="refresh_cache_all" value="yes">Refresh entire cache</button>
+
+		<button type="submit" class="btn btn-primary" name="refresh_cache_all" value="no">Refresh empty cache only</button>
+	</form>
+
+{% endblock %}

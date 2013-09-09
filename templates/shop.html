@@ -11,7 +11,7 @@
 
 {% set address = shop.address.get() %}
 
-<p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>
-
 <h1>{{ shop.name }}</h1>
+
+<p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>
 {% endblock %}
