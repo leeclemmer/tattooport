@@ -233,6 +233,22 @@ ul li li {
 	color: #8dc233;
 }
 
+/*** Tattoo Overview ***/
+.tattoos-overview li li {
+    padding-left: 0;
+}
+
+.tattoos-overview .row div div {
+	padding-left: 0;
+	font-size:0.9em;
+}
+
+@media (max-width: 992px) {
+	.tattoos-overview .category-col {
+		clear: both;
+	}
+}
+
 /*** Shop Page ***/
 .photo {
 	max-width: 768px;

@@ -5,28 +5,49 @@
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
 {% block main %}
+	<span class="tattoos-overview">
     <h1>Tattoo Ideas &amp; Designs</h1>
 
     <p class="text-muted">CATEGORIES</p>
 
-    <ul class="list-unstyled">
+	
+	<div class="row">
+		{% set num_cols = 4 %}
+		{% set group_length = groups|length() %}
+		{% set group_length = group_length %}
+		{% set length_mod = group_length % num_cols %}
+		{% set first_col = group_length/num_cols %}
+		{% set second_col = group_length/num_cols*2 %}
+		{% set third_col = group_length/num_cols*3 %}
+		{% set fourth_col = group_length + length_mod %}
 		{% for group in groups %}
-		<li>
-			<h2>{{ group[0].name }}</h2>
-			<ul class="list-unstyled">
-				{% for category in group[1] %}
+		{% if loop.first or loop.index == first_col|round(method='ceil')+1 or loop.index == second_col|round(method='ceil')+1 or loop.index == third_col|round(method='ceil')+1 %}
+		{% set col_num = '%.0d'|format(12/num_cols) %}
+		<div class="col-sm-6 col-md-{{ col_num }} col-lg-{{ col_num }} category-col">
+		{% endif %}
+		    <ul class="list-unstyled">
 				<li>
-					<a href="/tattoos/{{ category.key.pairs()[0][1] }}/{{ category.name }}">
-						{{ category.name }}</a> 
-					{% if category.instagram_count %}
-					({{ category.instagram_count|format_number_with_commas }})
-					{% endif %}
+					<h2>{{ group[0].name }}</h2>
+
+					{% for category in group[1] %}
+					<ul class="list-unstyled">
+						<li>
+							<a href="/tattoos/{{ category.key.pairs()[0][1] }}/{{ category.name }}">
+								{{ category.name }}</a> 
+							{% if category.instagram_count %}
+							({{ category.instagram_count|format_number_with_commas }})
+							{% endif %}
+						</li>
+					</ul>					
+					{% endfor %}
 				</li>
-				{% endfor %}
 			</ul>
-		</li>
+		{% if loop.index == first_col|round(method='ceil') or loop.index == second_col|round(method='ceil') or loop.index == third_col|round(method='ceil') or loop.last %}
+		</div>
+		{% endif %}
 		{% endfor %}
-	</ul>
+	</div>
+	</span>
 
 {% endblock %}
 
