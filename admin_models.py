@@ -1035,7 +1035,7 @@ class AdminStudioBrowse(BaseHandler):
 		self.render('admin_browse.html',
 					active='models',
 					active_nav=model_kind,
-					regions=self.regions_in_db())
+					regions=regions_in_db())
 
 class AdminBrowseRegion(BaseHandler):
 	def get(self, model_kind, pagename):
@@ -1047,7 +1047,7 @@ class AdminBrowseRegion(BaseHandler):
 
 		if ancestor_key.kind() == 'Locality':
 			# If browsing city, search is a proximity search
-			results = self.nearby_shops(ancestor_key)
+			results = helper.nearby_shops(ancestor_key)
 		else:
 			if ancestor_key.kind() == 'Country':
 				regions = Subdivision.query_location(ancestor_key).fetch()
@@ -1057,7 +1057,7 @@ class AdminBrowseRegion(BaseHandler):
 			results = Studio.query_location(ancestor_key).order(Studio.name)
 
 		if model_kind == 'artist':
-			results = self.shops_artists(results)
+			results = helper.shops_artists(results)
 		results = zip(results,[self.key_to_path(result.key) for result in results])
 
 		self.render('admin_browse_region.html',

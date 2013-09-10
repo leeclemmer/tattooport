@@ -340,6 +340,8 @@ class ContactPage(BaseHandler):
 		else:
 			max_id = self.request.get('max_id')
 
+			info('pagename',pagename)
+
 			contact_name, cid = pagename.split('/')
 			contact_name = urllib.unquote_plus(contact_name)
 			self.contact = helper.get_contact(self.contact_type, contact_name, cid)
@@ -354,9 +356,9 @@ class ContactPage(BaseHandler):
 					self.api_url = self.ig_location_media_recent(self.contact, self.user.access_token)
 
 	def call_cached_page(self, pagename):# Anonymous User
-		self.media = memcache.get(pagename)
+		self.media = memcache.get('Philadephia_recent_media')
 		if self.media:
-			self.media = media[:12] # only show 12 pics on anonymous screen
+			self.media = self.media[:12] # only show 12 pics on anonymous screen
 
 class ShopPage(ContactPage):
 	def initialize(self, *a, **kw):
@@ -366,10 +368,11 @@ class ShopPage(ContactPage):
 	def get(self, pagename):
 		super(ShopPage, self).get(pagename)
 				
-		self.render('shop.html',
-					user=self.user,
-					shop=self.contact,
-					api_url=self.api_url)
+		if self.user:
+			self.render('shop.html',
+						user=self.user,
+						shop=self.contact,
+						api_url=self.api_url)
 
 	def call_cached_page(self, pagename):
 		super(ShopPage, self).call_cached_page(pagename)

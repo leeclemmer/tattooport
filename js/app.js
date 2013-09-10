@@ -22,7 +22,7 @@ $(function() {
 			api_url = api_url.replace(/count=../,'count=20');
 		}*/
 
-		if (api_url.substring(0, 4) !== 'None') {
+		if (api_url.substring(0, 4) == 'http') {
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
 		}
