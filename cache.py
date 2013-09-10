@@ -1,7 +1,8 @@
 """ Contains caching logic, methods and deferred calls.
 """
 import fix_path
-import random 
+import math 
+from datetime import datetime
 
 import helper
 import utils
@@ -28,38 +29,66 @@ def objects_to_cache():
 	return otc
 
 def refresh_handler():
-	''' Determines how much of cache to refresh.
-		The basic formula is:
-		Num of items X Crons Runs/Hour X Randomness = Calls per hour
+	''' Takes every object to be cached and refreshes it in batches.
+		Batch size is determined by the following formula:
 
-		How soon an item will renew is given by:
-		Num of items / Calls per hour = Time to renew
+		batch_size = num_of_items / (cron_runs_per_hour * time_to_refresh)
 
-		Calls per hour should not exceed 4000.
-		Time to renew should be half of cache expiry, currently 6 hours
+		batch_size * cron_runs_per_hour should not exceed 4000.
+		(Instagram API rate limit is 5000)
 
-		At 10,000 items and 4 cron runs an hour, 3600 calls per made
-		with time to renew at 2.777 hours if given a Randomness of 0.09.
-
-		Adjust as necessary.
+		Which part of the object list to batch and refresh is determined
+		by the par to the hour we're in, where the hour is divided by 
+		cron_runs_per_hour
 	'''
-	randomness = 0.09
+	info('begin refresh_handler')
 
+	# Objects that need caching
 	otc = objects_to_cache()
 
-	for obj_type, objects in otc.iteritems():		
-		k = int(randomness * len(objects))
-		if k == 0: k = 1
+	# Reflects 15 minute cron run schedule
+	cron_runs_per_hour = 4
 
-		otc[obj_type] = random.sample(objects, k)
+	# How long it will take for object to be refreshed, in hours
+	time_to_refresh = 5
 
-		info('%s %s, sampled' % (len(objects), obj_type), k)
+	# Number of batches
+	num_batches = cron_runs_per_hour * time_to_refresh
 
+	# Set which part of object list to refresh
+	now = datetime.now()
+	day_part = time_to_refresh - (now.hour % time_to_refresh)
+	hour_part = now.minute / (60 / cron_runs_per_hour) + 1
+	batch_part = (day_part - 1) * 4 + hour_part
+
+	info('batch_part',batch_part)
+
+	# Limit objects to cache to batch size
+	for ot, o in otc.iteritems():
+		# Total number of objects
+		num_of_items = len(o)
+
+		# How many objects to refresh per cron run
+		batch_size = num_of_items / (cron_runs_per_hour * time_to_refresh * 1.0)
+		batch_size = int(math.ceil(batch_size))
+
+		batch_end = int((batch_part / (num_batches * 1.0) * num_of_items) - 1)
+		batch_start = batch_end - batch_size
+
+		info('''batching %s: num_items=%s | batch_size=%s | batch_start=%s | batch_end=%s | batch_part=%s''' % \
+			(ot, num_of_items, batch_size, batch_start, batch_end, batch_part))
+
+		otc[ot] = o[batch_start:batch_end]
+
+	# Refresh
 	refresh_cache(refresh_all=True, otc=otc)
+
 
 def refresh_cache(refresh_all=False, otc=''):
 	''' Refreshes cache, either all or only cold objects. '''
 	if not otc: otc = objects_to_cache()
+
+	info('otc',otc)
 
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
