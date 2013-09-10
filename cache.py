@@ -88,8 +88,6 @@ def refresh_cache(refresh_all=False, otc=''):
 	''' Refreshes cache, either all or only cold objects. '''
 	if not otc: otc = objects_to_cache()
 
-	info('otc',otc)
-
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
 			if obj_type in ['shops','artists']:
@@ -134,20 +132,31 @@ def refresh_category(category_cache_id):
 	else: return False
 
 def refresh_lrm(lrm_ids, refresh_all):
-	all_localities = {}
+	'''all_localities = {}
 	regions = regions_in_db()
 
 	for country in regions:
 		for subdivision in country[1]:
 			for locality in subdivision[1]:
-				all_localities[locality[1]] = locality[0]
+				all_localities[locality[1]] = locality[0]'''
 
 	for lrm_cache_id in lrm_ids:
 		locality = lrm_cache_id.split('_')[0]
 
-		if all_localities.get(locality):
-			info('caching lrm', locality)
-			local_recent_media(all_localities.get(locality))
+		country, subdivision, locality = locality.split('/')
+		locality = urllib.unquote_plus(locality)
+
+		locality_key = ndb.Key('Country',country,
+							   'Subdivision', subdivision,
+							   'Locality', locality)
+		
+		info('caching lrm', locality)
+
+		if refresh_all:
+			local_recent_media(locality_key.get())
+		elif not memcache.get(lrm_cache_id):
+			local_recent_media(locality_key.get())
+
 
 def contact_cache_id(contact, contact_type):
 	if contact_type == 'shop':
@@ -183,7 +192,8 @@ def all_categories():
 
 def lrm_ids():
 	''' Returns a list of all local_recent_media ids. '''
-	return ['%s_recent_media' % (urllib.quote_plus(loca.display_name),) \
+	return ['%s/%s/%s_recent_media' % (loca.key.pairs()[0][1],
+		loca.key.pairs()[1][1], urllib.quote_plus(loca.display_name),) \
 								for loca in Locality.query().fetch()]
 
 def local_recent_media(locality):
@@ -209,7 +219,11 @@ def local_recent_media(locality):
 	merged_media = merged_media[:300]
 
 	# Add to cache
-	memcache.set('%s_recent_media' % (urllib.quote_plus(locality.display_name),), merged_media, time=60*60*6)
+	memcache.set('%s/%s/%s_recent_media' % (locality.key.pairs()[0][1],
+		locality.key.pairs()[1][1],
+		urllib.quote_plus(locality.display_name),), merged_media, time=60*60*6)
 
-	info('%s_recent_media' % (urllib.quote_plus(locality.display_name),),len(merged_media))
+	info('%s/%s/%s_recent_media count' % (locality.key.pairs()[0][1],
+		locality.key.pairs()[1][1],
+		urllib.quote_plus(locality.display_name),),len(merged_media))
 
