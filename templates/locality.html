@@ -5,9 +5,12 @@
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
 {% block main %}
-    <p class="backlink"><a href="/shops-artists">ALL CITIES</a></p>
+    <span class="locality-page">
+    <div class="tp-page-header">
+        <p class="backlink"><a href="/shops-artists">ALL CITIES</a></p>
     
-    <h1>{{ locality.display_name }}</h1>
+        <h1>{{ locality.display_name }}</h1>
+    </div>
 
     <div class="row">
         <div class="col-sm-6 col-md-6 col-lg-6">
@@ -45,5 +48,6 @@
             {% endif %}
         </div>
     </div>
+    </span>
 {% endblock %}
 

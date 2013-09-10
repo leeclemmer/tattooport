@@ -67,7 +67,7 @@ $(function() {
 
 		$('#media-holder img.lazy').lazyload({
 			effect : "fadeIn",
-			threshold : 200
+			threshold : 600
 		});
 
 		// *** Insert Load button binding
