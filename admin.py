@@ -21,10 +21,11 @@ class AdminMain(BaseHandler):
 					subd_count=subd_count,
 					loca_count=loca_count
 					)
+
 class AdminRefreshCache(BaseHandler):
 	def get(self):
 		''' Cron handler to refresh cache. '''
-		deferred.defer(deferred_tasks.refresh_cache)
+		deferred.defer(cache.refresh_handler)
 		info('Task added to refresh cache.')
 		self.redirect('/admin')
 

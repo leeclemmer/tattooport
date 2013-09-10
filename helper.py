@@ -53,21 +53,20 @@ def get_contact(contact_type, contact_name, cid):
 			return c
 			break
 
-	return (media, next)
-
-def get_shop_response(api, shop, sid, max_id=''):
+def get_contact_response(api, contact, cid, contact_type, max_id=''):
 	media = None
 	next = None
-	if shop.instagram.get() is not None:
-		for ig in shop.instagram.fetch():
+
+	if contact.instagram.get() is not None:
+		for ig in contact.instagram.fetch():
 			if ig.primary == True and ig.user_id:
 				media, next = api.user_recent_media(
 					user_id=ig.user_id,
 					count=30, 
 					max_id=max_id)
 				break
-	elif shop.foursquare.get() is not None:
-		for fsq in shop.foursquare.fetch():
+	elif contact_type != 'artist' and contact.foursquare.get() is not None:
+		for fsq in contact.foursquare.fetch():
 			if fsq.primary == True and fsq.location_id:
 				location_id = fsq.location_id
 				media, next = api.location_recent_media(
@@ -77,3 +76,10 @@ def get_shop_response(api, shop, sid, max_id=''):
 				break
 
 	return (media, next)
+
+def get_category_response(api, category, max_id=''):
+	return api.tag_recent_media(
+		count=30,
+		tag_name=category,
+		max_id=max_id)
+

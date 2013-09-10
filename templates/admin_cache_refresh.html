@@ -10,9 +10,21 @@
 	{% endif %}
 
 	<form method="post">
-		<button type="submit" class="btn btn-primary" name="refresh_cache_all" value="yes">Refresh entire cache</button>
+		<p>
+			<button type="submit" class="btn btn-primary" name="refresh_type" value="all">Refresh entire cache</button>
+		</p>
 
-		<button type="submit" class="btn btn-primary" name="refresh_cache_all" value="no">Refresh empty cache only</button>
+		<p>
+			<button type="submit" class="btn btn-primary" name="refresh_type" value="emptyonly">Refresh empty cache only</button>
+		</p>
+
+		<p>
+			<button type="submit" class="btn btn-primary" name="refresh_type" value="cron">Cron refresh</button>
+		</p>
+
+		<p>
+			<button type="submit" class="btn btn-danger" name="refresh_type" value="flush">Flush cache</button>
+		</p>
 	</form>
 
 {% endblock %}

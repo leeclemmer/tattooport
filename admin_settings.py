@@ -104,15 +104,21 @@ class AdminCacheRefresh(BaseHandler):
 					)
 
 	def post(self):
-		refresh_cache_all = self.request.get('refresh_cache_all')
-		if refresh_cache_all:
+		refresh_type = self.request.get('refresh_type')
+		if refresh_type:
 			try:
-				if refresh_cache_all == 'yes':
-					deferred.defer(cache.refresh_cache, hard_refresh=True)
+				if refresh_type == 'all':
+					deferred.defer(cache.refresh_cache, refresh_all=True)
 					status_message = 'Cache all objects task added to queue.'
-				elif refresh_cache_all == 'no':
+				elif refresh_type == 'emptyonly':
 					deferred.defer(cache.refresh_cache)
 					status_message = 'Cache cold objects only task added to queue.'
+				elif refresh_type == 'cron':
+					deferred.defer(cache.refresh_handler)
+					status_message = 'Cron cache task added to queue.'
+				elif refresh_type == 'flush':
+					deferred.defer(memcache.flush_all)
+					status_message = 'memcache being flushed.'
 			except:
 				utils.catch_exception()
 				status_message = 'Something went wrong. Check error log.'
@@ -124,13 +130,6 @@ class AdminCacheRefresh(BaseHandler):
 					active='settings',
 					status_message=status_message
 					)
-
-		
-
-
-
-
-
 
 app = webapp2.WSGIApplication(
 	[('/admin/settings/?', AdminSettings),

@@ -1,4 +1,4 @@
 cron:
-- description: refresh cache
+- description: 15-minute random cache refresh
   url: /admin/refresh_cache
-  schedule: every 6 hours
+  schedule: every 15 minutes

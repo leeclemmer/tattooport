@@ -1,54 +1,88 @@
 """ Contains caching logic, methods and deferred calls.
 """
 import fix_path
+import random 
+
 import helper
 import utils
 from models import *
 
 from google.appengine.api import memcache
 
-def refresh_cache(hard_refresh=False):
-	''' To be called as deferred task, hence the imports.
-	'''
-	# 2. Check current cache to see if they're current
-	# 3. Update missing or soon-to-expire cache
+def refresh_handler():
+	''' Determines how much of cache to refresh.
+		The basic formula is:
+		Num of items X Crons Runs/Hour X Randomness = Calls per hour
 
-	# 1. Pages that need to be cached:
-	# - Shop pages
-	# - Artist pages
-	# - Tag Pages
-	
-	# 1. Get list of all pages that need to be cached
+		How soon an item will renew is given by:
+		Num of items / Calls per hour = Time to renew
+
+		Calls per hour should not exceed 4000.
+		Time to renew should be half of cache expiry, currently 6 hours
+
+		At 10,000 items and 4 cron runs an hour, 3600 calls per made
+		with time to renew at 2.777 hours if given a Randomness of 0.09.
+
+		Adjust as necessary.
+	'''
+	randomness = 0.09
+
 	otc = objects_to_cache()
+
+	for obj_type, objects in otc.iteritems():		
+		k = int(randomness * len(objects))
+		if k == 0: k = 1
+
+		otc[obj_type] = random.sample(objects, k)
+
+		info('%s %s, sampled' % (len(objects), obj_type), k)
+
+	refresh_cache(refresh_all=True, otc=otc)
+
+def refresh_cache(refresh_all=False, otc=''):
+	''' Refreshes cache, either all or only cold objects. '''
+	if not otc: otc = objects_to_cache()
 
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
-			if obj_type == 'shops':
-					if hard_refresh:
-						refresh_shops(o)
-					elif not memcache.get(o):
-						refresh_shops(o)
-				
+			if obj_type in ['shops','artists']:
+				if refresh_all:
+					refresh_contact(o, obj_type)
+				elif not memcache.get(o):
+					refresh_contact(o, obj_type)
+			elif obj_type == 'categories':
+				if refresh_all:
+					refresh_category(o)
+				elif not memcache.get(o):
+					refresh_category(o)				
 
-def refresh_shops(shop_cache_id):
-	# If shops with the same name, compare IDs
+def refresh_contact(contact_cache_id, contact_type):
+	# If contact with the same name, compare IDs
 	# There is chance of same ID and same name... 
 	# ... very remote (let's hope)
-	shop_name, sid = shop_cache_id.split('/')
-	shop_name = urllib.unquote_plus(shop_name)
-	shop = helper.get_contact('shop', shop_name, sid)
+	contact_name, cid = contact_cache_id.split('/')
+	contact_name = urllib.unquote_plus(contact_name)
 
-	media, next = helper.get_shop_response(helper.get_app_api(), shop, sid)
+	contact = helper.get_contact('%s' % (contact_type[:-1],), contact_name, cid)
 
-	info('caching shop', shop.name, media)
+	media, next = helper.get_contact_response(helper.get_app_api(), contact, cid, contact_type[:-1])
 
-	return memcache.set(shop_cache_id, media, time=60*60*6)
+	info('caching contact', contact_type == 'shops' and contact.name or contact.display_name)
 
-def refresh_artists(artist_cache_id):
-	pass
+	return memcache.set(contact_cache_id, media, time=60*60*6)
 
-def refresh_categories(category_cache_id):
-	pass
+def refresh_category(category_cache_id):
+	category_cache_id = urllib.unquote_plus(category_cache_id)
+
+	category = TattooCategory.by_name(category_cache_id).get()
+
+	if category.instagram_tag:
+		media,next = helper.get_category_response(helper.get_app_api(), category.instagram_tag)
+
+		info('caching category',category.name)
+
+		return memcache.set(category_cache_id, media, time=60*60*6)
+	else: return False
 
 def objects_to_cache():
 	''' Returns a list of all ids of objects to cache. '''
