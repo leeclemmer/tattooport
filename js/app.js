@@ -22,7 +22,7 @@ $(function() {
 			api_url = api_url.replace(/count=../,'count=20');
 		}*/
 
-		if (api_url.substring(0, 4) == 'http') {
+		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'cache'))  {
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
 		}
@@ -140,8 +140,8 @@ $(function() {
 			$('#media-modal .modal-meta').children().remove();
 			modal_author = '<div class="photo-author"> \
 								<img class="img-responsive img-circle" \
-									 src="' + photos[igid].caption.from.profile_picture + '"> ' + 
-								photos[igid].caption.from.username + ' \
+									 src="' + photos[igid].user.profile_picture + '"> ' + 
+								photos[igid].user.username + ' \
 							</div>';
 
 			modal_like_count = '<div class="likes-count"><i class="icon-heart"></i> ' + photos[igid].likes.count + '</div>';
@@ -152,5 +152,9 @@ $(function() {
 
 			$('#media-modal .modal-meta').append(modal_author).append(modal_like_count).append(modal_comment_count).append(modal_caption);
 		}
+	}
+
+	function endsWith(str, suffix) {
+	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 	}
 });

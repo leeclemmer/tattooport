@@ -166,3 +166,9 @@ def numbers_only(s):
 def flatten_list(l):
 	''' Flattens a list in the form [[a,b],[c,d]]. '''
 	return[i for sl in l for i in sl]
+
+def epoch_seconds(dt):
+	''' Takes datetime d and returns seconds since epoch. '''
+	epoch = datetime.datetime.utcfromtimestamp(0)
+	delta = dt - epoch
+	return int(delta.total_seconds())

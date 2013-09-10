@@ -150,6 +150,11 @@ class BaseHandler(webapp2.RequestHandler):
 								 self.ig_url_params(access_token))
 		else: return None
 
+	def json_output(self, *a, **kw):
+		self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
+		if a: self.write(json.dumps(a[0], sort_keys=True, indent=4, separators=(',', ': ')))
+		elif kw: self.write(json.dumps(kw))
+
 	def read_secure_cookie(self, name):
 		value = self.request.cookies.get(name)
 		return value and check_secure_val(value)
@@ -327,11 +332,46 @@ class LocalityPage(BaseHandler):
 		# Add path to artist list
 		artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
 
+		# Set cache url as api_url
+		api_url = '/loc/%s/cache' % (pagename,)
+
 		self.render('locality.html',
 					user=self.user,
 					locality=locality.get(),
 					shop_results=shop_results,
-					artist_results=artist_results)
+					artist_results=artist_results,
+					api_url=api_url)
+
+class LocalityPageCache(BaseHandler):
+	def get(self, pagename):
+		count = self.request.get('count') and self.request.get('count') or 30
+		media_list = memcache.get('%s_recent_media' % (pagename,))[:count]
+
+		container = {"data":[],"meta":{"code":200}}
+
+		for media_item in media_list:
+			container['data'].append(self.todict(media_item))
+
+		self.json_output(container)
+
+	def todict(self, obj, classkey=None):
+	    if isinstance(obj, dict):
+	        for k in obj.keys():
+	            obj[k] = self.todict(obj[k], classkey)
+	        return obj
+	    elif hasattr(obj, "__iter__"):
+	        return [self.todict(v, classkey) for v in obj]
+	    elif hasattr(obj, "__dict__"):
+	        data = dict([(key, self.todict(value, classkey)) 
+	            for key, value in obj.__dict__.iteritems() 
+	            if not callable(value) and not key.startswith('_')])
+	        if classkey is not None and hasattr(obj, "__class__"):
+	            data[classkey] = obj.__class__.__name__
+	        return data
+	    elif hasattr(obj, "second"):
+	    	return utils.epoch_seconds(obj)
+	    else:
+	        return obj
 
 class ContactPage(BaseHandler):
 	def get(self, pagename):
@@ -402,6 +442,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/tattoos/?', Tattoos),
 							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
+							   ('/loc/(.*)/cache', LocalityPageCache),
 							   ('/loc/?(.*)?', LocalityPage),
 							   ('/shop/(.*)?', ShopPage),
 							   ('/artist/(.*)?',ArtistPage),

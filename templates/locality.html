@@ -1,10 +1,10 @@
-{% extends "front_base.html" %}
+{% extends "stream.html" %}
 
 {% block title %}{{ locality.display_name }}{% endblock %}
 
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
-{% block main %}
+{% block top_content %}
     <span class="locality-page">
     <div class="tp-page-header">
         <p class="backlink"><a href="/shops-artists">ALL CITIES</a></p>
@@ -49,5 +49,14 @@
         </div>
     </div>
     </span>
+{% endblock %}
+
+{% block javascript %}
+{{ super() }}
+<script>
+$_API_URL = "{{ api_url }}";
+
+</script>
+<script src="/js/app.js"></script>
 {% endblock %}
 
