@@ -38,6 +38,7 @@ $(function() {
 	                </div>';
 
 		if (data.meta.code == 200) {
+			console.log('data.data.length=' + data.data.length)
 			// Insert photos
 			for (i=0; i<data.data.length; i++) {
 				photo = data.data[i];
@@ -79,7 +80,12 @@ $(function() {
 				};
 				$('#loadmore').off().on('click', function() {
 					$(this).addClass('button-loading');
-					call_api(api_url=data.pagination.next_url + '&callback=?');
+					var next_url = data.pagination.next_url;
+					if (next_url.indexOf('api.instagram') != -1) {
+						next_url = next_url + '&callback=?'
+					};
+					console.log('next_url=' + next_url);
+					call_api(api_url=next_url);
 				});
 			} else {
 				$('#loadmore').remove()

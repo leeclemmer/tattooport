@@ -116,6 +116,9 @@ class AdminCacheRefresh(BaseHandler):
 				elif refresh_type == 'cron':
 					deferred.defer(cache.refresh_unit_test)
 					status_message = 'Cron cache task added to queue.'
+				elif refresh_type == 'lrm':
+					deferred.defer(cache.refresh_cache, refresh_all=True, obj_type='local_recent_media')
+					status_message = 'Cron cache task added to queue.'
 				elif refresh_type == 'flush':
 					deferred.defer(memcache.flush_all)
 					status_message = 'memcache being flushed.'

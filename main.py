@@ -2,6 +2,7 @@ import re
 import time
 import os
 import sys
+import socket
 
 import urllib
 import urllib2
@@ -314,7 +315,8 @@ class LocalityPage(BaseHandler):
 	def get(self, pagename):
 		# Get Locality key
 		if pagename.endswith('/'): pagename = pagename[:-1]
-		locality = self.path_to_key(pagename)
+		info('pagename',pagename)
+		locality = self.path_to_key(pagename.split('&')[0])
 		
 		# Prevent user from URL hacking
 		if pagename.count('/') is not 2:
@@ -344,34 +346,29 @@ class LocalityPage(BaseHandler):
 
 class LocalityPageCache(BaseHandler):
 	def get(self, pagename):
+		# Set count and page
 		count = self.request.get('count') and self.request.get('count') or 30
-		media_list = memcache.get('%s_recent_media' % (pagename,))[:count]
+		page = self.request.get('page') and int(self.request.get('page')) or 1
 
-		container = {"data":[],"meta":{"code":200}}
+		# Get slice of media list
+		end = count * page
+		start = end - count
+
+		media_list = memcache.get('%s_recent_media' % (pagename,))[start:end]
+
+		# Convert media items to JSON
+		media_list_json = []
 
 		for media_item in media_list:
-			container['data'].append(self.todict(media_item))
+			media_list_json.append(utils.to_dict(media_item))
 
-		self.json_output(container)
+		# Wrap in envelope
+		api_url = 'http://%s/loc/%s/cache' % (socket.gethostname(), pagename,)
+		max_id = media_list[-1].id
+		output_json = helper.ig_envelope(media_list_json, api_url, page, max_id)
 
-	def todict(self, obj, classkey=None):
-	    if isinstance(obj, dict):
-	        for k in obj.keys():
-	            obj[k] = self.todict(obj[k], classkey)
-	        return obj
-	    elif hasattr(obj, "__iter__"):
-	        return [self.todict(v, classkey) for v in obj]
-	    elif hasattr(obj, "__dict__"):
-	        data = dict([(key, self.todict(value, classkey)) 
-	            for key, value in obj.__dict__.iteritems() 
-	            if not callable(value) and not key.startswith('_')])
-	        if classkey is not None and hasattr(obj, "__class__"):
-	            data[classkey] = obj.__class__.__name__
-	        return data
-	    elif hasattr(obj, "second"):
-	    	return utils.epoch_seconds(obj)
-	    else:
-	        return obj
+		# Output as JSON
+		self.json_output(output_json)
 
 class ContactPage(BaseHandler):
 	def get(self, pagename):

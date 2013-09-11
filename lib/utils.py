@@ -172,3 +172,23 @@ def epoch_seconds(dt):
 	epoch = datetime.datetime.utcfromtimestamp(0)
 	delta = dt - epoch
 	return int(delta.total_seconds())
+
+def to_dict(obj, classkey=None):
+	''' Converts an object to a dictionary. '''
+	if isinstance(obj, dict):
+		for k in obj.keys():
+			obj[k] = to_dict(obj[k], classkey)
+		return obj
+	elif hasattr(obj, "__iter__"):
+		return [to_dict(v, classkey) for v in obj]
+	elif hasattr(obj, "__dict__"):
+		data = dict([(key, to_dict(value, classkey)) 
+			for key, value in obj.__dict__.iteritems() 
+			if not callable(value) and not key.startswith('_')])
+		if classkey is not None and hasattr(obj, "__class__"):
+			data[classkey] = obj.__class__.__name__
+		return data
+	elif hasattr(obj, "second"):
+		return epoch_seconds(obj)
+	else:
+		return obj

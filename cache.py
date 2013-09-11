@@ -10,6 +10,7 @@ import utils
 from models import *
 
 from google.appengine.api import memcache
+from google.appengine.ext import deferred
 
 def objects_to_cache():
 	''' Returns a list of all ids of objects to cache. '''
@@ -85,9 +86,14 @@ def refresh_handler(now=''):
 	refresh_cache(refresh_all=True, otc=otc)
 
 
-def refresh_cache(refresh_all=False, otc=''):
+def refresh_cache(refresh_all=False, otc='', obj_type=''):
 	''' Refreshes cache, either all or only cold objects. '''
 	if not otc: otc = objects_to_cache()
+
+	if obj_type: otc = {'%s' % (obj_type,):otc[obj_type]}
+
+	info('obj_type',obj_type)
+	info('otc',otc)
 
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
@@ -216,21 +222,19 @@ def local_recent_media(locality):
 		and memcache.get(lc) != 'NOFEED' else [] for lc in local_contacts])
 
 	# Sort by date
-	merged_media = sorted(merged_media, key=lambda x: x.created_time)
+	merged_media = sorted(merged_media, key=lambda x: x.created_time, reverse=True)
 
 	# Limit to 300
 	merged_media = merged_media[:300]
 
+	# Capture no feeds
 	if len(merged_media) is 0: merged_media = 'NOFEED'
 
 	# Add to cache
-	memcache.set('%s/%s/%s_recent_media' % (locality.key.pairs()[0][1],
+	lrm_cache_id = '%s/%s/%s_recent_media count' % (locality.key.pairs()[0][1],
 		locality.key.pairs()[1][1],
-		urllib.quote_plus(locality.display_name),), merged_media, time=60*60*6)
-
-	info('%s/%s/%s_recent_media count' % (locality.key.pairs()[0][1],
-		locality.key.pairs()[1][1],
-		urllib.quote_plus(locality.display_name),),len(merged_media))
+		urllib.quote_plus(locality.display_name))
+	memcache.set(lrm_cache_id, merged_media, time=60*60*6)
 
 def refresh_unit_test():
 	now = datetime.now()
@@ -241,5 +245,5 @@ def refresh_unit_test():
 	while now < until:
 		info('##### Round %s #####' % (i,) ,now)
 		i += 1
-		refresh_handler(now)
+		deferred.defer(refresh_handler,now)
 		now = now + fame_span

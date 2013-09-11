@@ -83,3 +83,21 @@ def get_category_response(api, category, max_id=''):
 		tag_name=category,
 		max_id=max_id)
 
+def ig_envelope(media_list, api_url, page, max_id=''):
+	''' Wraps a list of media items in IG API envelope. '''
+	return {
+		"pagination": {
+			"next_url": "%s?page=%d" % (api_url, page + 1),
+			"next_max_id": max_id
+			},
+		"meta": {
+			"code": 200
+			},
+		"data": media_list
+		}
+
+def adjust_media_json():
+	''' Adjusts JSON version of media item to match IG API. '''
+	pass
+
+

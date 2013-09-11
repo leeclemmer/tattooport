@@ -61,7 +61,7 @@
 {% block javascript %}
 {{ super() }}
 <script>
-$_API_URL = "{{ api_url }}&callback=?";
+$_API_URL = "{{ api_url }}{% if 'http' in api_url%}&callback=?{% endif %}";
 
 </script>
 <script src="/js/app.js"></script>
