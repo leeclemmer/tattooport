@@ -10,7 +10,7 @@
 		<h2>{{ obj_type|capitalize }}</h2>
 		{% for o in objects %}
 		<li>
-			<span class="{% if o[1] == 'yes'%}text-success{% elif o[1] %}text-danger{% endif %}"><strong>{{ o[1]|upper }}</strong></span> - 
+			<span class="{% if o[1] and o[1] != 'NOFEED' %}text-success{% elif not o[1] %}text-danger{% endif %}"><strong>{% if o[1] and o[1] != 'NOFEED' %}YES{% elif not o[1] %}NO{% else %}NOFEED{% endif %}</strong></span> - 
 			{{ o[0] }}
 		</li>
 		{% endfor %}

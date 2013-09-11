@@ -88,7 +88,7 @@ class AdminCacheStatus(BaseHandler):
 		otc = cache.objects_to_cache()
 
 		for obj_type in otc:
-			otc[obj_type] = zip(otc[obj_type],[memcache.get(o) and 'yes' or 'no' for o in otc[obj_type]])
+			otc[obj_type] = zip(otc[obj_type],[memcache.get(o) for o in otc[obj_type]])
 
 		self.render('admin_cache_status.html',
 					title='Cache Status',
@@ -114,7 +114,7 @@ class AdminCacheRefresh(BaseHandler):
 					deferred.defer(cache.refresh_cache)
 					status_message = 'Cache cold objects only task added to queue.'
 				elif refresh_type == 'cron':
-					deferred.defer(cache.refresh_handler)
+					deferred.defer(cache.refresh_unit_test)
 					status_message = 'Cron cache task added to queue.'
 				elif refresh_type == 'flush':
 					deferred.defer(memcache.flush_all)

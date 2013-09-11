@@ -3,6 +3,7 @@
 import fix_path
 import math 
 from datetime import datetime
+from datetime import timedelta
 
 import helper
 import utils
@@ -17,18 +18,18 @@ def objects_to_cache():
 		   'categories':[]}
 
 	otc['shops'] = utils.flatten_list(all_contacts('shop'))
-	otc['shops'] = [contact_cache_id(obj,'shop') for obj in otc['shops']]
+	otc['shops'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shops']])
 
 	otc['artists'] = utils.flatten_list(all_contacts('artist'))
-	otc['artists'] = [contact_cache_id(obj,'artist') for obj in otc['artists']]
+	otc['artists'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artists']])
 	
-	otc['categories'] = all_categories()
+	otc['categories'] = sorted(all_categories())
 
-	otc['local_recent_media'] = lrm_ids()
+	otc['local_recent_media'] = sorted(lrm_ids())
 
 	return otc
 
-def refresh_handler():
+def refresh_handler(now=''):
 	''' Takes every object to be cached and refreshes it in batches.
 		Batch size is determined by the following formula:
 
@@ -56,7 +57,7 @@ def refresh_handler():
 	num_batches = cron_runs_per_hour * time_to_refresh
 
 	# Set which part of object list to refresh
-	now = datetime.now()
+	if not now: now = datetime.now()
 	day_part = time_to_refresh - (now.hour % time_to_refresh)
 	hour_part = now.minute / (60 / cron_runs_per_hour) + 1
 	batch_part = (day_part - 1) * 4 + hour_part
@@ -72,7 +73,7 @@ def refresh_handler():
 		batch_size = num_of_items / (cron_runs_per_hour * time_to_refresh * 1.0)
 		batch_size = int(math.ceil(batch_size))
 
-		batch_end = int((batch_part / (num_batches * 1.0) * num_of_items) - 1)
+		batch_end = int((batch_part / (num_batches * 1.0) * num_of_items))
 		batch_start = batch_end - batch_size
 
 		info('''batching %s: num_items=%s | batch_size=%s | batch_start=%s | batch_end=%s | batch_part=%s''' % \
@@ -113,6 +114,7 @@ def refresh_contact(contact_cache_id, contact_type):
 	contact = helper.get_contact('%s' % (contact_type[:-1],), contact_name, cid)
 
 	media, next = helper.get_contact_response(helper.get_app_api(), contact, cid, contact_type[:-1])
+	if media is None: media = 'NOFEED'
 
 	info('caching contact', contact_type == 'shops' and contact.name or contact.display_name)
 
@@ -150,8 +152,6 @@ def refresh_lrm(lrm_ids, refresh_all):
 							   'Subdivision', subdivision,
 							   'Locality', locality)
 		
-		info('caching lrm', locality)
-
 		if refresh_all:
 			local_recent_media(locality_key.get())
 		elif not memcache.get(lrm_cache_id):
@@ -200,6 +200,8 @@ def local_recent_media(locality):
 	''' Creates a list of media objects for all IG accounts in locality.
 		Puts this list in cache. Caps at 300 media objects.
 	'''
+	info('caching lrm', locality.display_name)
+
 	# Get cache ids for local objects
 	local_shops = helper.nearby_shops(locality.key)
 	local_artists = helper.shops_artists(local_shops)
@@ -210,13 +212,16 @@ def local_recent_media(locality):
 	local_contacts = local_shops + local_artists
 	
 	# Merge cached media lists
-	merged_media = utils.flatten_list([memcache.get(lc) if memcache.get(lc) else [] for lc in local_contacts])
+	merged_media = utils.flatten_list([memcache.get(lc) if memcache.get(lc) \
+		and memcache.get(lc) != 'NOFEED' else [] for lc in local_contacts])
 
 	# Sort by date
 	merged_media = sorted(merged_media, key=lambda x: x.created_time)
 
 	# Limit to 300
 	merged_media = merged_media[:300]
+
+	if len(merged_media) is 0: merged_media = 'NOFEED'
 
 	# Add to cache
 	memcache.set('%s/%s/%s_recent_media' % (locality.key.pairs()[0][1],
@@ -227,3 +232,14 @@ def local_recent_media(locality):
 		locality.key.pairs()[1][1],
 		urllib.quote_plus(locality.display_name),),len(merged_media))
 
+def refresh_unit_test():
+	now = datetime.now()
+	until = now + timedelta(hours=5)
+	fame_span = timedelta(minutes=15)
+	i = 1
+
+	while now < until:
+		info('##### Round %s #####' % (i,) ,now)
+		i += 1
+		refresh_handler(now)
+		now = now + fame_span
