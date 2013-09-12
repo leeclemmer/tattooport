@@ -355,7 +355,6 @@ class LocalityPageCache(BaseHandler):
 		cached_ml = memcache.get('%s_recent_media' % (pagename,))
 
 		if cached_ml and page * count - len(cached_ml) < count:
-			info('len_cached_ml',len(cached_ml))
 			media_list = cached_ml[start:end]
 
 			# Convert media items to JSON
@@ -367,8 +366,6 @@ class LocalityPageCache(BaseHandler):
 
 			# Wrap in envelope
 			api_url = 'http://%s/loc/%s/cache' % (socket.gethostname(), pagename,)
-			info('api_ur',api_url)
-			info('media_list',media_list)
 			max_id = media_list[-1].id
 
 			# Is there a next page

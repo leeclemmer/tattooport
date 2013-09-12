@@ -76,6 +76,7 @@ def refresh_handler(now=''):
 
 		batch_end = int((batch_part / (num_batches * 1.0) * num_of_items))
 		batch_start = batch_end - batch_size
+		if batch_start < 0: batch_start = 0
 
 		info('''batching %s: num_items=%s | batch_size=%s | batch_start=%s | batch_end=%s | batch_part=%s''' % \
 			(ot, num_of_items, batch_size, batch_start, batch_end, batch_part))
@@ -142,7 +143,7 @@ def refresh_lrm(lrm_ids, refresh_all):
 			info('cached lrm', locality_key.get().display_name)	
 		else: 
 			info('couldnt cache lrm', locality_key.get().display_name)
-				
+
 	for lrm_cache_id in lrm_ids:
 		locality = lrm_cache_id.split('_')[0]
 
