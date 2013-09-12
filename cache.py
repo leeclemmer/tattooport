@@ -92,9 +92,6 @@ def refresh_cache(refresh_all=False, otc='', obj_type=''):
 
 	if obj_type: otc = {'%s' % (obj_type,):otc[obj_type]}
 
-	info('obj_type',obj_type)
-	info('otc',otc)
-
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
 			if obj_type in ['shops','artists']:
@@ -140,14 +137,12 @@ def refresh_category(category_cache_id):
 	else: return False
 
 def refresh_lrm(lrm_ids, refresh_all):
-	'''all_localities = {}
-	regions = regions_in_db()
-
-	for country in regions:
-		for subdivision in country[1]:
-			for locality in subdivision[1]:
-				all_localities[locality[1]] = locality[0]'''
-
+	def call_lrm(locality_key):
+		if local_recent_media(locality_key.get()):
+			info('cached lrm', locality_key.get().display_name)	
+		else: 
+			info('couldnt cache lrm', locality_key.get().display_name)
+				
 	for lrm_cache_id in lrm_ids:
 		locality = lrm_cache_id.split('_')[0]
 
@@ -159,9 +154,9 @@ def refresh_lrm(lrm_ids, refresh_all):
 							   'Locality', locality)
 		
 		if refresh_all:
-			local_recent_media(locality_key.get())
+			call_lrm(locality_key)
 		elif not memcache.get(lrm_cache_id):
-			local_recent_media(locality_key.get())
+			call_lrm(locality_key)
 
 
 def contact_cache_id(contact, contact_type):
@@ -206,8 +201,6 @@ def local_recent_media(locality):
 	''' Creates a list of media objects for all IG accounts in locality.
 		Puts this list in cache. Caps at 300 media objects.
 	'''
-	info('caching lrm', locality.display_name)
-
 	# Get cache ids for local objects
 	local_shops = helper.nearby_shops(locality.key)
 	local_artists = helper.shops_artists(local_shops)
@@ -231,10 +224,11 @@ def local_recent_media(locality):
 	if len(merged_media) is 0: merged_media = 'NOFEED'
 
 	# Add to cache
-	lrm_cache_id = '%s/%s/%s_recent_media count' % (locality.key.pairs()[0][1],
+	lrm_cache_id = '%s/%s/%s_recent_media' % (locality.key.pairs()[0][1],
 		locality.key.pairs()[1][1],
 		urllib.quote_plus(locality.display_name))
-	memcache.set(lrm_cache_id, merged_media, time=60*60*6)
+
+	return memcache.set(lrm_cache_id, merged_media, time=60*60*6)
 
 def refresh_unit_test():
 	now = datetime.now()

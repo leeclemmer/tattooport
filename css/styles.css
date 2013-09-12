@@ -360,3 +360,8 @@ p.backlink a {
 .footer {
 	height:100px;
 }
+
+.lazy {
+	max-width: 100%;
+	height: auto;
+}

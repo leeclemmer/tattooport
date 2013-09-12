@@ -315,7 +315,6 @@ class LocalityPage(BaseHandler):
 	def get(self, pagename):
 		# Get Locality key
 		if pagename.endswith('/'): pagename = pagename[:-1]
-		info('pagename',pagename)
 		locality = self.path_to_key(pagename.split('&')[0])
 		
 		# Prevent user from URL hacking
@@ -353,19 +352,31 @@ class LocalityPageCache(BaseHandler):
 		# Get slice of media list
 		end = count * page
 		start = end - count
+		cached_ml = memcache.get('%s_recent_media' % (pagename,))
 
-		media_list = memcache.get('%s_recent_media' % (pagename,))[start:end]
+		if cached_ml and page * count - len(cached_ml) < count:
+			info('len_cached_ml',len(cached_ml))
+			media_list = cached_ml[start:end]
 
-		# Convert media items to JSON
-		media_list_json = []
+			# Convert media items to JSON
+			media_list_dicts = []
 
-		for media_item in media_list:
-			media_list_json.append(utils.to_dict(media_item))
+			for media_item in media_list:
+				mi_dict = helper.adjust_media_item(utils.to_dict(media_item))
+				media_list_dicts.append(mi_dict)
 
-		# Wrap in envelope
-		api_url = 'http://%s/loc/%s/cache' % (socket.gethostname(), pagename,)
-		max_id = media_list[-1].id
-		output_json = helper.ig_envelope(media_list_json, api_url, page, max_id)
+			# Wrap in envelope
+			api_url = 'http://%s/loc/%s/cache' % (socket.gethostname(), pagename,)
+			info('api_ur',api_url)
+			info('media_list',media_list)
+			max_id = media_list[-1].id
+
+			# Is there a next page
+			if not len(cached_ml) - (page + 1) * count > 0:
+				page = -1 # No, final page
+			output_json = helper.ig_envelope(media_list_dicts, api_url, page, max_id)
+		else:
+			output_json = {"meta":{"code":503}}
 
 		# Output as JSON
 		self.json_output(output_json)

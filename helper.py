@@ -85,9 +85,10 @@ def get_category_response(api, category, max_id=''):
 
 def ig_envelope(media_list, api_url, page, max_id=''):
 	''' Wraps a list of media items in IG API envelope. '''
+	next_url = page != -1 and "%s?page=%d" % (api_url, page + 1) or None
 	return {
 		"pagination": {
-			"next_url": "%s?page=%d" % (api_url, page + 1),
+			"next_url": next_url,
 			"next_max_id": max_id
 			},
 		"meta": {
@@ -96,8 +97,59 @@ def ig_envelope(media_list, api_url, page, max_id=''):
 		"data": media_list
 		}
 
-def adjust_media_json():
-	''' Adjusts JSON version of media item to match IG API. '''
-	pass
+def adjust_media_item(mi_dict):
+	''' Adjusts JSON version of media item to match IG API.
+		Frankly instead of doing this I should just adapt
+		Instagram library to give me straight IG response.
+	'''
+	# Things to come back to:
+	# - attribution: null
+	# - type: image - does python instagram cover videos?
+	# - users_in_photo (not in API)
+	if mi_dict.get('tags'):
+		mi_dict['tags'] = [i['name'] for i in mi_dict['tags']]
+
+	if mi_dict.get('location'):
+		mi_dict['location'] = dict(mi_dict['location'].items() +
+							       mi_dict['location']['point'].items())
+		del mi_dict['location']['point']
+
+	if mi_dict.get('comments'):
+		comments = {}
+
+		comments['count'] = mi_dict['comment_count']
+		del mi_dict['comment_count']
+
+		comments['data'] = mi_dict['comments']
+
+		for comment in comments['data']:
+			comment['created_time'] = str(comment['created_at'])
+			del comment['created_at']
+
+			comment['from'] = comment['user']
+			del comment['user']
+
+		mi_dict['comments'] = comments
+
+	mi_dict['created_time'] = str(mi_dict['created_time'])
+
+	if mi_dict.get('likes'):
+		likes = {}
+
+		likes['count'] = mi_dict['like_count']
+		del mi_dict['like_count']
+
+		likes['data'] = mi_dict['likes']
+		mi_dict['likes'] = likes
+
+	if mi_dict.get('caption'):
+		mi_dict['caption']['created_time'] = \
+			str(mi_dict['caption']['created_at'])
+		del mi_dict['caption']['created_at']
+
+		mi_dict['caption']['from'] = mi_dict['caption']['user']
+		del mi_dict['caption']['user']
+	
+	return mi_dict
 
 

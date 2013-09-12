@@ -14,14 +14,6 @@ $(function() {
 		// Set defaul value for api_url; see http://bit.ly/RlOOZA
 		api_url = typeof api_url !== 'undefined' ? api_url : $_API_URL;
 
-		/*if (document.width < 768) {
-			// Smartphones
-			api_url = api_url.replace(/count=../,'count=12');
-		} else if (document.width >= 768 && document.width < 1200) {
-			// Tablet
-			api_url = api_url.replace(/count=../,'count=20');
-		}*/
-
 		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'cache'))  {
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
@@ -30,15 +22,14 @@ $(function() {
 
 	function on_api_load(data) {
 		var photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
-	                    <div class="photo" style="display:none"> \
+	                    <div class="photo"> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
-	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="img-responsive lazy" data-igid="{{igid}}" width="100%" height="auto"> \
+	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
 	                        </a> \
 	                    </div> \
 	                </div>';
 
 		if (data.meta.code == 200) {
-			console.log('data.data.length=' + data.data.length)
 			// Insert photos
 			for (i=0; i<data.data.length; i++) {
 				photo = data.data[i];
@@ -48,31 +39,29 @@ $(function() {
 				html_to_append = html_to_append.replace('{{igid}}',photo.id);
 				
 				$('#media-holder').append(html_to_append);
+				$('#media-holder img.lazy:last').lazyload({ effect: "fadeIn", threshold: 600 });
 			}
 
-			// Remove loading gif
-			$('#ajax-loader').remove();
-			$('#loadmore').removeClass('button-loading');
+			$('#media-holder').append('<img class="lazy" style="display:none">')
 
 			// Bindings
 			bind_photo_actions(data);
 		} else {
-			alert("Couldn't load data from Instagram. Please try again.");
+			$('#media-holder').append("<div class='col-lg-12'><p>Sorry no pictures currently... try again later?</p></div>");
 		}
+
+		// Remove loading gif
+		$('#ajax-loader').remove();
+		$('#loadmore').removeClass('button-loading');
 	}
 
-	function bind_photo_actions(data) {				
-		// Fade in Photos
-		$('#media-holder img').bind('load', function() { $(this).parent().parent().fadeIn('slow'); });
-		$('#media-holder img:last').parent().parent().fadeIn('slow');
-
-		$('#media-holder img.lazy').lazyload({
-			effect : "fadeIn",
-			threshold : 600
-		});
+	function bind_photo_actions(data) {
+		insert_load_button();
 
 		// *** Insert Load button binding
 		function insert_load_button() {
+			var load_more_button = '<button class="btn btn-lg btn-primary" id="loadmore">Load more</button>';
+
 			// Insert load more button
 			if (data.pagination.next_url) {
 				if ($('#loadmore').length == 0) {
@@ -80,11 +69,12 @@ $(function() {
 				};
 				$('#loadmore').off().on('click', function() {
 					$(this).addClass('button-loading');
+
 					var next_url = data.pagination.next_url;
 					if (next_url.indexOf('api.instagram') != -1) {
 						next_url = next_url + '&callback=?'
 					};
-					console.log('next_url=' + next_url);
+
 					call_api(api_url=next_url);
 				});
 			} else {
@@ -92,15 +82,10 @@ $(function() {
 			}
 		}
 
-		var load_more_button = '<button class="btn btn-lg btn-primary" id="loadmore">Load more</button>'
-		
-		$('#media-holder img:last').off().on('load', function() { insert_load_button() });
-
-
 		// *** Launch Modal Bindings
 		if (document.width >= 768) {
 			// only bind for tablet or larger
-			$('.img-responsive').bind('click', function() {
+			$('.lazy').bind('click', function() {
 				load_modal.call(this);
 			});
 		} else {
