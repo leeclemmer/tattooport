@@ -278,7 +278,7 @@ def update_popular_list(plid, iid, item_type):
 
 	# Get item media list
 	item_media = memcache.get(iid)
-	if not item_media:
+	if not item_media or item_media == 'NOFEED':
 		if item_type in ['shop','artist']:
 			item_media = refresh_contact(iid, item_type)
 
@@ -297,15 +297,19 @@ def update_popular_list(plid, iid, item_type):
 
 			# algo to figure out where in list it belongs
 			info('algotime')
-			pop_list.append(item_media[0])
+			#pop_list.append(item_media[0])
 
 	info('pop_list',pop_list)
 	info('plid',plid)
 	info('iid',iid)
 
 	# Update list in DB and memcache
-	PopularList.put_pop_list(plid, pop_list)
+	# PopularList.put_pop_list(plid, pop_list)
 	memcache.set(plid, pop_list, time=60*60*2)
 
 def sort_media_by_popularity(media_list):
+	if media_list == 'NOFEED':
+		media_list = []
+	else:
+		media_list = [ml for ml in media_list if not isinstance(ml, str)]
 	return sorted(media_list, key=lambda x: x.like_count, reverse=True)

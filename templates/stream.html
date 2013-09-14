@@ -60,10 +60,12 @@
 
 {% block javascript %}
 {{ super() }}
+{% if api_url %}
 <script>
 $_API_URL = "{{ api_url }}{% if 'instagram' in api_url%}&callback=?{% endif %}";
 
 </script>
+{% endif %}
 <script src="/js/app.js"></script>
 {% endblock %}
 

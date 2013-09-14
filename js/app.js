@@ -172,11 +172,17 @@ $(function() {
 								photos[igid].user.username + ' \
 							</div>';
 
-			modal_like_count = '<div class="likes-count"><i class="icon-heart"></i> ' + photos[igid].likes.count + '</div>';
+			var likes_count = 0;
+			if (photos[igid].likes.count) likes_count = photos[igid].likes.count;
+			modal_like_count = '<div class="likes-count"><i class="icon-heart"></i> ' + likes_count + '</div>';
 
-			modal_comment_count = '<div class="comment-count"><i class="icon-comment"></i> ' + photos[igid].comments.count + '</div>';
+			var comments_count = 0;
+			if (photos[igid].comments.count) comments_count =  photos[igid].comments.count;
+			modal_comment_count = '<div class="comment-count"><i class="icon-comment"></i> ' + comments_count + '</div>';
 
-			modal_caption = '<div class="caption">' + photos[igid].caption.text + '</div>';
+			var caption = '';
+			if (photos[igid].caption) caption = photos[igid].caption.text;
+			modal_caption = '<div class="caption">' + caption + '</div>';
 
 			$('#media-modal .modal-meta').append(modal_author).append(modal_like_count).append(modal_comment_count).append(modal_caption);
 		}
