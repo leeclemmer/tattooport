@@ -27,7 +27,7 @@
 			<div class="form-group">
 				<label for="display_name" class="col-lg-2 control-label">Display Name <span class="required">*</span></label>
 				<div class="col-lg-9">
-					<input type="text" name="display_name" id="display_name" class="form-control" pattern="[!:.,'a-zA-Z0-9_-\s]{3,250}" maxlength="250" placeholder="Name displayed publically, either your given or artist name. 3-250 letters, numbers, or _,-,!" value="{{ args['display_name'] }}" required>
+					<input type="text" name="display_name" id="display_name" class="form-control" pattern="[!:.,'""a-zA-Z0-9_-\s]{3,250}" maxlength="250" placeholder="Name displayed publically, either your given or artist name. 3-250 letters, numbers, or _,-,!" value="{{ args['display_name'] }}" required>
 				</div>
 			</div>
 

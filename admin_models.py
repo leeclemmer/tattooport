@@ -53,7 +53,7 @@ class AdminStudio(BaseHandler):
 			self.redirect('/admin/models')
 
 	def valid_name(self, name):
-		NAME_RE = re.compile(r"^[!:.,'\sa-zA-Z0-9_-]{3,250}$")
+		NAME_RE = re.compile(r"^[!:.,'\"\sa-zA-Z0-9_-]{3,250}$")
 		return NAME_RE.match(name)
 
 	def valid_email(self, email):
