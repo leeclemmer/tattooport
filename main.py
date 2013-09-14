@@ -341,9 +341,11 @@ class LocalityPage(BaseHandler):
 
 		# Fetch shops
 		shop_results = helper.nearby_shops(locality)
+		shop_results = sorted(shop_results, key=lambda x: x.name)
 
 		# Fetch artists
-		artist_results = helper.shops_artists(shop_results)		
+		artist_results = helper.shops_artists(shop_results)
+		artist_results = sorted(artist_results, key=lambda x: x.display_name)		
 
 		# Add encoded name to shop list
 		shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
