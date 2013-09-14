@@ -5,6 +5,7 @@
 	Relationships: http://bit.ly/SFQQrl
 '''
 import urllib
+import cPickle
 
 from utils import info
 
@@ -285,3 +286,26 @@ class InstagramUser(User):
 							 user_id=user_id,
 							 full_name=full_name,
 							 profile_picture=profile_picture)
+
+class PopularList(ndb.Model):
+	popular_list = ndb.BlobProperty(required=True)
+
+	@classmethod
+	def put_pop_list(cls, plid, pl):
+		try:
+			result = cPickle.dumps(pl)
+			PopularList(id=plid, 
+						popular_list=result).put()
+		except cPickle.PicklingError, e:
+			info('PicklingError', e)
+
+	@classmethod
+	def get_pop_list(cls, plid):
+		try:
+			pl = PopularList.get_by_id(plid)
+			if pl:
+				value = cPickle.loads(str(pl.popular_list))
+			else: value = None
+			return value
+		except cPickle.PicklingError, e:
+			info('PicklingError', e)

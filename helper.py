@@ -1,4 +1,6 @@
 ''' Helper functions. '''
+import socket 
+
 from models import *
 import utils
 import keys
@@ -83,7 +85,18 @@ def get_category_response(api, category, max_id=''):
 		tag_name=category,
 		max_id=max_id)
 
-def ig_envelope(media_list, api_url, page, max_id=''):
+def media_list_to_json(media_list, pagename='', page=-1):
+	''' Takes a media list and converts it to JSON. '''
+	media_list_dicts = []
+
+	for media_item in media_list:
+		mi_dict = adjust_media_item(utils.to_dict(media_item))
+		media_list_dicts.append(mi_dict)
+
+	return media_list_dicts
+
+def ig_envelope(media_list, api_url='', page=-1, max_id='', 
+				page_type='single_user'):
 	''' Wraps a list of media items in IG API envelope. '''
 	next_url = page != -1 and "%s?page=%d" % (api_url, page + 1) or None
 	return {
@@ -92,7 +105,9 @@ def ig_envelope(media_list, api_url, page, max_id=''):
 			"next_max_id": max_id
 			},
 		"meta": {
-			"code": 200
+			"code": 200,
+			"source": "tp_cache",
+			"page_type": page_type
 			},
 		"data": media_list
 		}
@@ -106,13 +121,15 @@ def adjust_media_item(mi_dict):
 	# - attribution: null
 	# - type: image - does python instagram cover videos?
 	# - users_in_photo (not in API)
+
 	if mi_dict.get('tags'):
 		mi_dict['tags'] = [i['name'] for i in mi_dict['tags']]
 
 	if mi_dict.get('location'):
-		mi_dict['location'] = dict(mi_dict['location'].items() +
+		if mi_dict['location']['point'] is not None:
+			mi_dict['location'] = dict(mi_dict['location'].items() +
 							       mi_dict['location']['point'].items())
-		del mi_dict['location']['point']
+			del mi_dict['location']['point']
 
 	if mi_dict.get('comments'):
 		comments = {}

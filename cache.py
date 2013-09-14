@@ -4,6 +4,7 @@ import fix_path
 import math 
 from datetime import datetime
 from datetime import timedelta
+import cPickle
 
 import helper
 import utils
@@ -14,17 +15,17 @@ from google.appengine.ext import deferred
 
 def objects_to_cache():
 	''' Returns a list of all ids of objects to cache. '''
-	otc = {'shops':[],
-		   'artists':[],
-		   'categories':[]}
+	otc = {'shop':[],
+		   'artist':[],
+		   'category':[]}
 
-	otc['shops'] = utils.flatten_list(all_contacts('shop'))
-	otc['shops'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shops']])
+	otc['shop'] = utils.flatten_list(all_contacts('shop'))
+	otc['shop'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shop']])
 
-	otc['artists'] = utils.flatten_list(all_contacts('artist'))
-	otc['artists'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artists']])
+	otc['artist'] = utils.flatten_list(all_contacts('artist'))
+	otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])
 	
-	otc['categories'] = sorted(all_categories())
+	otc['category'] = sorted(all_categories())
 
 	otc['local_recent_media'] = sorted(lrm_ids())
 
@@ -95,16 +96,16 @@ def refresh_cache(refresh_all=False, otc='', obj_type=''):
 
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
-			if obj_type in ['shops','artists']:
+			if obj_type in ['shop','artist']:
 				if refresh_all:
 					refresh_contact(o, obj_type)
 				elif not memcache.get(o):
 					refresh_contact(o, obj_type)
-			elif obj_type == 'categories':
+			elif obj_type == 'category':
 				if refresh_all:
 					refresh_category(o)
 				elif not memcache.get(o):
-					refresh_category(o)	
+					refresh_category(o)
 		if obj_type == 'local_recent_media':
 			refresh_lrm(objects, refresh_all)
 
@@ -115,14 +116,16 @@ def refresh_contact(contact_cache_id, contact_type):
 	contact_name, cid = contact_cache_id.split('/')
 	contact_name = urllib.unquote_plus(contact_name)
 
-	contact = helper.get_contact('%s' % (contact_type[:-1],), contact_name, cid)
+	contact = helper.get_contact('%s' % (contact_type,), contact_name, cid)
 
-	media, next = helper.get_contact_response(helper.get_app_api(), contact, cid, contact_type[:-1])
+	media, next = helper.get_contact_response(helper.get_app_api(), contact, cid, contact_type)
 	if media is None: media = 'NOFEED'
 
-	info('caching contact', contact_type == 'shops' and contact.name or contact.display_name)
+	info('caching contact', contact_type == 'shop' and contact.name or contact.display_name)
 
-	return memcache.set(contact_cache_id, media, time=60*60*6)
+	memcache.set(contact_cache_id, media, time=60*6*6)
+
+	return media
 
 def refresh_category(category_cache_id):
 	category_cache_id = urllib.unquote_plus(category_cache_id)
@@ -210,19 +213,8 @@ def local_recent_media(locality):
 	local_artists = [contact_cache_id(la, 'artist') for la in local_artists]
 	
 	local_contacts = local_shops + local_artists
-	
-	# Merge cached media lists
-	merged_media = utils.flatten_list([memcache.get(lc) if memcache.get(lc) \
-		and memcache.get(lc) != 'NOFEED' else [] for lc in local_contacts])
 
-	# Sort by date
-	merged_media = sorted(merged_media, key=lambda x: x.created_time, reverse=True)
-
-	# Limit to 300
-	merged_media = merged_media[:300]
-
-	# Capture no feeds
-	if len(merged_media) is 0: merged_media = 'NOFEED'
+	merged_media = get_merged_media(local_contacts, sort_by='like_count')
 
 	# Add to cache
 	lrm_cache_id = '%s/%s/%s_recent_media' % (locality.key.pairs()[0][1],
@@ -230,6 +222,28 @@ def local_recent_media(locality):
 		urllib.quote_plus(locality.display_name))
 
 	return memcache.set(lrm_cache_id, merged_media, time=60*60*6)
+
+def get_merged_media(contact_list,
+					 sort_by='created_time', 
+					 sort_order='reverse'):
+	# Merge cached media lists
+	merged_media = utils.flatten_list(
+		[memcache.get(lc) if memcache.get(lc) and memcache.get(lc) != 'NOFEED'\
+						  else [] for lc in contact_list])
+
+	# Sort by date
+	merged_media = sorted(merged_media, 
+						  key=lambda x: getattr(x, '%s' % (sort_by,)), 
+						  reverse=(sort_order == 'reverse'))
+
+	# Limit to 300
+	merged_media = merged_media[:300]
+
+	# Capture no feeds
+	if len(merged_media) is 0: merged_media = 'NOFEED'
+
+	return merged_media
+
 
 def refresh_unit_test():
 	now = datetime.now()
@@ -242,3 +256,56 @@ def refresh_unit_test():
 		i += 1
 		deferred.defer(refresh_handler,now)
 		now = now + fame_span
+
+def update_popular_list(plid, iid, item_type):
+	'''
+		1. Get current popular list
+		2. Get item media list
+		3. See if item's most popular makes the current list
+		4. Insert item's most popular and update DB & cache
+	'''
+	# Get current popular list
+	plid = '%s_pop_list' % (plid,)
+	pop_list = memcache.get(plid)
+	if not pop_list:
+		pop_list = PopularList.get_pop_list(plid)
+		if pop_list: 
+			memcache.set(plid, pop_list)
+		else:
+			pop_list = []
+
+	info('1. pop_list len', len(pop_list))
+
+	# Get item media list
+	item_media = memcache.get(iid)
+	if not item_media:
+		if item_type in ['shop','artist']:
+			item_media = refresh_contact(iid, item_type)
+
+	info('2. item_media len', len(item_media))
+
+	# See if item's most popular makes the current list
+	if pop_list: pop_list = sort_media_by_popularity(pop_list)
+	if item_media: item_media = sort_media_by_popularity(item_media)
+	
+	if not pop_list and item_media: # empty list
+		pop_list.append(item_media[0])
+	elif pop_list and item_media and \
+			(item_media[0].like_count > pop_list[-1].like_count or \
+			len(pop_list) < 30):
+			# it made the popular list
+
+			# algo to figure out where in list it belongs
+			info('algotime')
+			pop_list.append(item_media[0])
+
+	info('pop_list',pop_list)
+	info('plid',plid)
+	info('iid',iid)
+
+	# Update list in DB and memcache
+	PopularList.put_pop_list(plid, pop_list)
+	memcache.set(plid, pop_list, time=60*60*2)
+
+def sort_media_by_popularity(media_list):
+	return sorted(media_list, key=lambda x: x.like_count, reverse=True)

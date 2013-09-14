@@ -14,14 +14,19 @@ $(function() {
 		// Set defaul value for api_url; see http://bit.ly/RlOOZA
 		api_url = typeof api_url !== 'undefined' ? api_url : $_API_URL;
 
-		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'cache'))  {
+		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'json'))  {
+			if (api_url.indexOf(' ') > -1) {
+				// encode space as "+"
+				api_url = api_url.replace(' ','+');
+			}
+
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
 		}
 	}
 
 	function on_api_load(data) {
-		var photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
+		var single_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
 	                    <div class="photo"> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
 	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
@@ -29,7 +34,31 @@ $(function() {
 	                    </div> \
 	                </div>';
 
+		var multi_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
+	                    <div class="photo"> \
+	                        <div class="stream-photo-meta stream-photo-meta-top"> \
+                    			<div class="photo-author"> \
+                    				<img class="img-responsive img-circle" src="{{profile_picture}}">{{username}} \
+                    			</div> \
+                    		</div> \
+	                    	<a data-toggle="modal" href="#media-modal"> \
+	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
+	                        </a> \
+	                        <div class="stream-photo-meta stream-photo-meta-bottom"> \
+                    			<div class="likes-count"><i class="icon-heart"></i> {{likes_count}}</div> \
+                    			<!--<div class="comment-count"><i class="icon-comment"></i> {{comment_count}}</div>--> \
+                    		</div> \
+	                    </div> \
+	                </div>';
+
+	    var photo_div = '';
+
+	    if (data.meta.page_type == 'multi_user') { photo_div = multi_user_photo_div; }
+	    else { photo_div = single_user_photo_div; }
+
+ 
 		if (data.meta.code == 200) {
+			console.log(data.meta.source);
 			// Insert photos
 			for (i=0; i<data.data.length; i++) {
 				photo = data.data[i];
@@ -37,6 +66,14 @@ $(function() {
 				
 				html_to_append = photo_div.replace('{{img_src}}',photo.images.low_resolution.url);
 				html_to_append = html_to_append.replace('{{igid}}',photo.id);
+
+				if (data.meta.source == 'tp_cache') {
+					// Multi user stream page
+					html_to_append = html_to_append.replace('{{profile_picture}}',photo.user.profile_picture);
+					html_to_append = html_to_append.replace('{{username}}',photo.user.username);
+					html_to_append = html_to_append.replace('{{likes_count}}',photo.likes.count);
+					html_to_append = html_to_append.replace('{{comment_count}}',photo.comments.count);
+				}
 				
 				$('#media-holder').append(html_to_append);
 				$('#media-holder img.lazy:last').lazyload({ effect: "fadeIn", threshold: 600 });
@@ -98,8 +135,8 @@ $(function() {
 			$('#media-modal .modal-body').children().remove();
 
 			// Get previous and next image
-			var data_prev = $(this).closest('.photo-col').prev().find('img');
-			var data_next = $(this).closest('.photo-col').next().find('img');
+			var data_prev = $(this).closest('.photo-col').prev().find('img.lazy');
+			var data_next = $(this).closest('.photo-col').next().find('img.lazy');
 			data_prev_id = data_prev.length > 0 ? data_prev.attr('data-igid') : null;
 			data_next_id = data_next.length > 0 ? data_next.attr('data-igid') : null;
 			

@@ -40,6 +40,8 @@ unauthenticated_api = InstagramAPI(client_id=keys.IG_CLIENTID,
 										  client_secret=keys.IG_CLIENTSECRET,
 										  redirect_uri=keys.IG_REDIRECTURI)
 
+ANONYMOUS_PHOTO_COUNT = 12
+
 def make_secure_val(value):
 	return '%s|%s' % (value, hashlib.sha256(keys.SECRET + value).hexdigest())
 
@@ -284,14 +286,30 @@ class TattooCategoryPage(BaseHandler):
 	def get(self, pagename):
 		parent, category_name = pagename.split('/')
 		category_name = urllib.unquote_plus(category_name)
-		category_name = ''.join(category_name.split(' '))
+		category_name_joined = ''.join(category_name.split(' '))
 		category = ndb.Key('TattooGroup', parent, 
-						   'TattooCategory', category_name).get()
-		api_url = self.ig_tag_recent_media(category, self.user.access_token)
-		self.render('tattoo_category.html',
+						   'TattooCategory', category_name_joined).get()
+
+		if self.user:
+			api_url = self.ig_tag_recent_media(category, self.user.access_token)
+			
+			self.render('tattoo_category.html',
 					user=self.user,
 					category=category,
 					api_url=api_url)
+		else: # Anonymous User
+			self.media = memcache.get(category_name)
+			if not self.media: # cold cache
+				if cache.refresh_category(category_name):
+					self.media = memcache.get(category_name)
+			if self.media:
+				self.media = self.media[:12] # only show 12 pics on anonymous screen
+
+				self.render('tattoo_category_cached.html',
+							user=self.user,
+							category=category,
+							media=self.media)
+
 
 class ShopsArtists(BaseHandler):
 	def get(self):
@@ -334,7 +352,7 @@ class LocalityPage(BaseHandler):
 		artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
 
 		# Set cache url as api_url
-		api_url = '/loc/%s/cache' % (pagename,)
+		api_url = '/loc/%s/json' % (pagename,)
 
 		self.render('locality.html',
 					user=self.user,
@@ -343,7 +361,7 @@ class LocalityPage(BaseHandler):
 					artist_results=artist_results,
 					api_url=api_url)
 
-class LocalityPageCache(BaseHandler):
+class LocalityPageJson(BaseHandler):
 	def get(self, pagename):
 		# Set count and page
 		count = self.request.get('count') and self.request.get('count') or 30
@@ -354,56 +372,98 @@ class LocalityPageCache(BaseHandler):
 		start = end - count
 		cached_ml = memcache.get('%s_recent_media' % (pagename,))
 
-		if cached_ml and page * count - len(cached_ml) < count:
-			media_list = cached_ml[start:end]
+		output_json = {"meta":{"code":503, "source":"tp_cache"}}
+
+		if not cached_ml or cached_ml == 'NOFEED':
+			country, subdivision, locality = pagename.split('/')
+			locality = ndb.Key('Country', country,
+							   'Subdivision', subdivision,
+							   'Locality', urllib.unquote_plus(locality)).get()
+			if cache.local_recent_media(locality):
+				cached_ml = memcache.get('%s_recent_media' % (pagename,))
+		elif cached_ml and page * count - len(cached_ml) < count:
+			if self.user:
+				media_list = cached_ml[start:end]
+			elif not self.user:
+				media_list = cached_ml[:ANONYMOUS_PHOTO_COUNT]
 
 			# Convert media items to JSON
-			media_list_dicts = []
-
-			for media_item in media_list:
-				mi_dict = helper.adjust_media_item(utils.to_dict(media_item))
-				media_list_dicts.append(mi_dict)
+			media_list_dicts = helper.media_list_to_json(media_list)
 
 			# Wrap in envelope
-			api_url = 'http://%s/loc/%s/cache' % (socket.gethostname(), pagename,)
+			api_url = 'http://%s/loc/%s/json' % (socket.gethostname(), pagename,)
 			max_id = media_list[-1].id
 
 			# Is there a next page
-			if not len(cached_ml) - (page + 1) * count > 0:
+			if not len(cached_ml) - (page + 1) * count > 0 or not self.user:
 				page = -1 # No, final page
-			output_json = helper.ig_envelope(media_list_dicts, api_url, page, max_id)
-		else:
-			output_json = {"meta":{"code":503}}
+			output_json = helper.ig_envelope(media_list_dicts, api_url, page, max_id, page_type='multi_user')
 
 		# Output as JSON
 		self.json_output(output_json)
 
 class ContactPage(BaseHandler):
+	''' Parent class handler for Shop and Artist. '''
+
 	def get(self, pagename):
+		info(pagename.count('/'))
 		if not pagename:
 			self.redirect('/shops-artists')
 		else:
 			max_id = self.request.get('max_id')
 
-			info('pagename',pagename)
+			if pagename.count('/') > 1:
+				pagename = '/'.join(pagename.split('/')[:2])
 
 			contact_name, cid = pagename.split('/')
 			contact_name = urllib.unquote_plus(contact_name)
 			self.contact = helper.get_contact(self.contact_type, contact_name, cid)
 
-			if not self.user:
-				self.call_cached_page(pagename)
-			else:
+			info(self.contact)
+
+			if self.user:
 				# Logged in user			
-				self.api_url = self.ig_user_media_recent(self.contact, self.user.access_token)
+				self.api_url = self.ig_user_media_recent(self.contact, 
+					self.user.access_token)
 
 				if not self.api_url and self.contact_type == 'shop':
-					self.api_url = self.ig_location_media_recent(self.contact, self.user.access_token)
+					# Set api_url to fetch location media 
+					# instead of IG user account
+					self.api_url = self.ig_location_media_recent(
+						self.contact, self.user.access_token)
+			elif not self.user:
+				# Anonymous user; setting api_url to json page
+				self.api_url = 'http://%s/%s/%s/json' % (socket.gethostname(), 
+														 self.contact_type,
+														 pagename)
 
-	def call_cached_page(self, pagename):# Anonymous User
-		self.media = memcache.get('Philadephia_recent_media')
+	def get_media(self, pagename):
+		''' Retrieves media for contact page.
+			If it can't find it in memcache, it sets memcache.
+		'''
+		self.media = memcache.get(pagename)
+
+		if not self.media: # cold cache
+			self.media = cache.refresh_contact(pagename, self.contact_type)
+			memcache.set(pagename, self.media)
+
 		if self.media:
-			self.media = self.media[:12] # only show 12 pics on anonymous screen
+			self.media = self.media[:ANONYMOUS_PHOTO_COUNT]
+
+class ContactPageJson(ContactPage):
+	''' Provides JSON interface to media list of contact.
+		Called for anonymous user.
+	'''
+
+	def get(self, contact_type, pagename):
+		self.contact_type = contact_type
+
+		# Get media list
+		self.get_media(pagename)
+		media_list_dicts = helper.media_list_to_json(self.media)
+
+		# Output json
+		self.json_output(helper.ig_envelope(media_list_dicts))
 
 class ShopPage(ContactPage):
 	def initialize(self, *a, **kw):
@@ -413,20 +473,10 @@ class ShopPage(ContactPage):
 	def get(self, pagename):
 		super(ShopPage, self).get(pagename)
 				
-		if self.user:
-			self.render('shop.html',
-						user=self.user,
-						shop=self.contact,
-						api_url=self.api_url)
-
-	def call_cached_page(self, pagename):
-		super(ShopPage, self).call_cached_page(pagename)
-
-		self.render('shop_cached.html',
+		self.render('shop.html',
 					user=self.user,
 					shop=self.contact,
-					media=self.media,
-					next=None)
+					api_url=self.api_url)
 
 class ArtistPage(ContactPage):
 	def initialize(self, *a, **kw):
@@ -436,10 +486,12 @@ class ArtistPage(ContactPage):
 	def get(self, pagename):
 		super(ArtistPage, self).get(pagename)
 
+		cache.update_popular_list('US/US-PA/Philadeliphia',pagename, 'artist')
+
 		self.render('artist.html',
-					user=self.user,
-					artist=self.contact,
-					api_url=self.api_url)
+				user=self.user,
+				artist=self.contact,
+				api_url=self.api_url)
 
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/login', Login),
@@ -447,8 +499,9 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/tattoos/?', Tattoos),
 							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
-							   ('/loc/(.*)/cache', LocalityPageCache),
+							   ('/loc/(.*)/json', LocalityPageJson),
 							   ('/loc/?(.*)?', LocalityPage),
+							   ('/(shop|artist)/(.*)/json', ContactPageJson),
 							   ('/shop/(.*)?', ShopPage),
 							   ('/artist/(.*)?',ArtistPage),
 							   ('/(.*)?', FourOhFour)], debug = True)

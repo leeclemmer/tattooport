@@ -4,14 +4,15 @@
 
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
-{% block top_content %}
-    <span class="locality-page">
-    <div class="tp-page-header">
+{% block pageclass %}locality-page{% endblock %}
+
+{% block stream_header %}
         <p class="backlink"><a href="/shops-artists">ALL CITIES</a></p>
     
         <h1>{{ locality.display_name }}</h1>
-    </div>
+{% endblock %}
 
+{% block top_content %}
     <div class="row">
         <div class="col-sm-6 col-md-6 col-lg-6">
             <h2>Shops</h2>
@@ -50,7 +51,6 @@
     </div>
 
     <h2>Recent Photos</h2>
-    </span>
 {% endblock %}
 
 

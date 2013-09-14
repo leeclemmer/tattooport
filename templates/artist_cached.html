@@ -1,7 +1,7 @@
-{% extends "shop.html" %}
+{% extends "artist.html" %}
 
 {% block media %}
-    {% if media and media != 'NOFEED' %}
+    {% if media %}
         <div class="row">
         {% for item in media %}
                 <div class=" col-sm-6 col-md-4 col-lg-3">
