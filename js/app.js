@@ -31,6 +31,10 @@ $(function() {
 	                    	<a data-toggle="modal" href="#media-modal"> \
 	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
 	                        </a> \
+	                        <div class="stream-photo-meta stream-photo-meta-bottom"> \
+                    			<div class="likes-count"><i class="icon-heart"></i> {{likes_count}}</div> \
+                    			<!--<div class="comment-count"><i class="icon-comment"></i> {{comment_count}}</div>--> \
+                    		</div> \
 	                    </div> \
 	                </div>';
 
@@ -66,12 +70,12 @@ $(function() {
 				
 				html_to_append = photo_div.replace('{{img_src}}',photo.images.low_resolution.url);
 				html_to_append = html_to_append.replace('{{igid}}',photo.id);
+				html_to_append = html_to_append.replace('{{likes_count}}',photo.likes.count);
 
 				if (data.meta.source == 'tp_cache') {
 					// Multi user stream page
 					html_to_append = html_to_append.replace('{{profile_picture}}',photo.user.profile_picture);
 					html_to_append = html_to_append.replace('{{username}}',photo.user.username);
-					html_to_append = html_to_append.replace('{{likes_count}}',photo.likes.count);
 					html_to_append = html_to_append.replace('{{comment_count}}',photo.comments.count);
 				}
 				
