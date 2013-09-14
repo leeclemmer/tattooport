@@ -25,7 +25,13 @@ def nearby_shops(locality_key, latlng=''):
 def shops_artists(shops):
 	''' Given a list of shops, return all related artists. '''
 	results = [[rel.artist.get() for rel in shop.artists.fetch()] for shop in shops]
-	return utils.flatten_list(results)
+	results = utils.flatten_list(results)
+
+	#dedupe
+	results_dict = {result.key.id():result for result in results}
+	results = [result[1] for result in results_dict.items()]
+		
+	return results
 
 def get_instagram_api(access_token=''):
 	''' Helper function for quick access to instagram api. 

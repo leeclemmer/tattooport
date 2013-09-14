@@ -9,6 +9,7 @@ import urllib2
 import json
 import logging
 import hashlib
+from collections import OrderedDict
 
 # internal
 import fix_path
@@ -345,8 +346,8 @@ class LocalityPage(BaseHandler):
 
 		# Fetch artists
 		artist_results = helper.shops_artists(shop_results)
-		artist_results = sorted(artist_results, key=lambda x: x.display_name)		
-
+		artist_results = sorted(artist_results, key=lambda x: x.display_name)
+		
 		# Add encoded name to shop list
 		shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
 
