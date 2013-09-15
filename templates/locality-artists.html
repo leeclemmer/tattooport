@@ -1,0 +1,53 @@
+{% extends "front_base.html" %}
+
+{% block title %}{{ locality.display_name }}{% endblock %}
+
+{% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
+
+{% block main %}
+{% set locality_path = '%s/%s/%s'|format(locality.key.pairs()[0][1],locality.key.pairs()[1][1],locality.key.pairs()[2][1]) %}
+<span class="locality-contacts-page">
+
+<!-- Header -->
+<div class="row">
+    <div class="col-sm-8 col-md-6 col-lg-6 stream-header">
+        <p class="backlink"><a href="/loc/{{ locality_path }}/">{{ locality.display_name|upper }}</a></p>
+    
+        <h1>{{ locality.display_name }}: Artists</h1>
+    </div>
+
+    <div class="col-sm-4 col-md-6 col-lg-6">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+        {% if not artist_results %}
+        <p>Hm that's odd, doesn't look like there are any shops.</p>
+        {% else %}
+            <ul class="list-unstyled">
+            {% for result in artist_results %}
+                <li>
+                    <a href="/artist/{{ result[1] }}/{{ result[0].key.id() }}">
+                        {{ result[0].display_name }}
+                    </a>
+                </li>
+            {% endfor %}
+        	</ul>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row more">
+    <div class="col-sm-3 col-md-3 col-lg-3"></div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+{% if not user%}
+        <a href="/login"><button class="btn btn-lg btn-primary">Log in to see more</button></a>
+{% endif %}
+    </div>
+    <div class="col-sm-3 col-md-3 col-lg-3"></div>
+</div>
+</span>
+{% endblock %}
+
+

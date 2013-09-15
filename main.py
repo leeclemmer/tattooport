@@ -339,30 +339,30 @@ class LocalityPage(BaseHandler):
 		# Prevent user from URL hacking
 		if pagename.count('/') is not 2:
 			self.redirect('/shops-artists')
+		else:
+			# Fetch shops
+			shop_results = helper.nearby_shops(locality)
+			shop_results = sorted(shop_results, key=lambda x: x.name)
 
-		# Fetch shops
-		shop_results = helper.nearby_shops(locality)
-		shop_results = sorted(shop_results, key=lambda x: x.name)
+			# Fetch artists
+			artist_results = helper.shops_artists(shop_results)
+			artist_results = sorted(artist_results, key=lambda x: x.display_name)
+			
+			# Add encoded name to shop list
+			shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
 
-		# Fetch artists
-		artist_results = helper.shops_artists(shop_results)
-		artist_results = sorted(artist_results, key=lambda x: x.display_name)
-		
-		# Add encoded name to shop list
-		shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
+			# Add path to artist list
+			artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
 
-		# Add path to artist list
-		artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
+			# Set cache url as api_url
+			api_url = '/loc/%s/json' % (pagename,)
 
-		# Set cache url as api_url
-		api_url = '/loc/%s/json' % (pagename,)
-
-		self.render('locality.html',
-					user=self.user,
-					locality=locality.get(),
-					shop_results=shop_results,
-					artist_results=artist_results,
-					api_url=api_url)
+			self.render('locality.html',
+						user=self.user,
+						locality=locality.get(),
+						shop_results=shop_results,
+						artist_results=artist_results,
+						api_url=api_url)
 
 class LocalityPageJson(BaseHandler):
 	def get(self, pagename):
@@ -404,6 +404,37 @@ class LocalityPageJson(BaseHandler):
 
 		# Output as JSON
 		self.json_output(output_json)
+
+class LocalityAllContacts(BaseHandler):
+	def get(self, pagename, contact_type):
+		locality = self.path_to_key(pagename)
+		info('vars,',locality, contact_type)
+
+		# Fetch shops
+		shop_results = helper.nearby_shops(locality)
+		shop_results = sorted(shop_results, key=lambda x: x.name)
+
+		if contact_type == 'artists':
+			# Fetch artists
+			artist_results = helper.shops_artists(shop_results)
+			artist_results = sorted(artist_results, key=lambda x: x.display_name)
+			
+			# Add path to artist list
+			artist_results = zip(artist_results,[urllib.quote_plus(result.display_name) for result in artist_results])
+
+			self.render('locality-artists.html',
+						user=self.user,
+						locality=locality.get(),
+						artist_results=artist_results)
+			
+		elif contact_type == 'shops':
+			# Add encoded name to shop list
+			shop_results = zip(shop_results, [urllib.quote_plus(result.name) for result in shop_results ])
+
+			self.render('locality-shops.html',
+						user=self.user,
+						locality=locality.get(),
+						shop_results=shop_results)
 
 class ContactPage(BaseHandler):
 	''' Parent class handler for Shop and Artist. '''
@@ -502,7 +533,8 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/tattoos/?', Tattoos),
 							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
-							   ('/loc/(.*)/json', LocalityPageJson),
+							   ('/loc/(.*)/json', LocalityPageJson),							   
+							   ('/loc/(.*)/(shops|artists)/?', LocalityAllContacts),
 							   ('/loc/?(.*)?', LocalityPage),
 							   ('/(shop|artist)/(.*)/json', ContactPageJson),
 							   ('/shop/(.*)?', ShopPage),
