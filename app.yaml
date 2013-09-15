@@ -21,6 +21,9 @@ handlers:
   static_dir: js
 - url: /img
   static_dir: img
+- url: /gadmin/.*
+  script: google.appengine.ext.admin.application
+  login: admin
 - url: /admin/settings.*
   script: admin_settings.app
   login: admin

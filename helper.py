@@ -15,7 +15,7 @@ def nearby_shops(locality_key, latlng=''):
 		results = Address.proximity_fetch(
 			Address.query(),
 			geocoords,
-			max_results=10,
+			max_results=1000,
 			max_distance=80467) # 50 miles
 	except AttributeError:
 		utils.catch_exception()
