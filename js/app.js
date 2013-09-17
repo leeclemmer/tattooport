@@ -20,6 +20,10 @@ $(function() {
 				api_url = api_url.replace(' ','+');
 			}
 
+			if (api_url.indexOf('locations') > -1) {
+				$('#location-photo-header').show();
+			}
+
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
 		}
@@ -105,6 +109,8 @@ $(function() {
 					re = /{{comment_count}}/g;
 					html_to_append = html_to_append.replace(re,photo.comments.count);
 				}
+
+				$('.view-all').show();
 				
 				$('#media-holder').append(html_to_append);
 				$('#media-holder img.lazy:last').lazyload({ effect: "fadeIn", threshold: 600 });
@@ -157,7 +163,7 @@ $(function() {
 				load_modal.call(this);
 			});
 		} else {
-			$('.photo a').removeAttr('href').on('click', function() { return null; });
+			$('.photo>a').removeAttr('href').on('click', function() { return null; });
 		}
 
 		function load_modal(igid) {

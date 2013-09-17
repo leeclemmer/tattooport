@@ -28,6 +28,11 @@
             <ul class="list-unstyled">
             {% for result in artist_results %}
                 <li>
+                    <img class="img-circle" src="{% if result[0].instagram.get() %}
+                                                    {{ result[0].instagram.get().profile_picture }}
+                                                {% else %}
+                                                    /img/blank_circle_150.gif
+                                                {% endif %}">
                     <a href="/artist/{{ result[1] }}/{{ result[0].key.id() }}">
                         {{ result[0].display_name }}
                     </a>

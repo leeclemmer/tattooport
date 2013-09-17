@@ -9,6 +9,7 @@ import cPickle
 import helper
 import utils
 from models import *
+from config import *
 
 from google.appengine.api import memcache
 from google.appengine.ext import deferred
@@ -26,8 +27,6 @@ def objects_to_cache():
 	otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])
 	
 	otc['category'] = sorted(all_categories())
-
-	otc['local_recent_media'] = sorted(lrm_ids())
 
 	return otc
 
@@ -110,8 +109,6 @@ def refresh_cache(refresh_all=False, otc='', obj_type=''):
 					refresh_category(o)
 				elif not memcache.get(o):
 					refresh_category(o)
-		if obj_type == 'local_recent_media':
-			refresh_lrm(objects, refresh_all)
 
 def refresh_contact(contact_cache_id, contact_type):
 	# If contact with the same name, compare IDs
@@ -154,7 +151,8 @@ def refresh_category(category_cache_id):
 def refresh_pop_list(contact_cache_id, contact_type):
 	def call_update(shop_key, iid, item_type):
 		nearby_shops = helper.nearby_shops(shop_key.get().address.get().key)
-		locations = [shop.key.parent().pairs() for shop in nearby_shops]
+		locations = [shop.key.parent().pairs() for shop in nearby_shops \
+			if shop.key.parent().id() in FEATURED_CITIES]
 		locations = list(set(locations))
 
 		# Update location popular lists

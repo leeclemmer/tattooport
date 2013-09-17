@@ -27,6 +27,13 @@
             <ul class="list-unstyled">
         	{% for result in shop_results %}
         		<li>
+                    <img class="img-circle" src="{% if result[0].instagram.get() %}
+                                                    {{ result[0].instagram.get().profile_picture }}
+                                                {% elif result[0].foursquare.get() %}
+                                                    /img/location_circle_150.gif
+                                                {% else %}
+                                                    /img/blank_circle_150.gif
+                                                {% endif %}">
         			<a href="/shop/{{ result[1] }}/{{ result[0].key.id() }}">{{ result[0].name }}</a>
         			{% if result[0].key.pairs()[-2][1] != locality.key.pairs()[-1][1] %}
         			({{ result[0].key.pairs()[-2][1] }})
