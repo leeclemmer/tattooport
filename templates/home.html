@@ -1,11 +1,43 @@
-{% extends "front_base.html" %}
+{% extends "stream.html" %}
 
 {% block title %}Home{% endblock %}
 
 {% block user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% endblock %}
 
-{% block main %}
-    <h1>Featured stuff</h1>
+{% block pageclass %}home-page{% endblock %}
 
+{% block stream_header %}
+	<h1>Popular Shops &amp; Artists</h1>
+
+	<div class="row" id="pop-shops-artists">
+		<img src="/img/ajax-loader.gif" class="ajax-loader">
+	    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col view-all">
+	        <img class="img-circle img-responsive" src="/img/blank_circle_150.gif">
+	        <div class="author">
+	            <a href="/shops-artists">View all shops and artists</a>
+	        </div>
+	    </div>
+	</div>
 {% endblock %}
+
+{% block top_content %}
+    <h1>Popular Tattoo Art</h1>
+{% endblock %}
+
+{% block bottom_content %}
+	<h1>Browse Cities</h1>	
+
+    <ul class="list-unstyled">
+		{% for locality in localities %}
+			<li>
+				<a href="/loc{{ locality[2] }}">
+					{{ locality[0].display_name }}
+				</a>
+			</li>
+		{% endfor %}
+	</ul>
+{% endblock %}
+
+
+
 

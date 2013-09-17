@@ -1,11 +1,13 @@
 ''' Helper functions. '''
-import socket 
+import socket
+from datetime import datetime
 
 from models import *
 import utils
 import keys
 
 from instagram.client import InstagramAPI
+from google.appengine.api import memcache
 
 def nearby_shops(locality_key, latlng=''):
 	''' Proximity search for shops given a locality key. 
@@ -61,7 +63,7 @@ def get_contact(contact_type, contact_name, cid):
 			return c
 			break
 
-def get_contact_response(api, contact, cid, contact_type, max_id=''):
+def get_contact_response(api, contact, cid, contact_type, max_id='', count=30):
 	media = None
 	next = None
 
@@ -70,7 +72,7 @@ def get_contact_response(api, contact, cid, contact_type, max_id=''):
 			if ig.primary == True and ig.user_id:
 				media, next = api.user_recent_media(
 					user_id=ig.user_id,
-					count=30, 
+					count=count, 
 					max_id=max_id)
 				break
 	elif contact_type != 'artist' and contact.foursquare.get() is not None:
@@ -78,16 +80,16 @@ def get_contact_response(api, contact, cid, contact_type, max_id=''):
 			if fsq.primary == True and fsq.location_id:
 				location_id = fsq.location_id
 				media, next = api.location_recent_media(
-					count=30, 
+					count=count, 
 					location_id=fsq.location_id,
 					max_id=max_id)
 				break
 
 	return (media, next)
 
-def get_category_response(api, category, max_id=''):
+def get_category_response(api, category, max_id='',count=30):
 	return api.tag_recent_media(
-		count=30,
+		count=count,
 		tag_name=category,
 		max_id=max_id)
 
@@ -174,5 +176,25 @@ def adjust_media_item(mi_dict):
 		del mi_dict['caption']['user']
 	
 	return mi_dict
+
+def plid(name):
+	if not name.endswith('_popular_media'):
+		return '%s_popular_media' % (name,)
+	else: return name
+
+def get_pop_list(plid):	
+	pop_list = memcache.get(plid)
+	if not pop_list:
+		pop_list = PopularList.get_pop_list(plid)
+		if pop_list:
+ 			memcache.set(plid, pop_list)
+		else:
+			pop_list = []
+	return pop_list
+
+def score(votes, seconds_age, gravity=1.8):
+	hour_age = utils.epoch_seconds(datetime.now()) - int(seconds_age)
+	hour_age = hour_age / 60 / 60
+	return votes / pow((hour_age + 2) * (1 + 1/hour_age * gravity), gravity)
 
 

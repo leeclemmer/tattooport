@@ -16,10 +16,11 @@ import fix_path
 import keys
 import utils
 import cache
+import helper
 from countries import COUNTRIES
 from utils import info
 from models import *
-import helper
+from config import *
 
 
 # external
@@ -40,8 +41,6 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 unauthenticated_api = InstagramAPI(client_id=keys.IG_CLIENTID,
 										  client_secret=keys.IG_CLIENTSECRET,
 										  redirect_uri=keys.IG_REDIRECTURI)
-
-ANONYMOUS_PHOTO_COUNT = 12
 
 def make_secure_val(value):
 	return '%s|%s' % (value, hashlib.sha256(keys.SECRET + value).hexdigest())
@@ -159,6 +158,39 @@ class BaseHandler(webapp2.RequestHandler):
 		if a: self.write(json.dumps(a[0], sort_keys=True, indent=4, separators=(',', ': ')))
 		elif kw: self.write(json.dumps(kw))
 
+	def popular_json(self, plid):
+		# Get popular list ID
+		plid = helper.plid(plid)
+
+		# Get popular list for locality
+		pop_list = helper.get_pop_list(plid)
+
+		# Convert list to dictionary
+		pop_list = helper.media_list_to_json(pop_list)
+
+		# Wrap in envelope
+		pop_list = helper.ig_envelope(pop_list,
+									  api_url='',
+									  page=-1,
+									  max_id='',
+									  page_type='multi_user')
+
+		self.json_output(pop_list)
+
+	def get_localities(self):
+		regions = regions_in_db()
+		localities = []
+
+		for country in regions:
+			if country[0].key.id() == 'US':
+				for subdivision in country[1]:
+					for locality in subdivision[1]:
+						if locality[0].display_name in FEATURED_CITIES:
+							locality.append(self.key_to_path(locality[0].key))
+							localities.append(locality)
+
+		return sorted(localities,key=lambda x: x[0].display_name)
+
 	def read_secure_cookie(self, name):
 		value = self.request.cookies.get(name)
 		return value and check_secure_val(value)
@@ -202,8 +234,17 @@ class Home(BaseHandler):
 		if not self.user:
 			self.redirect('/login')
 		else:
+			# Set cache url as api_url
+			api_url = '/json'
+
 			self.render('home.html',
-						user=self.user)
+						user=self.user,
+						api_url=api_url,
+						localities=self.get_localities())
+
+class HomePopularJson(BaseHandler):
+	def get(self):
+		self.popular_json('Frontpage')
 
 class Login(BaseHandler):
 	def get(self):
@@ -311,24 +352,11 @@ class TattooCategoryPage(BaseHandler):
 							category=category,
 							media=self.media)
 
-
 class ShopsArtists(BaseHandler):
 	def get(self):
-		regions = regions_in_db()
-		localities = []
-
-		for country in regions:
-			if country[0].key.id() == 'US':
-				for subdivision in country[1]:
-					for locality in subdivision[1]:
-						locality.append(self.key_to_path(locality[0].key))
-						localities.append(locality)
-
-		localities.sort(key=lambda x: x[0].display_name)
-
 		self.render('shops_artists.html',
 					user=self.user,
-					localities=localities)
+					localities=self.get_localities())
 
 class LocalityPage(BaseHandler):
 	def get(self, pagename):
@@ -364,46 +392,12 @@ class LocalityPage(BaseHandler):
 						artist_results=artist_results,
 						api_url=api_url)
 
-class LocalityPageJson(BaseHandler):
+class LocalityPopularJson(BaseHandler):
 	def get(self, pagename):
-		# Set count and page
-		count = self.request.get('count') and self.request.get('count') or 30
-		page = self.request.get('page') and int(self.request.get('page')) or 1
+		# Unquote the pagename
+		pagename = urllib.unquote_plus(pagename)
 
-		# Get slice of media list
-		end = count * page
-		start = end - count
-		cached_ml = memcache.get('%s_recent_media' % (pagename,))
-
-		output_json = {"meta":{"code":503, "source":"tp_cache"}}
-
-		if not cached_ml or cached_ml == 'NOFEED':
-			country, subdivision, locality = pagename.split('/')
-			locality = ndb.Key('Country', country,
-							   'Subdivision', subdivision,
-							   'Locality', urllib.unquote_plus(locality)).get()
-			if cache.local_recent_media(locality):
-				cached_ml = memcache.get('%s_recent_media' % (pagename,))
-		elif cached_ml and page * count - len(cached_ml) < count:
-			if self.user:
-				media_list = cached_ml[start:end]
-			elif not self.user:
-				media_list = cached_ml[:ANONYMOUS_PHOTO_COUNT]
-
-			# Convert media items to JSON
-			media_list_dicts = helper.media_list_to_json(media_list)
-
-			# Wrap in envelope
-			api_url = 'http://%s/loc/%s/json' % (socket.gethostname(), pagename,)
-			max_id = media_list[-1].id
-
-			# Is there a next page
-			if not len(cached_ml) - (page + 1) * count > 0 or not self.user:
-				page = -1 # No, final page
-			output_json = helper.ig_envelope(media_list_dicts, api_url, page, max_id, page_type='multi_user')
-
-		# Output as JSON
-		self.json_output(output_json)
+		self.popular_json(pagename)
 
 class LocalityAllContacts(BaseHandler):
 	def get(self, pagename, contact_type):
@@ -499,6 +493,32 @@ class ContactPageJson(ContactPage):
 		# Output json
 		self.json_output(helper.ig_envelope(media_list_dicts))
 
+class ContactRedirect(BaseHandler):
+	def get(self, ig_username):
+		contact = Contact.by_ig_username(ig_username)
+		if contact:
+			contact = contact.get()
+			contact_type = contact.class_[1]
+
+			if contact_type == 'Studio':
+				contact_type = 'shop'
+				name = urllib.quote_plus(contact.name)
+			elif contact_type == 'Artist':
+				contact_type = 'artist'
+				name = urllib.quote_plus(contact.display_name)
+			
+			path = '/%s/%s/%s' % (contact_type, name, contact.key.id())
+			self.redirect(path)
+		else:
+			error_msg = '''<h3><a href="https://instagram.com/%s" target="_blank">
+				Try on Instagram?</a></h3>''' % (ig_username)
+
+			title = 'Couldn\'t find %s on TattooPort :(' % (ig_username,)
+
+			self.render('error.html',
+						  title=title,
+						  error_message=error_msg)
+
 class ShopPage(ContactPage):
 	def initialize(self, *a, **kw):
 		BaseHandler.initialize(self, *a, **kw)
@@ -520,7 +540,7 @@ class ArtistPage(ContactPage):
 	def get(self, pagename):
 		super(ArtistPage, self).get(pagename)
 
-		cache.update_popular_list('US/US-PA/Philadeliphia',pagename, 'artist')
+		#cache.update_popular_list('US/US-PA/Philadelphia',pagename, 'artist')
 
 		self.render('artist.html',
 				user=self.user,
@@ -528,15 +548,17 @@ class ArtistPage(ContactPage):
 				api_url=self.api_url)
 
 app = webapp2.WSGIApplication([('/?',Home),
+							   ('/json',HomePopularJson),
 							   ('/login', Login),
 							   ('/logoff', Logoff),
 							   ('/tattoos/?', Tattoos),
 							   ('/tattoos/(.*)?', TattooCategoryPage),
 							   ('/shops-artists', ShopsArtists),
-							   ('/loc/(.*)/json', LocalityPageJson),							   
+							   ('/loc/(.*)/json', LocalityPopularJson),							   
 							   ('/loc/(.*)/(shops|artists)/?', LocalityAllContacts),
 							   ('/loc/?(.*)?', LocalityPage),
 							   ('/(shop|artist)/(.*)/json', ContactPageJson),
 							   ('/shop/(.*)?', ShopPage),
 							   ('/artist/(.*)?',ArtistPage),
+							   ('/contact/(.*)/?',ContactRedirect),
 							   ('/(.*)?', FourOhFour)], debug = True)

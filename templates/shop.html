@@ -5,13 +5,14 @@
 {% block pageclass %}shop-page{% endblock %}
 
 {% block stream_header %}
-{% if shop.instagram.get().profile_picture %}
-<img src="{{ shop.instagram.get().profile_picture }}" class="img-circle">
-{% endif %} 
 
 {% set address = shop.address.get() %}
 
-<p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>
+<!--<p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>-->
+
+{% if shop.instagram.get().profile_picture %}
+<img src="{{ shop.instagram.get().profile_picture }}" class="img-circle">
+{% endif %} 
 
 <h1>{{ shop.name }}</h1>
 {% endblock %}

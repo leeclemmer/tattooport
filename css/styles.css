@@ -15,15 +15,30 @@ a {
 	color: #5bb6c3;
 }
 
+a:hover {	
+	text-decoration: none;
+}
+
+h1, h2, h3 {
+	font-family: 'Montserrat', sans-serif;	
+}
+
 h1 {
-	color: #DD9B3D;
-	font-family: 'Montserrat', sans-serif;
+	color: #8dc233;
 }
 
 @media (max-width: 768px) {
 	h1 {
 		font-size: 1.5em;
 	}
+
+	h2 {
+		font-size: 1.3em;
+	}
+}
+
+h2 {
+	color: #DD9B3D;
 }
 
 ul li li {
@@ -249,6 +264,31 @@ ul li li {
 	}
 }
 
+/*** Locality Page ***/
+.single-contact-col {
+	margin-top: 0.5em;
+	margin-bottom: 1em;
+	text-align: center;
+	font-size: 1.5em;
+}
+
+.single-contact-col .img-responsive{
+	display: inline;
+	margin-bottom: 0.5em;
+}
+
+.single-contact-col .author {
+	font-size: 0.7em;
+	font-weight: bold;
+}
+
+@media (min-width: 768px) {
+	.single-contact-col .author {
+		font-size: 1em;
+		font-weight: normal;
+	}
+}
+
 /*** Stream Page ***/
 .photo {
 	max-width: 768px;
@@ -283,24 +323,38 @@ ul li li {
 	height: auto;
 }
 
+.stream-page h2 {
+	margin-top: 0;
+}
+
 .stream-page .more {
 	padding-top: 30px;
 }
 
 .stream-header, .tp-page-header {
-	margin-top: 1em;
-	margin-bottom: 0.5em;
+	margin-top: 2em;
 }
 
-.stream-header img {
+.locality-page .stream-header,
+.locality-contacts-page .stream-header {
+	margin-top: 0;
+}
+
+.shop-page .stream-header img,
+.artist-page .stream-header img {
     float: left;
-    margin-top: 1em;
     margin-right: 10px;
     width: 40px;
 }
 
 .stream-header h1, .tp-page-header h1 {
-	margin-top: -0.3em;
+	margin-top: 0em;
+}
+
+.backlink {	
+	padding-bottom: 0.7em;
+	margin-bottom: -0.3em;
+	padding-top: 1em;
 }
 
 p.backlink a {
@@ -315,6 +369,10 @@ p.backlink a {
 	.shop-header img {
 		margin-top: 0.3em;
 		width: 50px;
+	}
+
+	.backlink {
+		padding-top: 0.2em;
 	}
 }
 
@@ -347,6 +405,37 @@ p.backlink a {
 
 .photo {
     padding-bottom: 20px
+}
+
+#media-holder {
+	margin-top: 2em;
+}
+
+.view-all .author {
+    width:70%;
+    margin:-6.2em auto 0 auto;
+}
+
+@media (min-width: 768px) {
+	.view-all .author {
+		font-size: 0.7em;
+		font-weight: bold;
+		margin: -5.9em auto 0 auto;
+	}
+}
+
+@media (min-width: 992px) {
+	.view-all .author {
+		font-size: 1em;
+		margin: -5.7em auto 0 auto;
+	}
+}
+
+@media (min-width: 1200px) {
+	.view-all .author {
+		font-weight: normal;
+		margin: -6em auto 0 auto;
+	}
 }
 
 /*** Modal ***/

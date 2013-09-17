@@ -5,11 +5,12 @@
 {% block pageclass %}artist-page{% endblock %}
 
 {% block stream_header %}
+
+<!--<p class="backlink"><a href="/loc/{{ loc_page }}/">{{ loc_name|upper }}</a></p>-->
+
 {% if artist.instagram.get().profile_picture %}
 <img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
 {% endif %} 
-
-<p class="backlink"><a href="/loc/{{ loc_page }}/">{{ loc_name|upper }}</a></p>
 
 <h1>{{ artist.display_name }}</h1>
 {% endblock %}

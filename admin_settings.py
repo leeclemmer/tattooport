@@ -47,7 +47,6 @@ class AdminStatsCounters(BaseHandler):
 		counters = zip(counters, [general_counter.get_count(counter) for counter in counters])
 		return counters
 
-
 class AdminRegionsDelete(BaseHandler):
 	def get(self):
 		region = self.request.get('region')
@@ -134,10 +133,9 @@ class AdminCacheRefresh(BaseHandler):
 					status_message=status_message
 					)
 
-app = webapp2.WSGIApplication(
-	[('/admin/settings/?', AdminSettings),
-	 ('/admin/settings/stats/counters/?', AdminStatsCounters),
-	 ('/admin/settings/regions/delete/?', AdminRegionsDelete),
-	 ('/admin/settings/cache/status/?', AdminCacheStatus),
-	 ('/admin/settings/cache/refresh/?', AdminCacheRefresh)
-	 ], debug=True)
+app = webapp2.WSGIApplication([('/admin/settings/?', AdminSettings),
+							   ('/admin/settings/stats/counters/?', AdminStatsCounters),
+							   ('/admin/settings/regions/delete/?', AdminRegionsDelete),
+							   ('/admin/settings/cache/status/?', AdminCacheStatus),
+							   ('/admin/settings/cache/refresh/?', AdminCacheRefresh)
+							  ], debug=True)

@@ -42,7 +42,8 @@ $(function() {
 	                    <div class="photo"> \
 	                        <div class="stream-photo-meta stream-photo-meta-top"> \
                     			<div class="photo-author"> \
-                    				<img class="img-responsive img-circle" src="{{profile_picture}}">{{username}} \
+                    				<img class="img-responsive img-circle" src="{{profile_picture}}"> \
+                    				<a href="/contact/{{username}}">{{username}}</a> \
                     			</div> \
                     		</div> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
@@ -60,23 +61,49 @@ $(function() {
 	    if (data.meta.page_type == 'multi_user') { photo_div = multi_user_photo_div; }
 	    else { photo_div = single_user_photo_div; }
 
+	    var single_contact_div = '<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col"> \
+			    <a href="/contact/{{username}}"> \
+			      <img class="img-circle img-responsive" src="{{profile_picture}}"> \
+			    <div class="author">{{username}}</div></a> \
+			  </div>';
  
 		if (data.meta.code == 200) {
-			console.log(data.meta.source);
-			// Insert photos
-			for (i=0; i<data.data.length; i++) {
+			var re = ''
+			// Insert HTML
+			for (i=0; i<data.data.length; i++) {				
+				// Photos
 				photo = data.data[i];
 				photos[photo.id] = photo;
+
+				// Popular Shops & Artists
+				if (i < 5) {
+					re = /{{profile_picture}}/g;
+					single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
+
+					re = /{{username}}/g;
+					single_contact_html = single_contact_html.replace(re,photo.user.username);
+					$('#pop-shops-artists .view-all').before(single_contact_html);
+				}
 				
-				html_to_append = photo_div.replace('{{img_src}}',photo.images.low_resolution.url);
-				html_to_append = html_to_append.replace('{{igid}}',photo.id);
-				html_to_append = html_to_append.replace('{{likes_count}}',photo.likes.count);
+				re = /{{img_src}}/g;
+				html_to_append = photo_div.replace(re,photo.images.low_resolution.url);
+
+				re = /{{igid}}/g;
+				html_to_append = html_to_append.replace(re,photo.id);
+
+				re = /{{likes_count}}/g;
+				html_to_append = html_to_append.replace(re,photo.likes.count);
 
 				if (data.meta.source == 'tp_cache') {
 					// Multi user stream page
-					html_to_append = html_to_append.replace('{{profile_picture}}',photo.user.profile_picture);
-					html_to_append = html_to_append.replace('{{username}}',photo.user.username);
-					html_to_append = html_to_append.replace('{{comment_count}}',photo.comments.count);
+					re = /{{profile_picture}}/g;
+					html_to_append = html_to_append.replace(re,photo.user.profile_picture);
+
+					re = /{{username}}/g;
+					html_to_append = html_to_append.replace(re,photo.user.username);
+
+					re = /{{comment_count}}/g;
+					html_to_append = html_to_append.replace(re,photo.comments.count);
 				}
 				
 				$('#media-holder').append(html_to_append);
@@ -92,7 +119,7 @@ $(function() {
 		}
 
 		// Remove loading gif
-		$('#ajax-loader').remove();
+		$('.ajax-loader').remove();
 		$('#loadmore').removeClass('button-loading');
 	}
 
@@ -173,8 +200,9 @@ $(function() {
 			modal_author = '<div class="photo-author"> \
 								<img class="img-responsive img-circle" \
 									 src="' + photos[igid].user.profile_picture + '"> ' + 
-								photos[igid].user.username + ' \
-							</div>';
+								'<a href="/contact/' + photos[igid].user.username + '">' + 
+								photos[igid].user.username + '</a>' + 
+							'</div>';
 
 			var likes_count = 0;
 			if (photos[igid].likes.count) likes_count = photos[igid].likes.count;

@@ -16,11 +16,17 @@
 {% set locality_path = '%s/%s/%s'|format(locality.key.pairs()[0][1],locality.key.pairs()[1][1],locality.key.pairs()[2][1]) %}
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <h3>View all <a href="/loc/{{ locality_path }}/shops">shops</a> or <a href="/loc/{{ locality_path }}/artists">artists</a></h3>
+        	<h2>Popular Shops &amp; Artists</h2>
+        	<div class="row" id="pop-shops-artists">
+                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col view-all">
+                    <img class="img-circle img-responsive" src="/img/blank_circle_150.gif">
+                    <div class="author">
+                        View all <a href="/loc/{{ locality_path }}/shops">shops</a> or <a href="/loc/{{ locality_path }}/artists">artists</a>
+                    </div>
+                </div>
+        	</div>
         </div>
     </div>
 
-    <h2>Recent Photos</h2>
+    <h2>Popular Tattoo Art</h2>
 {% endblock %}
-
-

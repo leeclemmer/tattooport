@@ -13,6 +13,22 @@ from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
 from geo.geomodel import GeoModel
 
+# Helper functions
+
+def regions_in_db():
+	''' Returns a list of list of lists with all used regions. '''
+	return [[country,
+				[[subdivision,
+					[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
+				for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
+			for country in Country.query().order(Country.display_name).fetch()]
+
+def parent_key(group_name, group):
+	return ndb.Key('%s' % group_name,group)
+
+
+# Models
+
 class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.
 		See http://en.wikipedia.org/wiki/ISO_3166-1 for more. '''
@@ -35,14 +51,6 @@ class Locality(GeoModel, ndb.Model):
 	@classmethod
 	def query_location(cls, ancestor_key):
 		return cls.query(ancestor = ancestor_key)
-
-def regions_in_db():
-	''' Returns a list of list of lists with all used regions. '''
-	return [[country,
-				[[subdivision,
-					[[locality,urllib.quote_plus(locality.key.id())] for locality in Locality.query_location(subdivision.key).order(Locality.display_name).fetch()]]
-				for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
-			for country in Country.query().order(Country.display_name).fetch()]
 
 class Contact(polymodel.PolyModel):
 	''' Superclass that defines common contact properties. '''
@@ -105,6 +113,14 @@ class Contact(polymodel.PolyModel):
 		return {attr_name for attr_name, attr_value \
 						  in cls.__dict__.iteritems() \
 						  if isinstance(attr_value,property)}
+
+	@classmethod
+	def by_ig_username(cls, ig_username):
+		ig = Instagram.query(Instagram.instagram == ig_username).get()
+		if ig:
+			return ig.contact
+		else:
+			return None
 
 class Email(ndb.Model):
 	contact = ndb.KeyProperty(kind=Contact)
@@ -216,9 +232,6 @@ class StudioArtist(ndb.Model):
 	artist = ndb.KeyProperty(required=True, kind=Artist)
 
 	relationship = ndb.StringProperty(choices=('owner', 'artist', 'guest'))
-
-def parent_key(group_name, group):
-	return ndb.Key('%s' % group_name,group)
 
 class TattooGroup(ndb.Model):
 	''' Models a tattoo group, like "Animals" '''
