@@ -13,4 +13,12 @@
 {% endif %} 
 
 <h1>{{ artist.display_name }}</h1>
+
+<ul class="list-unstyled works-at">
+	{% for studio in artist.studios %}
+		{% set studio = studio.studio.get() %}
+		{% set loc = studio.key.parent() %}
+	<li><a href="/shop/{{ studio.name }}/{{ studio.key.id() }}">{{ studio.name }}</a> in <a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{{ loc.get().display_name }}</a></li>
+	{% endfor %}
+</ul>
 {% endblock %}

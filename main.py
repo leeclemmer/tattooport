@@ -402,7 +402,6 @@ class LocalityPopularJson(BaseHandler):
 class LocalityAllContacts(BaseHandler):
 	def get(self, pagename, contact_type):
 		locality = self.path_to_key(pagename)
-		info('vars,',locality, contact_type)
 
 		# Fetch shops
 		shop_results = helper.nearby_shops(locality)
@@ -434,7 +433,6 @@ class ContactPage(BaseHandler):
 	''' Parent class handler for Shop and Artist. '''
 
 	def get(self, pagename):
-		info(pagename.count('/'))
 		if not pagename:
 			self.redirect('/shops-artists')
 		else:
@@ -446,8 +444,6 @@ class ContactPage(BaseHandler):
 			contact_name, cid = pagename.split('/')
 			contact_name = urllib.unquote_plus(contact_name)
 			self.contact = helper.get_contact(self.contact_type, contact_name, cid)
-
-			info(self.contact)
 
 			if self.user:
 				# Logged in user			

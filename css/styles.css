@@ -401,6 +401,15 @@ p.backlink a {
 	}
 }
 
+.works-at {
+	margin-left: 50px;
+	font-size: 16px;
+}
+
+.row .works-at li a {
+	font-size: 16px;
+}
+
 .stream-photo-meta {
     margin: 0 auto;
     margin-top: 1em;
