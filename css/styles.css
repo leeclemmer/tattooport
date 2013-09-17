@@ -410,6 +410,14 @@ p.backlink a {
 	font-size: 16px;
 }
 
+.dropdown-menu > li > a:hover {
+    font-weight: normal;
+}
+
+.dropdown-menu > li > a {
+    padding: 12px;
+}
+
 .stream-photo-meta {
     margin: 0 auto;
     margin-top: 1em;

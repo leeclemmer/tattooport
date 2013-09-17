@@ -12,9 +12,29 @@
 
 {% if shop.instagram.get().profile_picture %}
 <img src="{{ shop.instagram.get().profile_picture }}" class="img-circle">
+{% elif shop.foursquare.get() %}
+<img src="/img/location_circle_150.gif" class="img-circle">
+{% else %}
+<img src="/img/blank_circle_150.gif" class="img-circle">
 {% endif %} 
 
 <h1>{{ shop.name }}</h1>
+
+{% set artists = shop.artists.fetch() %}
+
+<div class="dropdown works-at">
+	{% set loc = shop.key.parent() %}
+	<a data-toggle="dropdown" href="#">{{ artists|count }} Artists</a> in <a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{{ loc.get().display_name }}</a>
+
+	<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+		{% for artist in artists %}
+		<li role="presentation">
+			{% set artist = artist.artist.get() %}
+			<a href="/artist/{{ artist.display_name }}/{{ artist.key.id() }}">{{ artist.display_name }}</a>
+		</li>
+		{% endfor %}
+	</ul>
+</div>
 
 <h3 id="location-photo-header" style="display:none">Photos taken at this location</h3>
 {% endblock %}
