@@ -289,7 +289,7 @@ class Login(BaseHandler):
 											   user_id=user_id,
 											   full_name=full_name,
 											   profile_picture=profile_picture,
-											   access_token=access_token
+											   access_token=access_token[0]
 											   )
 					else:
 						# Existing user, update information

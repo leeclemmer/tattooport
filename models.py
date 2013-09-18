@@ -292,13 +292,14 @@ class InstagramUser(User):
 
 	@classmethod
 	def register(cls, user_name, user_id, 
-				 full_name=None, profile_picture=None, 
-				 group='default'):
+				 full_name=None, profile_picture=None,
+				 access_token=access_token, group='default'):
 		return InstagramUser(parent=parent_key('users',group),
 							 user_name=user_name,
 							 user_id=user_id,
 							 full_name=full_name,
-							 profile_picture=profile_picture)
+							 profile_picture=profile_picture,
+							 access_token=access_token)
 
 class PopularList(ndb.Model):
 	popular_list = ndb.BlobProperty(required=True)
