@@ -3,6 +3,7 @@ body {
 	padding-top: 50px;
 	background-color: #1c1c1c;
 	color: #eee;
+	font-family: Tahoma, sans-serif;
 }
 
 @media (min-width: 768px) {
@@ -20,7 +21,7 @@ a:hover {
 }
 
 h1, h2, h3 {
-	font-family: 'Montserrat', sans-serif;	
+	font-family: 'Montserrat', sans-serif;
 }
 
 h1 {
@@ -50,10 +51,10 @@ ul li .dropdown-menu li {
 }
 
 .tagline {
-	font-family: 'Montserrat', sans-serif;
 	color: #7a7a7a;
 	font-size: 1.3em;
 	font-weight: 400;
+	font-family: 'Montserrat', sans-serif;
 	letter-spacing: -0.1em;
 }
 
@@ -103,8 +104,12 @@ ul li .dropdown-menu li {
 	float: left;
 }
 
+.text-important {
+	color: #8dc233;
+}
+
 /*** Navbar ***/
-.navbar-nav {
+.navbar-nav {	
 	font-family: 'Montserrat', sans-serif;
 }
 
@@ -508,8 +513,8 @@ p.backlink a {
 	text-align: left;
 	margin-left: 90px;
 	margin-right: 90px;
-	font-family: 'Montserrat', sans-serif;
 	font-size: 1.3em;
+	font-family: 'Montserrat', sans-serif;
 }
 
 .modal-meta .photo-author {
@@ -542,6 +547,21 @@ p.backlink a {
 }
 
 /*** Footer ***/
-.footer {
-	height:100px;
+.row.footer {
+	margin: 2em 0 0 0;
+	padding-top: 1em;
+	height: 300px;
+	background-color: black;
+    color: #666;
+}
+
+.footer ul li a {
+    margin-left: 3px;
+    font-size: 18px;
+    vertical-align: middle;
+}
+
+h4 {
+    text-transform: uppercase;
+    color: #333;
 }
