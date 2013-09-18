@@ -526,6 +526,7 @@ class ShopPage(ContactPage):
 		self.render('shop.html',
 					user=self.user,
 					shop=self.contact,
+					featured_cities=FEATURED_CITIES,
 					api_url=self.api_url)
 
 class ArtistPage(ContactPage):
@@ -541,6 +542,7 @@ class ArtistPage(ContactPage):
 		self.render('artist.html',
 				user=self.user,
 				artist=self.contact,
+				featured_cities=FEATURED_CITIES,
 				api_url=self.api_url)
 
 app = webapp2.WSGIApplication([('/?',Home),

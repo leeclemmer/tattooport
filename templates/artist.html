@@ -18,7 +18,8 @@
 	{% for studio in artist.studios %}
 		{% set studio = studio.studio.get() %}
 		{% set loc = studio.key.parent() %}
-	<li><a href="/shop/{{ studio.name }}/{{ studio.key.id() }}">{{ studio.name }}</a> in <a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{{ loc.get().display_name }}</a></li>
+		{% set loc_name = loc.get().display_name %}
+	<li><a href="/shop/{{ studio.name }}/{{ studio.key.id() }}">{{ studio.name }}</a> in {% if loc_name in featured_cities %}<a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{% endif %}{{ loc_name }}{% if loc_name in featured_cities %}</a>{% endif %}</li>
 	{% endfor %}
 </ul>
 {% endblock %}

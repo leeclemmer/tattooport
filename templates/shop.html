@@ -24,7 +24,8 @@
 
 <div class="dropdown works-at">
 	{% set loc = shop.key.parent() %}
-	<a data-toggle="dropdown" href="#">{{ artists|count }} Artists</a> in <a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{{ loc.get().display_name }}</a>
+	{% set loc_name = loc.get().display_name %}
+	<a data-toggle="dropdown" href="#">{{ artists|count }} Artists</a> in {% if loc_name in featured_cities %}<a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{% endif %}{{ loc_name }}{% if loc_name in featured_cities %}</a>{% endif %}
 
 	<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 		{% for artist in artists %}
