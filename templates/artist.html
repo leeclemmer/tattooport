@@ -10,6 +10,8 @@
 
 {% if artist.instagram.get().profile_picture %}
 <img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
+{% else %}
+<img src="/img/blank_circle_150.gif" class="img-circle">
 {% endif %} 
 
 <h1>{{ artist.display_name }}</h1>
