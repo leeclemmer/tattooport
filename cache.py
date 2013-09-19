@@ -262,23 +262,36 @@ def update_popular_list(plid, iid, item_type):
 
 	info('update_popular_list called with plid, iid, item_type', plid, iid, item_type)
 
-	# Get current popular list
-	plid = helper.plid(plid)
-	pop_list = helper.get_pop_list(plid)
-
 	# Get item media list
 	item_media = memcache.get(iid)
 	if not item_media or item_media == 'NOFEED':
 		if item_type in ['shop','artist']:
 			item_media = refresh_contact(iid, item_type)
-	item_media = item_media[:10] # limit to last 10
 
-	info('len(pop_list): %s | len(media_list): %s' % \
-		(len(pop_list), len(item_media)))
+	# Excluding Foursquare location feeds
+	if item_media and item_media != 'NOFEED':
+		user_ids = set([mi.user.id for mi in item_media])
+		info('user_ids',user_ids)
+		info('%s No. of user_ids' % (iid,),len(user_ids))
+		if len(user_ids) > 1:
+			item_media = None
+		else:
+			item_media = item_media[:10] # limit to last 10
+	
+	info('item_media thereafter', item_media)
+
+	# Get current popular list
+	plid = helper.plid(plid)
+	pop_list = helper.get_pop_list(plid)
+
+	#info('len(pop_list): %s | len(media_list): %s' % \
+	#	(len(pop_list), len(item_media)))
 
 	# See if item's most popular makes the current list
-	if pop_list: pop_list = sort_media_by_popularity(pop_list)
-	if item_media: item_media = sort_media_by_popularity(item_media)
+	if pop_list:
+		pop_list = sort_media_by_popularity(pop_list)
+	if item_media:
+		item_media = sort_media_by_popularity(item_media)
 
 	if not pop_list and item_media: # empty list
 		info('empty list')
@@ -296,15 +309,18 @@ def update_popular_list(plid, iid, item_type):
 			elif pop_item[0] == user_id and \
 					pop_item[1] > score:
 				item_media = None
-		if item_media: pop_list.append(item_media[0])
-	pop_list = sorted(pop_list,key=lambda x: x[1], reverse=True)
+		if item_media:
+			pop_list.append(item_media[0])
 
-	# Reduce back to media items only and limit to 30	
-	pop_list = [i[2] for i in pop_list][:30]
+	if pop_list and item_media:
+		pop_list = sorted(pop_list,key=lambda x: x[1], reverse=True)
 
-	# Update list in DB and memcache
-	PopularList.put_pop_list(plid, pop_list)
-	memcache.set(plid, pop_list, time=60*60*2)
+		# Reduce back to media items only and limit to 30	
+		pop_list = [i[2] for i in pop_list][:30]
+
+		# Update list in DB and memcache
+		PopularList.put_pop_list(plid, pop_list)
+		memcache.set(plid, pop_list, time=60*60*2)
 
 def sort_media_by_popularity(media_list):
 	if media_list == 'NOFEED':

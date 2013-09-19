@@ -165,6 +165,9 @@ class BaseHandler(webapp2.RequestHandler):
 		# Get popular list for locality
 		pop_list = helper.get_pop_list(plid)
 
+		# Sort by date
+		pop_list = sorted(pop_list, key=lambda x: x.created_time, reverse=True)
+
 		# Convert list to dictionary
 		pop_list = helper.media_list_to_json(pop_list)
 
