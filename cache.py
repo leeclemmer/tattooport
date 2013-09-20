@@ -14,6 +14,9 @@ from config import *
 from google.appengine.api import memcache
 from google.appengine.ext import deferred
 
+# Sets number of last media items to use for popular list
+LOOKBACK_COUNT = 3 
+
 def objects_to_cache():
 	''' Returns a list of all ids of objects to cache. '''
 	otc = {'shop':[],
@@ -271,15 +274,11 @@ def update_popular_list(plid, iid, item_type):
 	# Excluding Foursquare location feeds
 	if item_media and item_media != 'NOFEED':
 		user_ids = set([mi.user.id for mi in item_media])
-		info('user_ids',user_ids)
-		info('%s No. of user_ids' % (iid,),len(user_ids))
 		if len(user_ids) > 1:
 			item_media = None
 		else:
-			item_media = item_media[:10] # limit to last 10
+			item_media = item_media[:LOOKBACK_COUNT] # limit to last 3
 	
-	info('item_media thereafter', item_media)
-
 	# Get current popular list
 	plid = helper.plid(plid)
 	pop_list = helper.get_pop_list(plid)
