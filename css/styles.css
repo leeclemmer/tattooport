@@ -257,6 +257,10 @@ ul li .dropdown-menu li {
 	color: #8dc233;
 }
 
+.login-page footer {
+	display: none;
+}
+
 /*** Tattoo Overview ***/
 .tattoos-overview li li {
     padding-left: 0;
