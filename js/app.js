@@ -5,32 +5,46 @@ window.addEventListener("load",function() {
 	}, 0);
 });
 
-$(function() {
-	call_api();
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
 
+function image_exists(url) {
+	// h/t to Tester, http://bit.ly/e4mz10
+	var img = new Image();
+	img.src = url;
+	return img.height != 0;
+}
+
+$(function() {
 	photos = new Array();
+
+	call_api();
 
 	function call_api(api_url) {
 		// Set defaul value for api_url; see http://bit.ly/RlOOZA
 		api_url = typeof api_url !== 'undefined' ? api_url : $_API_URL;
 
 		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'json'))  {
+			// encode space as "+"s
 			if (api_url.indexOf(' ') > -1) {
-				// encode space as "+"
 				api_url = api_url.replace(' ','+');
 			}
 
+			// Show head for foursquare streams
 			if (api_url.indexOf('locations') > -1) {
 				$('#location-photo-header').show();
 			}
 
+			// GetJSON from apiurl and call on_api_load
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
 		}
 	}
 
 	function on_api_load(data) {
-		var single_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
+		// HTML snippets for stream page
+		var single_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}}"> \
 	                    <div class="photo"> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
 	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
@@ -42,7 +56,7 @@ $(function() {
 	                    </div> \
 	                </div>';
 
-		var multi_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col"> \
+		var multi_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}}"> \
 	                    <div class="photo"> \
 	                        <div class="stream-photo-meta stream-photo-meta-top"> \
                     			<div class="photo-author"> \
@@ -62,10 +76,12 @@ $(function() {
 
 	    var photo_div = '';
 
+	    // Pick either single or multi user HTML snippet
 	    if (data.meta.page_type == 'multi_user') { photo_div = multi_user_photo_div; }
 	    else { photo_div = single_user_photo_div; }
 
-	    var single_contact_div = '<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col"> \
+	    // HTML snippet for profile images/links
+	    var single_contact_div = '<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col {{username}}"> \
 			    <a href="/contact/{{username}}"> \
 			      <img class="img-circle img-responsive" src="{{profile_picture}}"> \
 			    <div class="author">{{username}}</div></a> \
@@ -73,6 +89,7 @@ $(function() {
  
 		if (data.meta.code == 200) {
 			var re = ''
+
 			// Insert HTML
 			for (i=0; i<data.data.length; i++) {				
 				// Photos
@@ -82,7 +99,15 @@ $(function() {
 				// Popular Shops & Artists
 				if (i < 5) {
 					re = /{{profile_picture}}/g;
-					single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
+					// Test whether user_profile_pic is still valid
+					if (image_exists(photo.user.profile_picture)) {
+						// yes
+						single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
+					} else {
+						// no, so go fetch the proper one
+						single_contact_html = single_contact_div.replace(re,'');
+						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
+					}
 
 					re = /{{username}}/g;
 					single_contact_html = single_contact_html.replace(re,photo.user.username);
@@ -101,7 +126,15 @@ $(function() {
 				if (data.meta.source == 'tp_cache') {
 					// Multi user stream page
 					re = /{{profile_picture}}/g;
-					html_to_append = html_to_append.replace(re,photo.user.profile_picture);
+					// Test whether user_profile_pic is still valid
+					if (image_exists(photo.user.profile_picture)) {
+						// yes
+						html_to_append = html_to_append.replace(re,photo.user.profile_picture);
+					} else {
+						// no, so go fetch the proper one
+						html_to_append = html_to_append.replace(re,'');
+						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
+					}
 
 					re = /{{username}}/g;
 					html_to_append = html_to_append.replace(re,photo.user.username);
@@ -126,6 +159,8 @@ $(function() {
 
 		// Remove loading gif
 		$('.ajax-loader').remove();
+		$('.stream-page h1').show();
+		$('.hide-while-loading').show();
 		$('#loadmore').removeClass('button-loading');
 	}
 
@@ -226,7 +261,31 @@ $(function() {
 		}
 	}
 
-	function endsWith(str, suffix) {
-	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+	function ig_api_url(endpoint) {
+		var base_url = "https://api.instagram.com/v1";
+		var at = "?access_token=" + $_ACCESS_TOKEN;
+		var cb = "&callback=?";
+		return base_url + endpoint + at + cb;
+	}
+
+	function ig_users_userid_url(user_id) {
+		return ig_api_url('/users/' + user_id);
+	}
+
+	function ig_users_userid(user_id, callback, params) {
+		console.log('user_id=' + user_id + ' callback=' + callback + ' params=' + params);
+		$.getJSON(url=ig_users_userid_url(user_id),
+				  function (data) {
+				  	callback(data, params);
+				  });
+	}
+
+	function insert_profile_picture(data, element) {
+		if (data.meta.code == 200) {
+			console.log('data');
+			console.log(data);
+			console.log('element = ' + element);
+			$(element).find('img:first').attr('src',data.data.profile_picture);
+		}
 	}
 });

@@ -71,7 +71,7 @@ class AdminStudio(BaseHandler):
 		return phone_type in ['home','work','fax','mobile','other']
 
 	def valid_url(self, url):
-		URL_RE = re.compile(r"^http+[!#$&-;=?-_a-z~]+\.+[!#$&-;=?-_a-z~]+$")
+		URL_RE = re.compile(r"^http+[!#$&-;=?-_a-z~]+\.+[!#$&-;=?-_a-z~%]+$")
 		return URL_RE.match(url)
 
 	def valid_instagram(self, instagram):

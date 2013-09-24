@@ -5,6 +5,9 @@
 {% block user %}{% if user %}<img src="{{ user.profile_picture }}" width="30px" class="img-circle"> {{ user.user_name }}{% else %}<a href="/login">Log In</a>{% endif %}{% endblock %}
 
 {% block main %}
+    {% if api_url %}
+    <img src="/img/ajax-loader.gif" class="ajax-loader">
+    {% endif %}
     <span class="stream-page {% block pageclass %}{% endblock %}">
 
     <!-- Header -->
@@ -22,9 +25,6 @@
     <!-- Media -->
     <div class="row" id="media-holder">
         {% block media %}
-        {% if api_url %}
-        <img src="/img/ajax-loader.gif" class="ajax-loader">
-        {% endif %}
         {% endblock %}
     </div>
 
@@ -64,6 +64,7 @@
 {% if api_url %}
 <script>
 $_API_URL = "{{ api_url }}{% if 'instagram' in api_url%}&callback=?{% endif %}";
+$_ACCESS_TOKEN = "{{ user.access_token }}";
 
 </script>
 {% endif %}

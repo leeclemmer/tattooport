@@ -339,6 +339,11 @@ ul li .dropdown-menu li {
 	height: auto;
 }
 
+.hide-while-loading, 
+.stream-page h1 {
+	display: none;
+}
+
 .stream-page h2 {
 	margin-top: 0;
 }

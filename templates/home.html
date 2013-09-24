@@ -26,7 +26,7 @@
 {% block bottom_content %}
 	<h1>Browse Cities</h1>	
 
-    <ul class="list-unstyled">
+    <ul class="list-unstyled hide-while-loading">
 		{% for locality in localities %}
 			<li>
 				<a href="/loc{{ locality[2] }}">
