@@ -340,7 +340,8 @@ ul li .dropdown-menu li {
 }
 
 .hide-while-loading, 
-.stream-page h1 {
+.stream-page h1,
+.stream-page h2 {
 	display: none;
 }
 

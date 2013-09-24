@@ -5,6 +5,12 @@ window.addEventListener("load",function() {
 	}, 0);
 });
 
+function forEach(array, action) {
+	for (var i=0; i < array.length; i++) {
+		action(array[i]);
+	}
+}
+
 function endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
@@ -22,8 +28,12 @@ $(function() {
 	call_api();
 
 	function call_api(api_url) {
-		// Set defaul value for api_url; see http://bit.ly/RlOOZA
-		api_url = typeof api_url !== 'undefined' ? api_url : $_API_URL;
+		if (typeof $_API_URL === 'undefined') {
+			api_url = '';
+		} else {
+			// Set defaul value for api_url; see http://bit.ly/RlOOZA
+			api_url = typeof api_url !== 'undefined' ? api_url : $_API_URL;
+		}
 
 		if (api_url.substring(0, 4) == 'http' || endsWith(api_url, 'json'))  {
 			// encode space as "+"s
@@ -90,6 +100,10 @@ $(function() {
 		if (data.meta.code == 200) {
 			var re = ''
 
+			if ($('.stream-header img:first').attr('src') == '') {
+				ig_users_userid(data.data[0].user.id, insert_profile_picture, '.stream-header');
+			}
+
 			// Insert HTML
 			for (i=0; i<data.data.length; i++) {				
 				// Photos
@@ -97,7 +111,7 @@ $(function() {
 				photos[photo.id] = photo;
 
 				// Popular Shops & Artists
-				if (i < 5) {
+				if (i < 5 && data.meta.page_type == 'multi_user') {
 					re = /{{profile_picture}}/g;
 					// Test whether user_profile_pic is still valid
 					if (image_exists(photo.user.profile_picture)) {
@@ -160,6 +174,7 @@ $(function() {
 		// Remove loading gif
 		$('.ajax-loader').remove();
 		$('.stream-page h1').show();
+		$('.stream-page h2').show();
 		$('.hide-while-loading').show();
 		$('#loadmore').removeClass('button-loading');
 	}
