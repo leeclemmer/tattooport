@@ -54,19 +54,19 @@ $(function() {
 
 	function on_api_load(data) {
 		// HTML snippets for stream page
-		var single_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}}"> \
+		var single_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}} {{igid}}"> \
 	                    <div class="photo"> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
 	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
 	                        </a> \
 	                        <div class="stream-photo-meta stream-photo-meta-bottom"> \
-                    			<div class="likes-count"><i class="icon-heart"></i> {{likes_count}}</div> \
+                    			<div class="likes-count {{liked_class}}"><i class="icon-heart"></i> <span class="likes-number">{{likes_count}}</span></div> \
                     			<!--<div class="comment-count"><i class="icon-comment"></i> {{comment_count}}</div>--> \
                     		</div> \
 	                    </div> \
 	                </div>';
 
-		var multi_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}}"> \
+		var multi_user_photo_div = '<div class="col-sm-6 col-md-4 col-lg-3 photo-col {{username}} {{igid}}"> \
 	                    <div class="photo"> \
 	                        <div class="stream-photo-meta stream-photo-meta-top"> \
                     			<div class="photo-author"> \
@@ -78,7 +78,7 @@ $(function() {
 	                        <img data-original="{{img_src}}" src="/img/1x1_2a2a2a.gif" class="lazy" data-igid="{{igid}}" width="316" height="316"> \
 	                        </a> \
 	                        <div class="stream-photo-meta stream-photo-meta-bottom"> \
-                    			<div class="likes-count"><i class="icon-heart"></i> {{likes_count}}</div> \
+                    			<div class="likes-count {{liked_class}}"><i class="icon-heart"></i> <span class="likes-number">{{likes_count}}</span></div> \
                     			<!--<div class="comment-count"><i class="icon-comment"></i> {{comment_count}}</div>--> \
                     		</div> \
 	                    </div> \
@@ -134,8 +134,16 @@ $(function() {
 				re = /{{igid}}/g;
 				html_to_append = html_to_append.replace(re,photo.id);
 
+				re = /{{liked_class}}/g;
+				var liked_class = '';
+				if (photo.user_has_liked && $_ACCESS_TOKEN) liked_class = 'liked';
+				html_to_append = html_to_append.replace(re,liked_class);
+
 				re = /{{likes_count}}/g;
 				html_to_append = html_to_append.replace(re,photo.likes.count);
+
+				re = /{{username}}/g;
+				html_to_append = html_to_append.replace(re,photo.user.username);
 
 				if (data.meta.source == 'tp_cache') {
 					// Multi user stream page
@@ -144,14 +152,14 @@ $(function() {
 					if (image_exists(photo.user.profile_picture)) {
 						// yes
 						html_to_append = html_to_append.replace(re,photo.user.profile_picture);
-					} else {
+					} else if (data.meta.page_type == 'multi_user') {
 						// no, so go fetch the proper one
 						html_to_append = html_to_append.replace(re,'');
 						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
+					} else if (data.meta.page_type == 'single_user') {
+						// no, so go fetch the proper one
+						$('.stream-header img').attr('src',photo.user.profile_picture);
 					}
-
-					re = /{{username}}/g;
-					html_to_append = html_to_append.replace(re,photo.user.username);
 
 					re = /{{comment_count}}/g;
 					html_to_append = html_to_append.replace(re,photo.comments.count);
@@ -180,9 +188,8 @@ $(function() {
 	}
 
 	function bind_photo_actions(data) {
-		insert_load_button();
-
 		// *** Insert Load button binding
+		insert_load_button();		
 		function insert_load_button() {
 			var load_more_button = '<button class="btn btn-lg btn-primary" id="loadmore">Load more</button>';
 
@@ -226,13 +233,24 @@ $(function() {
 			var data_next = $(this).closest('.photo-col').next().find('img.lazy');
 			data_prev_id = data_prev.length > 0 ? data_prev.attr('data-igid') : null;
 			data_next_id = data_next.length > 0 ? data_next.attr('data-igid') : null;
+
+			$(document).off('keydown');
 			
 			// Previous image binding
 			if (data_prev_id) {
 				$('#media-modal .btn-prev i').show();
 				$('#media-modal .btn-prev').off().on('click', function() {
 					load_modal.call(data_prev, data_prev_id);
-				});					
+				});
+
+				// Bind left key
+				$(document).keydown(function(e) {
+					var code = (e.keyCode ? e.keyCode : e.which);
+					if(code == 37) { 
+						load_modal.call(data_prev, data_prev_id);
+						return false;
+					}
+				});
 			} else {
 				$('#media-modal .btn-prev i').hide();
 			}
@@ -243,9 +261,21 @@ $(function() {
 				$('#media-modal .btn-next').off().on('click', function() {
 					load_modal.call(data_next, igid=data_next_id);
 				});
+
+				// Bind right key
+				$(document).keydown(function(e) {
+					var code = (e.keyCode ? e.keyCode : e.which);
+					if(code == 39) { 
+						load_modal.call(data_next, igid=data_next_id);
+						return false;
+					}
+				});
 			} else {
 				$('#media-modal .btn-next i').hide();
-			}			
+			}
+
+			// Attach ID
+			$('.modal-content').attr('id',igid);
 
 			// Render photo
 			modal_html = '<img src="' + photos[igid].images.standard_resolution.url + '" class="img-responsive media-modal">';
@@ -261,9 +291,15 @@ $(function() {
 							'</div>';
 
 			var likes_count = 0;
-			if (photos[igid].likes.count) likes_count = photos[igid].likes.count;
-			modal_like_count = '<div class="likes-count"><i class="icon-heart"></i> ' + likes_count + '</div>';
+			if (photos[igid].likes.count) likes_count = parseInt($('.' + igid + ' .likes-count .likes-number').text());
 
+			console.log('likes_count=',likes_count);
+
+			var liked_class = '';
+			var media_id = $('.modal-content').attr('id');
+			if ($('.' + media_id + ' .photo .stream-photo-meta .likes-count').hasClass('liked')) liked_class = ' liked';
+			modal_like_count = '<div class="likes-count' + liked_class + '"><i class="icon-heart"></i> <span class="likes-number">' + likes_count + '</span></div>';
+			
 			var comments_count = 0;
 			if (photos[igid].comments.count) comments_count =  photos[igid].comments.count;
 			modal_comment_count = '<div class="comment-count"><i class="icon-comment"></i> ' + comments_count + '</div>';
@@ -273,9 +309,62 @@ $(function() {
 			modal_caption = '<div class="caption">' + caption + '</div>';
 
 			$('#media-modal .modal-meta').append(modal_author).append(modal_like_count).append(modal_comment_count).append(modal_caption);
+
+			// Bind
+			bind_like_button();
+		}
+
+		// Bind Like button
+		bind_like_button();
+		function bind_like_button() {
+			if ($_ACCESS_TOKEN) {
+				$('.likes-count').off().bind('click', function() {
+					var in_modal = true;
+					var media_id = $(this).parents('.modal-content').attr('id');
+
+					if (media_id === undefined) { /// otherwise
+						var in_modal = false;
+						media_id = $(this).parents('.photo-col').find('a img:first').attr('data-igid');
+					}
+
+					// Call server proxy to like/unlike
+					if ($(this).hasClass('liked')) {
+						$.get('/igm/unlike/' + media_id);
+					} else {
+						$.get('/igm/like/' + media_id);
+					}
+
+					console.log('hello');
+
+					// Update UI
+					if (in_modal) {
+						// We're in a modal and changing the count of grid view
+						bind_like_button_action.apply($('.' + media_id + ' .likes-count'));
+					}
+
+					console.log('bout to bind');
+
+					bind_like_button_action.apply(this);				
+				});
+
+				function bind_like_button_action() {
+
+					console.log('in bind');
+					var likes = parseInt($(this).children('.likes-number').text());
+
+					if ($(this).hasClass('liked')) {
+						$(this).children('.likes-number').text(likes - 1);
+					} else {
+						$(this).children('.likes-number').text(likes + 1);
+					}
+
+					$(this).toggleClass('liked');
+				}				
+			}
 		}
 	}
 
+	// Wrapper to return instagram api url
 	function ig_api_url(endpoint) {
 		var base_url = "https://api.instagram.com/v1";
 		var at = "?access_token=" + $_ACCESS_TOKEN;
@@ -283,23 +372,27 @@ $(function() {
 		return base_url + endpoint + at + cb;
 	}
 
+	// Returns IG api url for user
 	function ig_users_userid_url(user_id) {
 		return ig_api_url('/users/' + user_id);
 	}
 
+	// Returns IG api url for media likes
+	function ig_media_mediaid_likes_url(media_id) {
+		return ig_api_url('/media/' + media_id + '/likes');
+	}
+
+	// Fetches JSON response for user id call
 	function ig_users_userid(user_id, callback, params) {
-		console.log('user_id=' + user_id + ' callback=' + callback + ' params=' + params);
 		$.getJSON(url=ig_users_userid_url(user_id),
 				  function (data) {
 				  	callback(data, params);
 				  });
 	}
 
+	// Inserts profile picture into element
 	function insert_profile_picture(data, element) {
 		if (data.meta.code == 200) {
-			console.log('data');
-			console.log(data);
-			console.log('element = ' + element);
 			$(element).find('img:first').attr('src',data.data.profile_picture);
 		}
 	}

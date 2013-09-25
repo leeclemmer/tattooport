@@ -153,6 +153,10 @@ class BaseHandler(webapp2.RequestHandler):
 								 self.ig_url_params(access_token))
 		else: return None
 
+	def ig_users_media_liked(self, access_token):
+		return '%s%s' % ('https://api.instagram.com/v1/users/self/media/liked',
+						self.ig_url_params(access_token))
+
 	def json_output(self, *a, **kw):
 		self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
 		if a: self.write(json.dumps(a[0], sort_keys=True, indent=4, separators=(',', ': ')))
@@ -548,6 +552,33 @@ class ArtistPage(ContactPage):
 				featured_cities=FEATURED_CITIES,
 				api_url=self.api_url)
 
+class MyLikes(BaseHandler):
+	def get(self):
+		if not self.user:
+			self.redirect('/')
+		else:
+			api_url = self.ig_users_media_liked(self.user.access_token)
+			self.render('my_likes.html',
+						user=self.user,
+						api_url=api_url)
+
+
+class IGMediaLike(BaseHandler):
+	def get(self, like, media_id):
+		if not media_id or not self.user:
+			self.redirect('/')
+		else:
+			api = helper.get_instagram_api(access_token=self.user.access_token)
+			try:				
+				if like == 'like':
+					api.like_media(media_id)
+				elif like == 'unlike':
+					api.unlike_media(media_id)
+				self.json_output({"meta":{"code": 200},"data": None})
+			except:
+				utils.catch_exception()
+				self.json_output({"meta":{"code": 400},"data": None})
+
 app = webapp2.WSGIApplication([('/?',Home),
 							   ('/json',HomePopularJson),
 							   ('/login', Login),
@@ -560,6 +591,8 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/loc/?(.*)?', LocalityPage),
 							   ('/(shop|artist)/(.*)/json', ContactPageJson),
 							   ('/shop/(.*)?', ShopPage),
-							   ('/artist/(.*)?',ArtistPage),
-							   ('/contact/(.*)/?',ContactRedirect),
+							   ('/artist/(.*)?', ArtistPage),
+							   ('/contact/(.*)/?', ContactRedirect),
+							   ('/my/likes/?', MyLikes),
+							   ('/igm/(like|unlike)/(.*)/?', IGMediaLike),
 							   ('/(.*)?', FourOhFour)], debug = True)

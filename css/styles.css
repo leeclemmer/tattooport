@@ -481,6 +481,12 @@ p.backlink a {
     margin:-6.5em auto 0 auto;
 }
 
+.likes-count:hover,
+.liked {
+    cursor: pointer;
+    color: #D14237 !important;
+}
+
 @media (min-width: 768px) {
 	.view-all .author {
 		font-size: 0.7em;
