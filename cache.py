@@ -23,19 +23,19 @@ def objects_to_cache():
 		   'artist':[],
 		   'category':[]}
 
-	#otc['shop'] = all_contacts('shop')
-	#otc['shop'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shop']])
-
 	otc['shop'] = sorted(StringList.get_by_id('StudioCacheIds').string_list)
 
-	#otc['artist'] = all_contacts('artist')
-	#otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])
-
 	otc['artist'] = sorted(StringList.get_by_id('ArtistCacheIds').string_list)
-	
-	#otc['category'] = sorted(all_categories())
 
-	otc['category'] = sorted(StringList.get_by_id('CategoryCacheIds').string_list)
+	# Deciding not to proactively cache categories
+	#otc['category'] = sorted(StringList.get_by_id('CategoryCacheIds').string_list)
+
+	# Old calls
+	#otc['shop'] = all_contacts('shop')
+	#otc['shop'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shop']])
+	#otc['artist'] = all_contacts('artist')
+	#otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])	
+	#otc['category'] = sorted(all_categories())
 
 	return otc
 
