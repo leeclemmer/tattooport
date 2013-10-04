@@ -160,17 +160,42 @@ class AdminStudio(BaseHandler):
 					  'Subdivision', subdivision,
 					  'Locality', locality)
 		new_studio = Studio(parent=parent, name=name)
-		new_studio.put()
+		new_studio_key = new_studio.put()
 		self.kind_incr('Studio',country, subdivision, locality)
+
+		# Update KeyList of all Studios
+		kl = KeyList.get_or_insert('Studios')
+		kl.key_list.append(new_studio_key)
+		kl.put()
+
+		# Update StringList of Studio cache IDs
+		sl = StringList.get_or_insert('StudioCacheIds')
+		sl.string_list.append(self.contact_cache_id(name, new_studio_key.id()))
+		sl.put()
+
 		return new_studio
 
 	def put_artist(self, display_name, first_name='', last_name=''):
 		new_artist = Artist(display_name=display_name,
 							first_name=first_name,
 							last_name=last_name)
-		new_artist.put()
+		new_artist_key = new_artist.put()
 		self.kind_incr('Artist')
+
+		# Update KeyList of all Studios
+		kl = KeyList.get_or_insert('Artists')
+		kl.key_list.append(new_artist_key)
+		kl.put()
+
+		# Update StringList of Studio cache IDs
+		sl = StringList.get_or_insert('ArtistCacheIds')
+		sl.string_list.append(self.contact_cache_id(display_name, new_artist_key.id()))
+		sl.put()
+
 		return new_artist
+
+	def contact_cache_id(self, name, cid):
+		return '%s/%s' % (urllib.quote_plus(name),cid)
 
 	def put_email(self, key, email, primary):
 		Email(
@@ -841,7 +866,18 @@ class AdminEdit(AdminStudio):
 						sma.put()
 
 				# Put new name
-				if args['name'] != model.name:
+				if args['name'] != model.name:					
+					# Update model's cache ID
+					sl = StringList.get_by_id('StudioCacheIds')
+					old_ccid = self.contact_cache_id(model.name, model.key.id())
+					new_ccid = self.contact_cache_id(args['name'], model.key.id())
+					
+					if old_ccid in sl.string_list:
+						sl.string_list.remove(old_ccid)
+					sl.string_list.append(new_ccid)
+					sl.put()
+
+					# Update name and put
 					model.name = args['name']
 					model.put()
 
@@ -851,7 +887,18 @@ class AdminEdit(AdminStudio):
 										args['locality'],
 										model.key.id())
 			elif model_kind == 'artist':
-				if args['display_name'] != model.display_name:
+				if args['display_name'] != model.display_name:				
+					# Update model's cache ID
+					sl = StringList.get_by_id('ArtistCacheIds')
+					old_ccid = self.contact_cache_id(model.display_name, model.key.id())
+					new_ccid = self.contact_cache_id(args['display_name'], model.key.id())
+					
+					if old_ccid in sl.string_list:
+						sl.string_list.remove(old_ccid)
+					sl.string_list.append(new_ccid)
+					sl.put()
+
+					# Update name and put					
 					model.display_name = args['display_name']
 				if args.get('first_name'):
 					model.first_name = args['first_name']
@@ -1026,6 +1073,30 @@ class AdminDelete(AdminStudio):
 					ndb.delete_multi([p.key for p in prop.fetch()])
 				except AttributeError:
 					pass
+
+			# Delete from KeyList
+			if model_kind == 'studio':
+				kl = KeyList.get_by_id('Studios')
+			elif model_kind == 'artist':
+				kl = KeyList.get_by_id('Artists')
+			if ancestor_key in kl.key_list:
+				kl.key_list.remove(ancestor_key)
+				kl.put()
+
+			# Delete from CacheIds
+			if model_kind == 'studio':
+				sl = StringList.get_by_id('StudioCacheIds')
+				ccid = self.contact_cache_id(ancestor_key.get().name,
+											 ancestor_key.id())
+			elif model_kind == 'artist':
+				sl = StringList.get_by_id('ArtistCacheIds')
+				ccid = self.contact_cache_id(ancestor_key.get().display_name,
+											 ancestor_key.id())
+
+			if ccid in sl.string_list:
+				sl.string_list.remove(ccid)
+				sl.put()
+
 			# Delete studio
 			ancestor_key.delete()
 
@@ -1260,6 +1331,11 @@ class AdminCategoryCreate(BaseHandler):
 					instagram_tag=instagram_tag,
 					instagram_count=instagram_count).put()
 
+		# Update Cache Id
+		sl = StringList.get_or_insert('CategoryCacheIds')
+		sl.string_list.append(name)
+		sl.put()
+
 	# Validation functions
 	validation_funcs = {'tattoogroup':valid_tattoogroup,
 						'newtattoogroup':valid_tattoogroup,
@@ -1289,6 +1365,12 @@ class AdminCategoryDelete(BaseHandler):
 		category_name = ''.join(category_name.split(' '))
 		
 		ndb.Key('TattooGroup',parent,'TattooCategory',category_name).delete()
+
+		# Delete Cache ID
+		sl = StringList.get_by_id('CategoryCacheIds')
+		if category_name in sl.string_list:
+			sl.string_list.remove(category_name)
+		sl.put()
 		
 		self.redirect('/admin/models/category/browse')
 

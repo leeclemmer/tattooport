@@ -37,6 +37,10 @@ class KeyList(ndb.Model):
 	''' Generic model containing lists of keys. '''
 	key_list = ndb.KeyProperty(repeated=True)
 
+class StringList(ndb.Model):
+	''' Generic model containing lists of strings. '''
+	string_list = ndb.StringProperty(repeated=True)
+
 class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.
 		See http://en.wikipedia.org/wiki/ISO_3166-1 for more. '''

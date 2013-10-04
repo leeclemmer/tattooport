@@ -23,13 +23,19 @@ def objects_to_cache():
 		   'artist':[],
 		   'category':[]}
 
-	otc['shop'] = utils.flatten_list(all_contacts('shop'))
-	otc['shop'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shop']])
+	#otc['shop'] = all_contacts('shop')
+	#otc['shop'] = sorted([contact_cache_id(obj,'shop') for obj in otc['shop']])
 
-	otc['artist'] = utils.flatten_list(all_contacts('artist'))
-	otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])
+	otc['shop'] = sorted(StringList.get_by_id('StudioCacheIds').string_list)
+
+	#otc['artist'] = all_contacts('artist')
+	#otc['artist'] = sorted([contact_cache_id(obj,'artist') for obj in otc['artist']])
+
+	otc['artist'] = sorted(StringList.get_by_id('ArtistCacheIds').string_list)
 	
-	otc['category'] = sorted(all_categories())
+	#otc['category'] = sorted(all_categories())
+
+	otc['category'] = sorted(StringList.get_by_id('CategoryCacheIds').string_list)
 
 	return otc
 
@@ -197,17 +203,19 @@ def contact_cache_id(contact, contact_type):
 
 def all_contacts(contact_type):
 	''' Returns a list of all contacts. '''
-	locality_keys = locality_keys_in_db()
-	contacts = []
+	if contact_type == 'shop':
+		return Studio.query().fetch()
+	elif contact_type == 'artist':
+		return Artist.query().fetch()
 
-	for key in locality_keys:
-		if contact_type == 'shop':
-			contacts.append(Studio.query_location(key).fetch())
-		elif contact_type == 'artist':
-			shops = Studio.query_location(key).fetch()
-			contacts.append(helper.shops_artists(shops))
-
-	return contacts
+def all_contact_keys(contact_type):
+	''' Returns a list of all contact keys.
+		Faster than all_contacts. Datastore read instead of query.
+	'''
+	if contact_type == 'shop':
+		return KeyList.get_by_id('Studios').key_list
+	elif contact_type == 'artist':
+		return KeyList.get_by_id('Artists').key_list
 
 def all_categories():
 	''' Returns a list of all categories. '''
