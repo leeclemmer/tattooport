@@ -197,17 +197,15 @@ def contact_cache_id(contact, contact_type):
 
 def all_contacts(contact_type):
 	''' Returns a list of all contacts. '''
-	regions = regions_in_db()
+	locality_keys = locality_keys_in_db()
 	contacts = []
 
-	for country in regions:
-		for subdivision in country[1]:
-			for locality in subdivision[1]:
-				if contact_type == 'shop':
-					contacts.append(Studio.query_location(locality[0].key).fetch())
-				elif contact_type == 'artist':
-					shops = Studio.query_location(locality[0].key).fetch()
-					contacts.append(helper.shops_artists(shops))
+	for key in locality_keys:
+		if contact_type == 'shop':
+			contacts.append(Studio.query_location(key).fetch())
+		elif contact_type == 'artist':
+			shops = Studio.query_location(key).fetch()
+			contacts.append(helper.shops_artists(shops))
 
 	return contacts
 

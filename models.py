@@ -23,11 +23,19 @@ def regions_in_db():
 				for subdivision in Subdivision.query_location(country.key).order(Subdivision.display_name).fetch()]]
 			for country in Country.query().order(Country.display_name).fetch()]
 
+def locality_keys_in_db():
+	''' Returns a list of all locality keys used in db. '''
+	return KeyList.get_by_id('Localities').key_list
+
 def parent_key(group_name, group):
 	return ndb.Key('%s' % group_name,group)
 
 
 # Models
+
+class KeyList(ndb.Model):
+	''' Generic model containing lists of keys. '''
+	key_list = ndb.KeyProperty(repeated=True)
 
 class Country(GeoModel, ndb.Model):
 	''' Models a country after ISO 3166-1.

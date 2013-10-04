@@ -352,6 +352,14 @@ class AdminStudio(BaseHandler):
 			loca.update_location()
 			loca.put()
 
+			# Update list of localities
+			kl = KeyList.get_or_insert('Localities')
+			kl.key_list.append(ndb.Key('Country', country,
+									   'Subdivision', subdivision,
+									   'Locality', locality))
+			kl.put()
+
+
 	def put_relationship(self, studio, artist, relationship):
 		StudioArtist(
 			studio=studio,
