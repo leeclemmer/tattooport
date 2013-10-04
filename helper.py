@@ -67,23 +67,27 @@ def get_contact_response(api, contact, cid, contact_type, max_id='', count=30):
 	media = None
 	next = None
 
-	if contact.instagram.get() is not None:
-		for ig in contact.instagram.fetch():
+	instagram_account = contact.instagram.fetch()
+
+	if len(instagram_account) > 0:
+		for ig in instagram_account:
 			if ig.primary == True and ig.user_id:
 				media, next = api.user_recent_media(
 					user_id=ig.user_id,
 					count=count, 
 					max_id=max_id)
 				break
-	elif contact_type != 'artist' and contact.foursquare.get() is not None:
-		for fsq in contact.foursquare.fetch():
-			if fsq.primary == True and fsq.location_id:
-				location_id = fsq.location_id
-				media, next = api.location_recent_media(
-					count=count, 
-					location_id=fsq.location_id,
-					max_id=max_id)
-				break
+	elif contact_type != 'artist':
+		foursquare_account = contact.foursquare.fetch()
+		if len(foursquare_account) > 0:
+			for fsq in foursquare_account:
+				if fsq.primary == True and fsq.location_id:
+					location_id = fsq.location_id
+					media, next = api.location_recent_media(
+						count=count, 
+						location_id=fsq.location_id,
+						max_id=max_id)
+					break
 
 	return (media, next)
 

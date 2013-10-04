@@ -104,20 +104,28 @@ def refresh_cache(refresh_all=False, otc='', obj_type=''):
 	if obj_type: otc = {'%s' % (obj_type,):otc[obj_type]}
 
 	# Refresh objects in otc
+	# Refresh contacts
 	for obj_type, objects in otc.iteritems():
 		for o in objects:
 			if obj_type in ['shop','artist']:
 				if refresh_all:
 					refresh_contact(o, obj_type)
-					refresh_pop_list(o, obj_type)
 				elif not memcache.get(o):
 					refresh_contact(o, obj_type)
-					refresh_pop_list(o, obj_type)
 			elif obj_type == 'category':
 				if refresh_all:
 					refresh_category(o)
 				elif not memcache.get(o):
 					refresh_category(o)
+
+	# Refresh popular lists
+	for obj_type, objects in otc.iteritems():
+		for o in objects:
+			if obj_type in ['shop','artist']:
+				if refresh_all:
+					refresh_pop_list(o, obj_type)
+				elif not memcache.get(o):
+					refresh_pop_list(o, obj_type)
 
 def refresh_contact(contact_cache_id, contact_type):
 	# If contact with the same name, compare IDs
@@ -158,6 +166,7 @@ def refresh_category(category_cache_id):
 	else: return False
 
 def refresh_pop_list(contact_cache_id, contact_type):
+
 	def call_update(shop_key, iid, item_type):
 		nearby_shops = helper.nearby_shops(shop_key.get().address.get().key)
 		locations = [shop.key.parent().pairs() for shop in nearby_shops \
