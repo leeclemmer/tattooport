@@ -8,4 +8,5 @@ FEATURED_CITIES = ['Philadelphia',
 				   'Los Angeles',
 				   'Las Vegas',
 				   'Washington D.C.',
-				   'Atlanta']
+				   'Atlanta',
+				   'Miami']

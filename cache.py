@@ -168,10 +168,10 @@ def refresh_category(category_cache_id):
 def refresh_pop_list(contact_cache_id, contact_type):
 
 	def call_update(shop_key, iid, item_type):
-		nearby_shops = helper.nearby_shops(shop_key.get().address.get().key)
-		locations = [shop.key.parent().pairs() for shop in nearby_shops \
-			if shop.key.parent().id() in FEATURED_CITIES]
-		locations = list(set(locations))
+		# Get nearby Featured locations; update their popular feeds
+		locations = helper.nearby_localities(shop_key.get().address.get())
+		locations = [locality.key.pairs() for locality in locations \
+			if locality.key.id() in FEATURED_CITIES]
 
 		# Update location popular lists
 		for location in locations:
@@ -201,71 +201,6 @@ def refresh_pop_list(contact_cache_id, contact_type):
 		for studio in contact.studios:
 			info('%s: artists studio: ' % (contact_cache_id),studio.studio)	
 			call_update(studio.studio, contact_cache_id, contact_type)
-
-def contact_cache_id(contact, contact_type):
-	if contact_type == 'shop':
-		cattr = 'name'
-	elif contact_type == 'artist':
-		cattr = 'display_name'
-	return '%s/%s' % (urllib.quote_plus(getattr(contact,cattr)),
-					  contact.key.id())
-
-def all_contacts(contact_type):
-	''' Returns a list of all contacts. '''
-	if contact_type == 'shop':
-		return Studio.query().fetch()
-	elif contact_type == 'artist':
-		return Artist.query().fetch()
-
-def all_contact_keys(contact_type):
-	''' Returns a list of all contact keys.
-		Faster than all_contacts. Datastore read instead of query.
-	'''
-	if contact_type == 'shop':
-		return KeyList.get_by_id('Studios').key_list
-	elif contact_type == 'artist':
-		return KeyList.get_by_id('Artists').key_list
-
-def all_categories():
-	''' Returns a list of all categories. '''
-	categories = []
-	for group in TattooGroup.query():
-		for category in TattooCategory.by_group(group.name):
-			categories.append(category.name)
-	return categories
-
-def get_merged_media(contact_list,
-					 sort_by='created_time', 
-					 sort_order='reverse'):
-	# Merge cached media lists
-	merged_media = utils.flatten_list(
-		[memcache.get(lc) if memcache.get(lc) and memcache.get(lc) != 'NOFEED'\
-						  else [] for lc in contact_list])
-
-	# Sort by date
-	merged_media = sorted(merged_media, 
-						  key=lambda x: getattr(x, '%s' % (sort_by,)), 
-						  reverse=(sort_order == 'reverse'))
-
-	# Limit to 300
-	merged_media = merged_media[:300]
-
-	# Capture no feeds
-	if len(merged_media) is 0: merged_media = 'NOFEED'
-
-	return merged_media
-
-def refresh_unit_test():
-	now = datetime.now()
-	until = now + timedelta(hours=5)
-	fame_span = timedelta(minutes=15)
-	i = 1
-
-	while now < until:
-		info('##### Round %s #####' % (i,) ,now)
-		i += 1
-		deferred.defer(refresh_handler,now)
-		now = now + fame_span
 
 def update_popular_list(plid, iid, item_type):
 	''' Function to update a popular list.
@@ -347,6 +282,71 @@ def sort_media_by_popularity(media_list):
 		media_list = [[ml.user.id, ml.like_count, ml] \
 						for ml in media_list]
 		return sorted(media_list, key=lambda x: x[1], reverse=True)
+
+def contact_cache_id(contact, contact_type):
+	if contact_type == 'shop':
+		cattr = 'name'
+	elif contact_type == 'artist':
+		cattr = 'display_name'
+	return '%s/%s' % (urllib.quote_plus(getattr(contact,cattr)),
+					  contact.key.id())
+
+def all_contacts(contact_type):
+	''' Returns a list of all contacts. '''
+	if contact_type == 'shop':
+		return Studio.query().fetch()
+	elif contact_type == 'artist':
+		return Artist.query().fetch()
+
+def all_contact_keys(contact_type):
+	''' Returns a list of all contact keys.
+		Faster than all_contacts. Datastore read instead of query.
+	'''
+	if contact_type == 'shop':
+		return KeyList.get_by_id('Studios').key_list
+	elif contact_type == 'artist':
+		return KeyList.get_by_id('Artists').key_list
+
+def all_categories():
+	''' Returns a list of all categories. '''
+	categories = []
+	for group in TattooGroup.query():
+		for category in TattooCategory.by_group(group.name):
+			categories.append(category.name)
+	return categories
+
+def get_merged_media(contact_list,
+					 sort_by='created_time', 
+					 sort_order='reverse'):
+	# Merge cached media lists
+	merged_media = utils.flatten_list(
+		[memcache.get(lc) if memcache.get(lc) and memcache.get(lc) != 'NOFEED'\
+						  else [] for lc in contact_list])
+
+	# Sort by date
+	merged_media = sorted(merged_media, 
+						  key=lambda x: getattr(x, '%s' % (sort_by,)), 
+						  reverse=(sort_order == 'reverse'))
+
+	# Limit to 300
+	merged_media = merged_media[:300]
+
+	# Capture no feeds
+	if len(merged_media) is 0: merged_media = 'NOFEED'
+
+	return merged_media
+
+def refresh_unit_test():
+	now = datetime.now()
+	until = now + timedelta(hours=5)
+	fame_span = timedelta(minutes=15)
+	i = 1
+
+	while now < until:
+		info('##### Round %s #####' % (i,) ,now)
+		i += 1
+		deferred.defer(refresh_handler,now)
+		now = now + fame_span
 
 
 # No longer needed?

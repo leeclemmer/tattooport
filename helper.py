@@ -11,7 +11,8 @@ from google.appengine.api import memcache
 
 def nearby_shops(locality_key, latlng=''):
 	''' Proximity search for shops given a locality key. 
-		Can also pass in a latlng direction. '''
+		Can also pass in a latlng direction.
+	'''
 	geocoords = latlng and latlng or locality_key.get().location
 	try:
 		results = Address.proximity_fetch(
@@ -23,6 +24,22 @@ def nearby_shops(locality_key, latlng=''):
 		utils.catch_exception()
 		results = ''
 	return sorted([addr.contact.get() for addr in results], key=lambda x: x.name)
+
+def nearby_localities(address, latlng=''):
+	''' Proximity search for localities near a give locality key.
+		Can also pass in a latlng direction.
+	'''
+	geocoords = latlng and latlng or address.location
+	try:
+		results = Locality.proximity_fetch(
+			Locality.query(),
+			geocoords,
+			max_results=1000,
+			max_distance=80647) # 50 miles
+	except AttributeError:
+		utils.catch_exception()
+		results = ''
+	return results
 
 def shops_artists(shops):
 	''' Given a list of shops, return all related artists. '''
