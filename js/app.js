@@ -71,7 +71,7 @@ $(function() {
 	                        <div class="stream-photo-meta stream-photo-meta-top"> \
                     			<div class="photo-author"> \
                     				<img class="img-responsive img-circle" src="{{profile_picture}}"> \
-                    				<a href="/contact/{{username}}">{{username}}</a> \
+                    				<a href="/i/{{username}}">{{username}}</a> \
                     			</div> \
                     		</div> \
 	                    	<a data-toggle="modal" href="#media-modal"> \
@@ -92,7 +92,7 @@ $(function() {
 
 	    // HTML snippet for profile images/links
 	    var single_contact_div = '<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 single-contact-col {{username}}"> \
-			    <a href="/contact/{{username}}"> \
+			    <a href="/i/{{username}}"> \
 			      <img class="img-circle img-responsive" src="{{profile_picture}}"> \
 			    <div class="author">{{username}}</div></a> \
 			  </div>';
@@ -286,7 +286,7 @@ $(function() {
 			modal_author = '<div class="photo-author"> \
 								<img class="img-responsive img-circle" \
 									 src="' + photos[igid].user.profile_picture + '"> ' + 
-								'<a href="/contact/' + photos[igid].user.username + '">' + 
+								'<a href="/i/' + photos[igid].user.username + '">' + 
 								photos[igid].user.username + '</a>' + 
 							'</div>';
 

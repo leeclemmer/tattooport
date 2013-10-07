@@ -595,7 +595,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/(shop|artist)/(.*)/json', ContactPageJson),
 							   ('/shop/(.*)?', ShopPage),
 							   ('/artist/(.*)?', ArtistPage),
-							   ('/contact/(.*)/?', ContactRedirect),
+							   ('/i/(.*)/?', ContactRedirect),
 							   ('/my/likes/?', MyLikes),
 							   ('/igm/(like|unlike)/(.*)/?', IGMediaLike),
 							   ('/(.*)?', FourOhFour)], debug = True)
