@@ -1,0 +1,26 @@
+{% extends "admin_content.html" %}
+{% block title %}
+	{{title}}
+{% endblock %}
+{% block main %}
+	<span class="tp-admin-content">
+	<h1>{{ title }}</h1>
+
+	{% if msg %}
+	<p class="status-message">{{ msg | safe }}</p>
+	{% endif %}
+
+	<ul class="list-unstyled inline-block">
+		{% for pop_item in pop_list %}
+			<li>
+				{{ pop_item.user.username }}<br/>
+				<img src="{{ pop_item.images['thumbnail'].url }}" width="150px" height="150px"><br/>
+				<form method="post">
+					<input type="hidden" name="userid" value="{{ pop_item.user.id }}">
+					<input type="submit" value="Delete"></input>
+				</form>
+			</li>
+		{% endfor %}
+		</ul>
+	</span>
+{% endblock %}

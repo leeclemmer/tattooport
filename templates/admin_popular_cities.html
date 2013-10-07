@@ -4,6 +4,12 @@
 {% endblock %}
 {% block main %}
 	<h1>{{ title }}</h1>
+
+	<ul class="list-unstyled">
+		{% for city in cities %}
+		<li><a href="/admin/content/popular/{{ city }}">{{ city }}</a></li>
+		{% endfor %}
+	</ul>
 	
 
 {% endblock %}
