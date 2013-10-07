@@ -1,0 +1,33 @@
+{% extends "admin_base.html" %}
+
+{% block title %}
+	{{title}}
+{% endblock %}
+
+{% block sidenav %}
+	<div class="panel-group" id="accordion">
+		<!-- Group 1 -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+						Popular Feeds
+					</a>
+				</h4>
+			</div>
+			<div id="collapseOne" class="panel-collapse collapse in">
+				<div class="panel-body">
+					<ul class="list-unstyled">
+						<li><a href="/admin/content/popular/frontpage">Front Page</a></li>
+						<li><a href="/admin/content/popular/cities">Cities</a></li>
+					</ul>					
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block main %}
+	<h1>{{ title }}</h1>
+	<p>What content do you need to edit?</p>
+{% endblock %}

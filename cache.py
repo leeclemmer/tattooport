@@ -233,9 +233,6 @@ def update_popular_list(plid, iid, item_type):
 	plid = helper.plid(plid)
 	pop_list = helper.get_pop_list(plid)
 
-	#info('len(pop_list): %s | len(media_list): %s' % \
-	#	(len(pop_list), len(item_media)))
-
 	# See if item's most popular makes the current list
 	if pop_list:
 		pop_list = sort_media_by_popularity(pop_list)
@@ -246,26 +243,27 @@ def update_popular_list(plid, iid, item_type):
 		info('empty list')
 		pop_list.append(item_media[0])
 	elif pop_list and item_media:
-		user_id = item_media[0][0]
-		score = item_media[0][1]
+		user_id = item_media[0].user.id
+		score = item_media[0].like_count
 
 		for pop_item in pop_list:
-
-			if pop_item[0] == user_id and \
-					pop_item[1] <= score:
+			if pop_item.user.id == user_id and \
+					(pop_item.like_count <= score or \
+					pop_item not in item_media):
 				# User already in list and image score higher than existing
 				del pop_list[pop_list.index(pop_item)]
-			elif pop_item[0] == user_id and \
-					pop_item[1] > score:
+			elif pop_item.user.id == user_id and \
+					pop_item.like_count > score:
+				info('is in item_media list', pop_item in item_media)
 				item_media = None
 		if item_media:
 			pop_list.append(item_media[0])
 
 	if pop_list and item_media:
-		pop_list = sorted(pop_list,key=lambda x: x[1], reverse=True)
+		pop_list = sorted(pop_list,key=lambda x: x.like_count, reverse=True)
 
-		# Reduce back to media items only and limit to 30	
-		pop_list = [i[2] for i in pop_list][:30]
+		# Limit to 30
+		pop_list = pop_list[:30]
 
 		# Update list in DB and memcache
 		PopularList.put_pop_list(plid, pop_list)
@@ -278,10 +276,8 @@ def sort_media_by_popularity(media_list):
 		# Make sure we only have media items
 		media_list = [ml for ml in media_list if not isinstance(ml, str)]
 
-		# Get score for each item
-		media_list = [[ml.user.id, ml.like_count, ml] \
-						for ml in media_list]
-		return sorted(media_list, key=lambda x: x[1], reverse=True)
+		# Return sorted by count media list
+		return sorted(media_list, key=lambda x: x.like_count, reverse=True)
 
 def contact_cache_id(contact, contact_type):
 	if contact_type == 'shop':

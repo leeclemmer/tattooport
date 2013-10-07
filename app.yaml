@@ -30,6 +30,9 @@ handlers:
 - url: /admin/models.*
   script: admin_models.app
   login: admin
+- url: /admin/content.*
+  script: admin_content.app
+  login: admin
 - url: /admin.*
   script: admin.app
   login: admin

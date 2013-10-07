@@ -23,6 +23,7 @@
 				{% block topmenu %}
 				<li{% if active == 'admin' %} class="active" {% endif %}><a href="/admin">Admin</a></li>
 				<li{% if active == 'models' %} class="active" {% endif %}><a href="/admin/models">Data Models</a></li>
+				<li{% if active == 'content' %} class="active" {% endif %}><a href="/admin/content">Content</a></li>
 				<li{% if active == 'settings' %} class="active" {% endif %}><a href="/admin/settings">Settings</a></li>
 				{% endblock %}
 			</ul>				
