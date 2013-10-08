@@ -15,7 +15,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import deferred
 
 # Sets number of last media items to use for popular list
-LOOKBACK_COUNT = 3 
+LOOKBACK_COUNT = 5
 
 def objects_to_cache():
 	''' Returns a list of all ids of objects to cache. '''

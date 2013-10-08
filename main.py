@@ -169,9 +169,6 @@ class BaseHandler(webapp2.RequestHandler):
 		# Get popular list for locality
 		pop_list = helper.get_pop_list(plid)
 
-		info('plid',plid)
-		info('pop_list',pop_list)
-
 		# Sort by date
 		pop_list = sorted(pop_list, key=lambda x: x.created_time, reverse=True)
 

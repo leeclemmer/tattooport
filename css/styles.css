@@ -88,6 +88,11 @@ ul li .dropdown-menu li {
 	background: #8dc233 url(/img/ajax-loader-button.gif) no-repeat 90% 1px;
 }
 
+.ajax-loader {
+	text-align: center;
+	margin-top: 20px;
+}
+
 .btn-next,
 .btn-prev {
 	display: inline-block !important;

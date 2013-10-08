@@ -6,7 +6,9 @@
 
 {% block main %}
     {% if api_url %}
-    <img src="/img/ajax-loader.gif" class="ajax-loader">
+    <div class="row ajax-loader">
+        <img src="/img/ajax-loader.gif" class="ajax-loader">
+    </div>
     {% endif %}
     <span class="stream-page {% block pageclass %}{% endblock %}">
 
