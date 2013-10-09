@@ -568,20 +568,22 @@ p.backlink a {
 }
 
 /*** Footer ***/
-.row.footer {
+.footer {
 	margin: 2em 0 0 0;
-	padding-top: 1em;
+	padding-top: 3em;
+	padding-bottom: 3em;
 	background-color: black;
     color: #666;
 }
 
 .footer ul li a {
-    margin-left: 3px;
     font-size: 18px;
+    color: #999;
     vertical-align: middle;
 }
 
-h4 {
+.footer h4 {
+	margin-bottom: 1.5em;
     text-transform: uppercase;
     color: #333;
 }
