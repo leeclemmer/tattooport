@@ -9,7 +9,7 @@
 <!--<p class="backlink"><a href="/loc/{{ loc_page }}/">{{ loc_name|upper }}</a></p>-->
 
 {% if artist.instagram.get().profile_picture %}
-<img src="" class="img-circle">
+<img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
 {% else %}
 <img src="/img/blank_circle_150.gif" class="img-circle">
 {% endif %} 

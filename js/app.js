@@ -15,13 +15,6 @@ function endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
 
-function image_exists(url) {
-	// h/t to Tester, http://bit.ly/e4mz10
-	var img = new Image();
-	img.src = url;
-	return img.height != 0;
-}
-
 $(function() {
 	photos = new Array();
 
@@ -100,10 +93,6 @@ $(function() {
 		if (data.meta.code == 200) {
 			var re = ''
 
-			if ($('.stream-header img:first').attr('src') == '') {
-				ig_users_userid(data.data[0].user.id, insert_profile_picture, '.stream-header');
-			}
-
 			// Insert HTML
 			for (i=0; i<data.data.length; i++) {				
 				// Photos
@@ -113,15 +102,7 @@ $(function() {
 				// Popular Shops & Artists
 				if (i < 5 && data.meta.page_type == 'multi_user') {
 					re = /{{profile_picture}}/g;
-					// Test whether user_profile_pic is still valid
-					if (image_exists(photo.user.profile_picture)) {
-						// yes
-						single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
-					} else {
-						// no, so go fetch the proper one
-						single_contact_html = single_contact_div.replace(re,'');
-						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
-					}
+					single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
 
 					re = /{{username}}/g;
 					single_contact_html = single_contact_html.replace(re,photo.user.username);
@@ -146,25 +127,9 @@ $(function() {
 				html_to_append = html_to_append.replace(re,photo.user.username);
 
 				if (data.meta.source == 'tp_cache') {
-					console.log('tp_cache pic checkin');
-					console.log('photo is ' + photo.user.profile_picture);
 					// Multi user stream page
 					re = /{{profile_picture}}/g;
-					// Test whether user_profile_pic is still valid
-					if (image_exists(photo.user.profile_picture)) {
-						console.log('yes valid');
-						// yes
-						html_to_append = html_to_append.replace(re,photo.user.profile_picture);
-					} else if (data.meta.page_type == 'multi_user') {
-						console.log('no multi_user');
-						// no, so go fetch the proper one
-						html_to_append = html_to_append.replace(re,'');
-						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
-					} else if (data.meta.page_type == 'single_user') {
-						console.log('no single_user');
-						// no, so go fetch the proper one
-						$('.stream-header img').attr('src',photo.user.profile_picture);
-					}
+					html_to_append = html_to_append.replace(re,photo.user.profile_picture);
 
 					re = /{{comment_count}}/g;
 					html_to_append = html_to_append.replace(re,photo.comments.count);

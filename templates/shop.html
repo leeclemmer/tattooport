@@ -11,7 +11,7 @@
 <!--<p class="backlink"><a href="/loc/{{ address.country }}/{{ address.subdivision }}/{{ address.locality }}/">{{ address.locality|upper }}</a></p>-->
 
 {% if shop.instagram.get().profile_picture %}
-<img src="" class="img-circle">
+<img src="{{ shop.instagram.get().profile_picture }}" class="img-circle">
 {% elif shop.foursquare.get() %}
 <img src="/img/location_circle_150.gif" class="img-circle">
 {% else %}
