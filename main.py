@@ -579,6 +579,11 @@ class IGMediaLike(BaseHandler):
 				utils.catch_exception()
 				self.json_output({"meta":{"code": 400},"data": None})
 
+class About(BaseHandler):
+	def get(self):
+		self.render('about.html',
+					user=self.user)
+
 class TermsOfService(BaseHandler):
 	def get(self):
 		self.render('tos.html',
@@ -605,6 +610,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/i/(.*)/?', ContactRedirect),
 							   ('/my/likes/?', MyLikes),
 							   ('/igm/(like|unlike)/(.*)/?', IGMediaLike),
+							   ('/about', About),
 							   ('/tos', TermsOfService),
 							   ('/pp', PrivacyPolicy),
 							   ('/(.*)?', FourOhFour)], debug = True)

@@ -146,17 +146,22 @@ $(function() {
 				html_to_append = html_to_append.replace(re,photo.user.username);
 
 				if (data.meta.source == 'tp_cache') {
+					console.log('tp_cache pic checkin');
+					console.log('photo is ' + photo.user.profile_picture);
 					// Multi user stream page
 					re = /{{profile_picture}}/g;
 					// Test whether user_profile_pic is still valid
 					if (image_exists(photo.user.profile_picture)) {
+						console.log('yes valid');
 						// yes
 						html_to_append = html_to_append.replace(re,photo.user.profile_picture);
 					} else if (data.meta.page_type == 'multi_user') {
+						console.log('no multi_user');
 						// no, so go fetch the proper one
 						html_to_append = html_to_append.replace(re,'');
 						ig_users_userid(photo.user.id, insert_profile_picture, '.' + photo.user.username);
 					} else if (data.meta.page_type == 'single_user') {
+						console.log('no single_user');
 						// no, so go fetch the proper one
 						$('.stream-header img').attr('src',photo.user.profile_picture);
 					}
@@ -293,8 +298,6 @@ $(function() {
 			var likes_count = 0;
 			if (photos[igid].likes.count) likes_count = parseInt($('.' + igid + ' .likes-count .likes-number').text());
 
-			console.log('likes_count=',likes_count);
-
 			var liked_class = '';
 			var media_id = $('.modal-content').attr('id');
 			if ($('.' + media_id + ' .photo .stream-photo-meta .likes-count').hasClass('liked')) liked_class = ' liked';
@@ -334,22 +337,16 @@ $(function() {
 						$.get('/igm/like/' + media_id);
 					}
 
-					console.log('hello');
-
 					// Update UI
 					if (in_modal) {
 						// We're in a modal and changing the count of grid view
 						bind_like_button_action.apply($('.' + media_id + ' .likes-count'));
 					}
 
-					console.log('bout to bind');
-
 					bind_like_button_action.apply(this);				
 				});
 
 				function bind_like_button_action() {
-
-					console.log('in bind');
 					var likes = parseInt($(this).children('.likes-number').text());
 
 					if ($(this).hasClass('liked')) {
