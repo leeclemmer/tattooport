@@ -21,6 +21,9 @@ handlers:
   static_dir: js
 - url: /img
   static_dir: img
+- url: /favicon.ico
+  static_files: img/favicon.ico
+  upload: img/favicon\.ico
 - url: /gadmin/.*
   script: google.appengine.ext.admin.application
   login: admin
@@ -38,7 +41,6 @@ handlers:
   login: admin
 - url: /.*
   script: main.app
-  login: admin
 
 admin_console:
   pages:
