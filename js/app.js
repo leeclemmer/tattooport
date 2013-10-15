@@ -184,7 +184,7 @@ $(function() {
 		}
 
 		// *** Launch Modal Bindings
-		if (document.width >= 768) {
+		if ($(document).width() >= 768) {
 			// only bind for tablet or larger
 			$('.lazy').bind('click', function() {
 				load_modal.call(this);
