@@ -605,6 +605,10 @@ class Sitemap(BaseHandler):
 			if lp[-1][1] in FEATURED_CITIES:
 				self.url_wrap('%s/loc/%s/%s/%s' % (host, lp[0][1], 
 					lp[1][1], lp[2][1]), '0.9')
+				self.url_wrap('%s/loc/%s/%s/%s/artists' % (host, lp[0][1], 
+					lp[1][1], lp[2][1]), '0.8')
+				self.url_wrap('%s/loc/%s/%s/%s/shops' % (host, lp[0][1], 
+					lp[1][1], lp[2][1]), '0.8')
 
 		# Studios
 		studio_cache_ids = StringList.get_by_id('StudioCacheIds').string_list
