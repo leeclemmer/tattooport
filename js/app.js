@@ -42,6 +42,10 @@ $(function() {
 			// GetJSON from apiurl and call on_api_load
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
+		} else {
+			$('.stream-page h1').show();
+			$('.stream-page h2').show();
+			$('.hide-while-loading').show();			
 		}
 	}
 
