@@ -567,7 +567,6 @@ class MyLikes(BaseHandler):
 						user=self.user,
 						api_url=api_url)
 
-
 class IGMediaLike(BaseHandler):
 	def get(self, like, media_id):
 		if not media_id or not self.user:
@@ -583,6 +582,72 @@ class IGMediaLike(BaseHandler):
 			except:
 				utils.catch_exception()
 				self.json_output({"meta":{"code": 400},"data": None})
+
+class Sitemap(BaseHandler):
+	''' Outputs sitemaps.org compliant Sitemap for Google Webmasters.'''
+	def get(self):
+		host = 'http://www.tattooport.com'
+		if os.environ['SERVER_NAME'] == 'localhost':
+			host = 'http://localhost:16080'
+
+		self.response.headers['Content-Type'] = 'application/xml'
+		self.response.write('<?xml version="1.0" encoding="UTF-8"?>')
+		self.response.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+		# Home
+		self.url_wrap(host, '1')
+
+		# Localities
+		localities = locality_keys_in_db()
+
+		for locality in localities:
+			lp = locality.pairs()
+			if lp[-1][1] in FEATURED_CITIES:
+				self.url_wrap('%s/loc/%s/%s/%s' % (host, lp[0][1], 
+					lp[1][1], lp[2][1]), '0.9')
+
+		# Studios
+		studio_cache_ids = StringList.get_by_id('StudioCacheIds').string_list
+
+		for scid in studio_cache_ids:
+			self.url_wrap('%s/shop/%s' % (host, scid), '0.8')
+
+		# Artists
+		artist_cache_ids = StringList.get_by_id('ArtistCacheIds').string_list
+
+		for scid in artist_cache_ids:
+			self.url_wrap('%s/artist/%s' % (host, scid), '0.8')
+
+		# Categories
+		groups = TattooGroup.all_groups()
+		for group in groups:
+			for category in group[1]:
+				self.url_wrap('%s/tattoos/%s/%s' % (host,
+					group[0].name,category.name), '0.8')
+
+		# Static Pages
+		self.url_wrap('%s/about' % (host,), '0.5')
+
+		self.response.write('</urlset>')
+
+	def url_wrap(self, url, prio):
+		self.response.write('<url>')
+
+		self.response.write('<loc>')
+		self.response.write(url)
+		self.response.write('</loc>\n')
+
+		self.response.write('<changefreq>')
+		self.response.write('daily')
+		self.response.write('</changefreq>\n')
+
+		self.response.write('<priority>')
+		self.response.write(prio)
+		self.response.write('</priority>\n')
+		self.response.write('</url>\n\n')
+
+
+# Static Pages
 
 class About(BaseHandler):
 	def get(self):
@@ -615,6 +680,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/i/(.*)/?', ContactRedirect),
 							   ('/my/likes/?', MyLikes),
 							   ('/igm/(like|unlike)/(.*)/?', IGMediaLike),
+							   ('/sitemap', Sitemap),
 							   ('/about', About),
 							   ('/tos', TermsOfService),
 							   ('/pp', PrivacyPolicy),
