@@ -115,6 +115,7 @@ p, ul, ol {
 
 .text-important {
 	color: #8dc233;
+	white-space: nowrap;
 }
 
 .jumbotron {
@@ -540,9 +541,12 @@ p.backlink a {
     color: #666;
 }
 
+.footer a {
+    color: #999;	
+}
+
 .footer ul li a {
     font-size: 18px;
-    color: #999;
     vertical-align: middle;
 }
 
