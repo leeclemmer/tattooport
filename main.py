@@ -238,16 +238,16 @@ class FourOhFour(BaseHandler):
 
 class Home(BaseHandler):
 	def get(self):
-		if not self.user:
+		'''if not self.user:
 			self.redirect('/login')
-		else:
-			# Set cache url as api_url
-			api_url = '/json'
+		else:'''
+		# Set cache url as api_url
+		api_url = '/json'
 
-			self.render('home.html',
-						user=self.user,
-						api_url=api_url,
-						localities=self.get_localities())
+		self.render('home.html',
+					user=self.user,
+					api_url=api_url,
+					localities=self.get_localities())
 
 class HomePopularJson(BaseHandler):
 	def get(self):
@@ -317,8 +317,9 @@ class Login(BaseHandler):
 				authentication_url = unauthenticated_api.get_authorize_url(scope=['likes','comments','relationships'])
 			except:
 				utils.log_tb()
-			self.render('login.html',
-						 authentication_url=authentication_url)
+			self.redirect(authentication_url)
+			'''self.render('login.html',
+						 authentication_url=authentication_url)'''
 
 class Logoff(BaseHandler):
 	def get(self):
@@ -491,7 +492,11 @@ class ContactPageJson(ContactPage):
 
 		# Get media list
 		self.get_media(pagename)
-		media_list_dicts = helper.media_list_to_json(self.media)
+		if self.media != 'NOFEED':
+			media_list_dicts = helper.media_list_to_json(self.media)
+		else:
+			media_list_dicts = helper.media_list_to_json([])
+
 
 		# Output json
 		self.json_output(helper.ig_envelope(media_list_dicts))

@@ -117,6 +117,26 @@ p, ul, ol {
 	color: #8dc233;
 }
 
+.jumbotron {
+	background-color: inherit;
+	padding-top: 12px;
+	padding-bottom: 0;
+}
+
+.jumbotron h1 {
+    line-height: 1.1em;
+}
+
+.jumbotron .btn-group .btn {
+	width: inherit;
+	margin-right:20px;
+	margin-bottom:20px;
+}
+
+.jumbotron .btn-group a {
+	display: inherit;
+}
+
 /*** Navbar ***/
 .navbar-nav {	
 	font-family: 'Montserrat', sans-serif;
@@ -195,79 +215,6 @@ p, ul, ol {
 
 .row ul li a {
 	font-size: 1.8em;
-}
-
-/*** Login ***/
-.login-page {
-	text-align: center;
-}
-
-.login-page .tagline {
-	margin: 7px auto 30px;
-	display: inline-block;
-}
-
-.login-page img {
-	margin: 0 auto;
-}
-
-.login-page a:hover, .login-page a:focus,
-.stream-page .more a:hover, .stream-page .more a:focus {
-	text-decoration: none;
-}
-
-.login-page .btn, .stream-page .btn {
-	display: block;
-	width: 100%;
-	max-width: 370px;
-	margin:0 auto;
-	border-radius: 0;
-	font-size: 1.7em;
-}
-
-.login-page .btn-lg {
-	padding: 17px 16px;
-}
-
-.login-page .main-col {
-	padding-top: 60%;
-	background: transparent url(/img/bg_login.png) no-repeat top center;
-	-o-background-size:99% auto;
-	-webkit-background-size:100% auto;
-	-moz-background-size:99% auto;
-	background-size:100% auto;
-}
-
-@media (min-width: 768px) {
-	.login-page .main-col {
-		padding-top: 30%;
-	}
-}
-
-@media (min-width: 992px) {
-	.login-page .main-col {
-		padding-top: 29%;
-	}
-}
-
-@media (min-width: 1200px) {
-	.login-page .main-col {
-		padding-top: 28%;
-	}
-}
-
-.login-page .sign-up {
-	padding:20px 0 30px 0;
-	font-weight: 800;
-	font-family: 'Montserrat', sans-serif;
-}
-
-.login-page .sign-up a {
-	color: #8dc233;
-}
-
-.login-page footer {
-	display: none;
 }
 
 /*** Tattoo Overview ***/
@@ -388,6 +335,19 @@ p, ul, ol {
 	margin-top: 1em;
 }
 
+.stream-page .more a:hover, .stream-page .more a:focus {
+	text-decoration: none;
+}
+
+.stream-page .btn, .jumbotron .btn {
+	display: block;
+	width: 100%;
+	max-width: 370px;
+	margin:0 auto;
+	border-radius: 0;
+	font-size: 1.7em;
+}
+
 .shop-page h3, 
 .artist-page h3 {
 	margin-bottom: 0;
@@ -490,11 +450,11 @@ p.backlink a {
     margin:-6.5em auto 0 auto;
 }
 
-.likes-count:hover,
+/*.likes-count:hover,
 .liked {
     cursor: pointer;
     color: #D14237 !important;
-}
+}*/
 
 @media (min-width: 768px) {
 	.view-all .author {

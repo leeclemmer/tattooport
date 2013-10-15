@@ -57,6 +57,17 @@
 
 	<div class="row">
 		<div class="col-lg-12 tp-main">
+			{% if not user %}
+			<div class="jumbotron">
+				<div class="container">
+					<h1>TattooPort helps you find the <a href="/tattoo">inspiration</a> and <a href="/shops-artists">artist</a> for your next tattoo.</h1>
+					<div class="btn-group">
+						<a href="/login"><button type="button" class="btn btn-primary">Log in with Instagram</button></a>
+						<a href="http://www.instagram.com/"><button type="button" class="btn btn-default">Sign up</button></a>
+					</div>
+				</div>
+			</div>
+			{% endif %}
 			{% block main %}
 			<h1>Front Base Template</h1>
 			<p>You should not be seeing this!</p>

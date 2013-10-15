@@ -283,7 +283,7 @@ $(function() {
 		}
 
 		// Bind Like button
-		bind_like_button();
+		// bind_like_button();
 		function bind_like_button() {
 			if ($_ACCESS_TOKEN) {
 				$('.likes-count').off().bind('click', function() {
