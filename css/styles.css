@@ -39,7 +39,7 @@ h1 {
 }
 
 h2 {
-	color: #DD9B3D;
+	color: #DD9B3D; /* Orange */
 }
 
 ul li li {
@@ -63,7 +63,7 @@ p, ul, ol {
 }
 
 .btn-primary {
-	background-color: #8dc233;
+	background-color: #8dc233; /* Green */
 	border-color: #8dc233;
 }
 
@@ -126,9 +126,11 @@ p, ul, ol {
 
 .jumbotron h1 {
     line-height: 1.1em;
+    font-size: 1.3em;
 }
 
 .jumbotron .btn-group .btn {
+	font-size: 1em;
 	width: inherit;
 	margin-right:20px;
 	margin-bottom:20px;
@@ -136,6 +138,16 @@ p, ul, ol {
 
 .jumbotron .btn-group a {
 	display: inherit;
+}
+
+@media (min-width: 768px) {
+	.jumbotron h1 {
+		font-size: 63px;
+	}
+
+	.jumbotron .btn-group .btn {
+		font-size: 1.7em;
+	}
 }
 
 /*** Navbar ***/
@@ -392,11 +404,12 @@ p.backlink a {
 
 .works-at {
 	margin-left: 50px;
-	font-size: 16px;
+	font-size: 20px;
+	font-family: 'Montserrat', sans-serif;
 }
 
 .row .works-at li a {
-	font-size: 16px;
+	font-size: 20px;
 }
 
 .works-at .dropdown-menu > li > a:hover {
@@ -405,6 +418,61 @@ p.backlink a {
 
 .works-at .dropdown-menu > li > a {
     padding: 12px;
+}
+
+.firstrow div {
+	float: left;
+    margin-right: 30px;
+}
+
+
+.contact-title h1 {
+    margin-bottom: 5px;
+}
+
+.firstrow #follow-button,
+.firstrow #follow-button a,
+.firstrow #followers {
+    height: 60px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.firstrow #follow-button,
+.firstrow #followers {
+    margin-top:7px;
+}
+
+.firstrow #follow-button a {
+    line-height: 48px;
+	background-color: #333333;
+	color: #cccccc;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.firstrow #follow-button a:hover {
+	background-color: #0c0c0c;
+	border-color: #0c0c0c;
+}
+
+.following a {
+	color: #8dc233 !important;
+}
+
+#followers {
+    background-color: #0c0c0c;
+    font-size: 1.3em;
+    text-align: center;
+    text-transform: uppercase;
+    color: #999999;
+    padding: 0 20px;
+}
+
+#follower-count {
+	display: block;
+	font-size: 1.4em;
+    margin-bottom: -5px;
+    margin-top: 2px;
 }
 
 .stream-photo-meta {

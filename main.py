@@ -583,6 +583,22 @@ class IGMediaLike(BaseHandler):
 				utils.catch_exception()
 				self.json_output({"meta":{"code": 400},"data": None})
 
+class IGUserFollow(BaseHandler):
+	def get(self, follow, user_id):
+		if not user_id or not self.user:
+			self.redirect('/')
+		else:
+			api = helper.get_instagram_api(access_token=self.user.access_token)
+			try:				
+				if follow == 'follow':
+					api.follow_user(user_id=user_id)
+				elif follow == 'unfollow':
+					api.unfollow_user(user_id=user_id)
+				self.json_output({"meta":{"code": 200},"data": None})
+			except:
+				utils.catch_exception()
+				self.json_output({"meta":{"code": 400},"data": None})
+
 class Sitemap(BaseHandler):
 	''' Outputs sitemaps.org compliant Sitemap for Google Webmasters.'''
 	def get(self):
@@ -684,6 +700,7 @@ app = webapp2.WSGIApplication([('/?',Home),
 							   ('/i/(.*)/?', ContactRedirect),
 							   ('/my/likes/?', MyLikes),
 							   ('/igm/(like|unlike)/(.*)/?', IGMediaLike),
+							   ('/igu/(follow|unfollow)/(.*)/?', IGUserFollow),
 							   ('/sitemap', Sitemap),
 							   ('/about', About),
 							   ('/tos', TermsOfService),

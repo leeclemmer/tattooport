@@ -18,9 +18,20 @@ function endsWith(str, suffix) {
 $(function() {
 	photos = new Array();
 
+	// Get user id
+	if (typeof $_API_URL !== 'undefined' && $_API_URL.substring(0, 4) == 'http') {
+		var user_id = $_API_URL.split('users/')[1];
+		if (user_id) { 
+			user_id = user_id.split('/media')[0];
+		} else {
+			user_id = '';
+		}
+	}
+
 	call_api();
 
 	function call_api(api_url) {
+		// Set api_url
 		if (typeof $_API_URL === 'undefined') {
 			api_url = '';
 		} else {
@@ -42,6 +53,15 @@ $(function() {
 			// GetJSON from apiurl and call on_api_load
 			$.getJSON(url=api_url,
 				  callback=on_api_load);
+
+			if (Boolean(user_id)) {
+				console.log('user_id:' + user_id);
+				// Get User Data
+				ig_users_userid(user_id, user_id_callback);
+
+				// Check if following
+				ig_users_relationship(user_id, user_relationship_callback);
+			}
 		} else {
 			$('.stream-page h1').show();
 			$('.stream-page h2').show();
@@ -93,17 +113,18 @@ $(function() {
 			      <img class="img-circle img-responsive" src="{{profile_picture}}"> \
 			    <div class="author">{{username}}</div></a> \
 			  </div>';
- 
-		if (data.meta.code == 200) {
+ 		
+ 		if (data.meta.code == 200) {
+ 			// We have data, let's do something with it
 			var re = ''
 
 			// Insert HTML
 			for (i=0; i<data.data.length; i++) {				
-				// Photos
+				// Get Photos
 				photo = data.data[i];
 				photos[photo.id] = photo;
 
-				// Popular Shops & Artists
+				// Top 5 Popular Shops & Artists
 				if (i < 5 && data.meta.page_type == 'multi_user') {
 					re = /{{profile_picture}}/g;
 					single_contact_html = single_contact_div.replace(re,photo.user.profile_picture);
@@ -328,6 +349,71 @@ $(function() {
 				}				
 			}
 		}
+
+		// Bind Follow Button
+		bind_follow_button();
+		function bind_follow_button() {
+			if ($_ACCESS_TOKEN) {
+				$('#follow-button a').off().bind('click', function() {
+					var follower_count = $('#follower-count').text();
+					if (!endsWith(follower_count, 'K') && 
+						!endsWith(follower_count, 'M') && 
+						!endsWith(follower_count, 'B')) {
+						follower_count = parseInt(follower_count);
+					} else {
+						follower_count == false; 
+					}
+
+					// Call server proxy to follow/unfollow
+					if ($(this).parent().hasClass('following')) {
+						$.get('/igu/unfollow/' + user_id);
+						$(this).text('Follow');
+						if (Boolean(follower_count) && follower_count < 1000) {
+							$('#follower-count').text(follower_count - 1);
+						}
+					} else {
+						$.get('/igu/follow/' + user_id);
+						$(this).text('Following');
+						if (Boolean(follower_count) && follower_count < 1000) {
+							$('#follower-count').text(follower_count + 1);
+						}
+					}
+
+					$(this).parent().toggleClass('following');
+				});
+			}
+		}
+	}
+
+	// Function to insert user info onto page
+	function user_id_callback(data, params) {
+		$('#followers').html('<span id="follower-count">' + 
+							 	format(data.data.counts.followed_by) + 
+							 '</span>Followers');
+	}
+
+	// Function to get users relationship to other user
+	function user_relationship_callback(data, params) {
+		console.log(data.data.outgoing_status);
+		if (data.data.outgoing_status == 'follows') {
+			$('#follow-button').addClass('following');
+			$('#follow-button a').text('Following');
+		}
+	}
+
+	// Helper functions to abbreviate numbers
+	// H/t: http://bit.ly/16UPEpW 
+	var pow=Math.pow, floor=Math.floor, abs=Math.abs, log=Math.log;
+
+	function round(n, precision) {
+	    var prec = Math.pow(10, precision);
+	    return Math.round(n*prec)/prec;
+	}
+
+	function format(n) {
+	    var base = floor(log(abs(n))/log(1000));
+	    var suffix = 'KMB'[base-1];
+	    return suffix ? round(n/pow(1000,base),1)+suffix : ''+n;
 	}
 
 	// Wrapper to return instagram api url
@@ -343,6 +429,11 @@ $(function() {
 		return ig_api_url('/users/' + user_id);
 	}
 
+	// Returns IG api url for user relationship
+	function ig_users_relationship_url(user_id) {
+		return ig_api_url('/users/' + user_id + '/relationship');
+	}
+
 	// Returns IG api url for media likes
 	function ig_media_mediaid_likes_url(media_id) {
 		return ig_api_url('/media/' + media_id + '/likes');
@@ -351,6 +442,14 @@ $(function() {
 	// Fetches JSON response for user id call
 	function ig_users_userid(user_id, callback, params) {
 		$.getJSON(url=ig_users_userid_url(user_id),
+				  function (data) {
+				  	callback(data, params);
+				  });
+	}
+
+	// Fetches JSON response for user relationship call
+	function ig_users_relationship(user_id, callback, params) {
+		$.getJSON(url=ig_users_relationship_url(user_id),
 				  function (data) {
 				  	callback(data, params);
 				  });

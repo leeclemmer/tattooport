@@ -91,7 +91,7 @@ class AdminStudio(BaseHandler):
 		return TUMBLR_RE.match(tumblr)
 
 	def valid_street(self, street):
-		STREET_RE = re.compile(r"^.[\s#.,;:'()a-zA-Z0-9_-]+$")
+		STREET_RE = re.compile(r"^.[\s#.,;:'/()a-zA-Z0-9_-]+$")
 		return STREET_RE.match(street)
 
 	def valid_locality(self, locality):
