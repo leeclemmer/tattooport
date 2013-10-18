@@ -479,6 +479,45 @@ p.backlink a {
     margin-top: 2px;
 }
 
+.iconrow {
+	clear: both;
+    margin-left: 10px;
+    padding-top: 20px;
+}
+
+.iconrow .user-icon i {
+    display: block;
+}
+
+.iconrow a {
+	color: #666666;
+}
+
+.iconrow a:hover,
+.iconrow a:focus {
+	color: #cccccc;
+}
+
+.iconrow .user-icon {  
+	float: left;
+    max-width:70px;
+    margin-right: 30px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight:bold;
+    color: #666666;
+    text-align: center;
+}
+
+.iconrow .user-icon:hover,
+.iconrow .user-icon:focus {
+    color: #cccccc;
+    cursor: pointer;
+}
+
+.popover, .popover h3 {
+    font-size:1.2em;
+    color: #333; 
+}
 .stream-photo-meta {
     margin: 0 auto;
     margin-top: 1em;

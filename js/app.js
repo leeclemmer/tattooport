@@ -55,13 +55,19 @@ $(function() {
 				  callback=on_api_load);
 
 			if (Boolean(user_id)) {
-				console.log('user_id:' + user_id);
 				// Get User Data
 				ig_users_userid(user_id, user_id_callback);
 
 				// Check if following
 				ig_users_relationship(user_id, user_relationship_callback);
 			}
+
+			$(".user-icon").popover();
+
+			$(".user-icon").on('show.bs.popover', function() {
+				console.log('asdf');
+				$(".user-icon").popover('hide');
+			});
 		} else {
 			$('.stream-page h1').show();
 			$('.stream-page h2').show();
@@ -394,7 +400,6 @@ $(function() {
 
 	// Function to get users relationship to other user
 	function user_relationship_callback(data, params) {
-		console.log(data.data.outgoing_status);
 		if (data.data.outgoing_status == 'follows') {
 			$('#follow-button').addClass('following');
 			$('#follow-button a').text('Following');

@@ -534,6 +534,13 @@ class ShopPage(ContactPage):
 
 	def get(self, pagename):
 		super(ShopPage, self).get(pagename)
+
+		# Exchange country and subdivision id names for more readable names (e.g. "Pennsylvania" instead of "US-PA")
+		try:
+			self.contact.country = COUNTRIES[self.contact.address.get().country]['name']
+			self.contact.subdivision = COUNTRIES[self.contact.address.get().country]['subdivisions'][self.contact.address.get().subdivision]
+		except:
+			pass
 				
 		self.render('shop.html',
 					user=self.user,

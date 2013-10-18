@@ -42,4 +42,116 @@
 	</div>
 	{% endif %}
 </div>
+
+<div class="iconrow">
+	{% set emails = artist.email.fetch() %}
+	{% if emails %}
+		{% for email in emails %}
+			<div class="user-icon contact" data-container="body" data-toggle="popover" data-placement="bottom" data-content="{{ email.email }}" data-original-title="Email" title="Email">
+				<i class="icon-envelope icon-4x"></i>
+				Email				
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set phones = artist.phone.fetch() %}
+	{% if phones %}
+		{% for phone in phones|sort(reverse=True,attribute='primary') %}
+			<div class="user-icon call" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true"
+			data-content='<abbr title="{{ phone.phone_type.capitalize() }} Phone">{{ phone.phone_type[0].capitalize() }}</abbr>:
+					<a href="tel:{{ phone.country_code }}{{ phone.number }}">
+						+{{ phone.country_code }} 
+						{% if phone.country_code == "1" %}
+							{% set number = phone.number|replace("-","")
+														|replace(" ","")
+														|replace("(","")
+														|replace(")","")
+														|replace(".","") %}
+							{{ "(%s) %s-%s" % (number[0:3],number[3:6],number[6:]) }}
+						{% else %}
+							{{ phone.number }}
+						{% endif %}
+					</a>' data-original-title="Phone" title="Phone">
+				<i class="icon-phone icon-4x"></i>
+				Call				
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set websites = artist.website.fetch() %}
+	{% if websites %}
+		{% for website in websites %}
+			<div class="user-icon contact">
+				<a href="{{ website.url }}" target="_blank">
+					<i class="icon-home icon-4x"></i>
+					Website
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set gallerys = artist.gallery.fetch() %}
+	{% if gallerys %}
+		{% for gallery in gallerys %}
+			<div class="user-icon contact">
+				<a href="{{ gallery.url }}" target="_blank">
+					<i class="icon-picture icon-4x"></i>
+					Gallery
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set instagrams = artist.instagram.fetch() %}
+	{% if instagrams %}
+		{% for instagram in instagrams %}
+			<div class="user-icon contact">
+				<a href="http://instagram.com/{{ instagram.instagram }}" target="_blank">
+					<i class="icon-instagram icon-4x"></i>
+					Instagram
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set facebooks = artist.facebook.fetch() %}
+	{% if facebooks %}
+		{% for facebook in facebooks %}
+			<div class="user-icon contact">
+				<a href="{{ facebook.facebook }}" target="_blank">
+					<i class="icon-facebook icon-4x"></i>
+					Facebook
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set twitters = artist.twitter.fetch() %}
+	{% if twitters %}
+		{% for twitter in twitters %}
+			<div class="user-icon contact">
+				<a href="http://twitter.com/{{ twitter.twitter }}" target="_blank">
+					<i class="icon-twitter icon-4x"></i>
+					Twitter
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	{% set tumblrs = artist.tumblr.fetch() %}
+	{% if tumblrs %}
+		{% for tumblr in tumblrs %}
+			<div class="user-icon contact">
+				<a href="{{ tumblr.tumblr }}" target="_blank">
+					<i class="icon-tumblr icon-4x"></i>
+					Tumblr
+				</a>	
+			</div>
+		{% endfor %}
+	{% endif %}
+</div>
 {% endblock %}
+
+<button type="button" class="btn btn-default" data-container="body" data-toggle="popover" data-placement="left" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus." data-original-title="" title="">
+          Popover on left
+        </button>
