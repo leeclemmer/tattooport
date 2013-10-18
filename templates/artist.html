@@ -8,15 +8,17 @@
 
 <div class="firstrow">
 	<div class="contact-title">
-		<!-- Profile picture -->
-		{% if artist.instagram.get().profile_picture %}
-		<img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
-		{% else %}
-		<img src="/img/blank_circle_150.gif" class="img-circle">
-		{% endif %} 
 
 		<!-- Name -->
-		<h1>{{ artist.display_name }}</h1>
+		<h1>
+			<!-- Profile picture -->
+			{% if artist.instagram.get().profile_picture %}
+			<img src="{{ artist.instagram.get().profile_picture }}" class="img-circle">
+			{% else %}
+			<img src="/img/blank_circle_150.gif" class="img-circle">
+			{% endif %} 
+			{{ artist.display_name }}
+		</h1>
 
 		<!-- Studio information -->
 		<ul class="list-unstyled works-at">
@@ -27,8 +29,9 @@
 			<li><a href="/shop/{{ studio.name }}/{{ studio.key.id() }}">{{ studio.name }}</a> in {% if loc_name in featured_cities %}<a href="/loc/{{ loc.pairs()[0][1] }}/{{ loc.pairs()[1][1] }}/{{ loc.pairs()[2][1] }}">{% endif %}{{ loc_name }}{% if loc_name in featured_cities %}</a>{% endif %}</li>
 			{% endfor %}
 		</ul>
-	</div>
+	</div>	
 
+	{% if user and artist.instagram.get() %}
 	<div id="follow-button">
 		<a class="btn btn-default">Follow</a>
 	</div>
@@ -37,5 +40,6 @@
 		<span id="follower-count">--</span>
 		Followers
 	</div>
+	{% endif %}
 </div>
 {% endblock %}
