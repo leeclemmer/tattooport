@@ -122,4 +122,31 @@ $(function() {
 	// when doc is loaded
 	generate_subdivisions.apply($('#country'));
 	generate_subdivisions.apply($('#ma_country'));
+
+	// Pressing key on artist create form
+	$('#display_name').on('keyup', function(event) {
+		// Autopopulate First and Last Name for artist
+		$('#first_name').attr('value',this.value.split(' ')[0]);
+		$('#last_name').attr('value',this.value.split(' ')[1]);
+
+		set_helper_links.apply(this);
+	});
+
+	// Pressing key on artist create form
+	$('#name').on('keyup', function() {
+		set_helper_links.apply(this);
+	});
+
+	function set_helper_links() {
+		// Autopopulates Google searches to cut down on typing time
+		var google_search = "https://www.google.com/search?q=";
+		var name = this.value + " tattoo";
+
+		$('#website-label').attr('href',google_search + name);
+		$('#instagram-label').attr('href',google_search + name + " instagram");
+		$('#facebook-label').attr('href',google_search + name + " facebook");
+		$('#twitter-label').attr('href',google_search + name + " twitter");
+		$('#tumblr-label').attr('href',google_search + name + " tumblr");
+		$('#foursquare-label').attr('href',google_search + name + " foursquare");
+	}
 });

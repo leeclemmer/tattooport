@@ -44,6 +44,10 @@ ul li li {
     text-decoration: none;
 }
 
+.tp-main form label a {
+    color: black;
+}
+
 .tp-main form a:hover {
     color: #428bca;
 }

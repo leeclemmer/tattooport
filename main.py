@@ -238,16 +238,12 @@ class FourOhFour(BaseHandler):
 
 class Home(BaseHandler):
 	def get(self):
-		'''if not self.user:
-			self.redirect('/login')
-		else:'''
 		# Set cache url as api_url
 		api_url = '/json'
 
 		self.render('home.html',
 					user=self.user,
-					api_url=api_url,
-					localities=self.get_localities())
+					api_url=api_url)
 
 class HomePopularJson(BaseHandler):
 	def get(self):

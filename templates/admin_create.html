@@ -132,7 +132,8 @@
 					{% set key = '%s-%s' % (key.split('-')[0],i) %}
 				{% endif %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Website</label>
+					<label for="{{ key }}" class="col-lg-2 control-label">
+						<a id="website-label" href="" target="_blank">Website</a></label>
 					<div class="col-lg-9">
 						<input type="url" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: http://www.tattooport.com" value="{{ args[key] }}">
 					</div>
@@ -174,26 +175,9 @@
 					{% set key = '%s-%s' % (key.split('-')[0],i) %}
 				{% endif %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Instagram name</label>
+					<label for="{{ key }}" class="col-lg-2 control-label"><a id="instagram-label" href="" target="_blank">Instagram name</a></label>
 					<div class="col-lg-9">
 						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 30 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,30}$" maxlength="30" >
-					</div>
-					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
-				</div>
-			{% endfor %}
-			
-			<!-- Foursquare -->
-			{% set key = 'foursquare' %}
-			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
-
-			{% for i in range(1,max+1) %}
-				{% if i > 1 %}
-					{% set key = '%s-%s' % (key.split('-')[0],i) %}
-				{% endif %}
-				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Foursquare page</label>
-					<div class="col-lg-9">
-						<input type="url" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: https://foursquare.com/v/tattooport/..." value="{{ args[key] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>
@@ -208,7 +192,7 @@
 					{% set key = '%s-%s' % (key.split('-')[0],i) %}
 				{% endif %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Facebook page</label>
+					<label for="{{ key }}" class="col-lg-2 control-label"><a id="facebook-label" href="" target="_blank">Facebook page</a></label>
 					<div class="col-lg-9">
 						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: http://www.facebook.com/page/tattooport" value="{{ args[key] }}">
 					</div>
@@ -225,7 +209,7 @@
 					{% set key = '%s-%s' % (key.split('-')[0],i) %}
 				{% endif %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Twitter name</label>
+					<label for="{{ key }}" class="col-lg-2 control-label"><a id="twitter-label" href="" target="_blank">Twitter name</a></label>
 					<div class="col-lg-9">
 						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="1 - 32 characters. For example: tattooport" value="{{ args[key] }}" pattern="^[A-Za-z0-9_]{1,32}$" maxlength="32" >
 					</div>
@@ -242,9 +226,26 @@
 					{% set key = '%s-%s' % (key.split('-')[0],i) %}
 				{% endif %}
 				<div class="form-group">
-					<label for="{{ key }}" class="col-lg-2 control-label">Tumblr page</label>
+					<label for="{{ key }}" class="col-lg-2 control-label"><a id="tumblr-label" href="" target="_blank">Tumblr page</a></label>
 					<div class="col-lg-9">
 						<input type="text" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: http://tattooport.tumblr.com" value="{{ args[key] }}">
+					</div>
+					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
+				</div>
+			{% endfor %}
+			
+			<!-- Foursquare -->
+			{% set key = 'foursquare' %}
+			{% set max = num_fields.get(key) and num_fields.get(key) or 1 %}
+
+			{% for i in range(1,max+1) %}
+				{% if i > 1 %}
+					{% set key = '%s-%s' % (key.split('-')[0],i) %}
+				{% endif %}
+				<div class="form-group">
+					<label for="{{ key }}" class="col-lg-2 control-label"><a id="foursquare-label" href="" target="_blank">Foursquare page</a></label>
+					<div class="col-lg-9">
+						<input type="url" name="{{ key }}" id="{{ key }}" class="form-control" placeholder="For example: https://foursquare.com/v/tattooport/..." value="{{ args[key] }}">
 					</div>
 					<a href="#" class="add-form-field"><i class="icon-plus-sign icon-2x col-lg-1"></i></a>
 				</div>

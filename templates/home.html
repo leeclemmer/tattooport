@@ -24,20 +24,6 @@
     <h1>Popular Tattoo Art</h1>
 {% endblock %}
 
-{% block bottom_content %}
-	<h1>Browse Cities</h1>	
-
-    <ul class="list-unstyled hide-while-loading">
-		{% for locality in localities %}
-			<li>
-				<a href="/loc{{ locality[2] }}">
-					{{ locality[0].display_name }}
-				</a>
-			</li>
-		{% endfor %}
-	</ul>
-{% endblock %}
-
 
 
 
